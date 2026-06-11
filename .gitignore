@@ -313,3 +313,4 @@ build/
 */build/
 node_modules
 package-lock.json
+whenwhere.db
