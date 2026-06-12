@@ -993,6 +993,18 @@ textarea.form-control {
   white-space: nowrap;
 }
 
+.country-label {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 15px;
+  color: #1a202c;
+  font-weight: 700;
+  text-shadow: 2px 2px 3px white, -2px -2px 3px white, 2px -2px 3px white, -2px 2px 3px white;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
 .event-marker-popup .popup-title {
   font-weight: 600;
   font-size: 14px;

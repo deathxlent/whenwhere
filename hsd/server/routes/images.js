@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const db = require('../db');
 
-const IMAGES_ROOT = path.join(__dirname, '..', '..', 'ww', 'static', 'images');
+const IMAGES_ROOT = path.join(__dirname, '..', '..', '..', 'ww', 'static', 'images');
 
 const ensureDir = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
