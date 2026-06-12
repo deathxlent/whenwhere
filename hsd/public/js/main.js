@@ -283,49 +283,54 @@ async function renderMapView() {
   initAddPanel();
 }
 
+const COUNTRIES_WITH_ADMIN1 = new Set([
+  '中国', '俄罗斯', '美国', '加拿大', '巴西', '澳大利亚', '印度', '阿根廷',
+  '哈萨克斯坦', '阿尔及利亚', '刚果(金)', '沙特阿拉伯', '墨西哥', '印度尼西亚',
+  '苏丹', '利比亚', '伊朗', '蒙古', '秘鲁', '乍得', '尼日尔', '安哥拉', '马里',
+  '南非', '哥伦比亚', '埃塞俄比亚', '玻利维亚', '毛里塔尼亚', '埃及',
+  '坦桑尼亚', '尼日利亚', '委内瑞拉', '纳米比亚', '莫桑比克', '巴基斯坦',
+  '土耳其', '智利', '赞比亚', '缅甸', '阿富汗', '索马里', '中非', '乌克兰',
+  '马达加斯加', '博茨瓦纳', '肯尼亚', '法国', '也门', '泰国', '西班牙',
+  '土库曼斯坦', '喀麦隆', '巴布亚新几内亚', '瑞典', '乌兹别克斯坦', '摩洛哥',
+  '伊拉克', '巴拉圭', '津巴布韦', '日本', '德国', '刚果(布)', '芬兰', '越南',
+  '马来西亚', '挪威', '科特迪瓦', '波兰', '意大利', '菲律宾', '厄瓜多尔',
+  '布基纳法索', '新西兰', '加蓬', '几内亚', '英国', '乌干达', '加纳', '罗马尼亚',
+  '老挝', '圭亚那', '白俄罗斯', '吉尔吉斯斯坦', '塞内加尔', '叙利亚', '柬埔寨',
+  '乌拉圭', '苏里南', '突尼斯', '孟加拉国', '尼泊尔', '塔吉克斯坦', '希腊',
+  '尼加拉瓜', '厄立特里亚', '朝鲜', '韩国'
+]);
+
 function initMap() {
   if (state.map) {
     state.map.remove();
     state.map = null;
   }
 
-  let center, zoom, minZoom;
+  let center, zoom;
   const subCode = state.currentSubCategory?.code || '';
   if (subCode === 'china') {
     center = [35, 105];
     zoom = 5;
-    minZoom = 2;
   } else {
     center = [25, 30];
-    zoom = 2;
-    minZoom = 2;
+    zoom = 4;
   }
 
   state.map = L.map('map', {
     center: center,
     zoom: zoom,
-    minZoom: minZoom,
-    maxZoom: 18,
+    minZoom: 4,
+    maxZoom: 16,
     zoomControl: true,
     worldCopyJump: true
   });
 
-  const subCodeForTile = state.currentSubCategory?.code || '';
-  if (subCodeForTile === 'china') {
-    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-      subdomains: ['1', '2', '3', '4'],
-      attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
-      minZoom: 1,
-      maxZoom: 18
-    }).addTo(state.map);
-  } else {
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      subdomains: ['a', 'b', 'c', 'd'],
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      minZoom: 1,
-      maxZoom: 18
-    }).addTo(state.map);
-  }
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
+    minZoom: 4,
+    maxZoom: 16
+  }).addTo(state.map);
 
   loadChinaProvinces();
   loadWorldAdmin1Labels();
@@ -511,7 +516,7 @@ async function loadWorldAdmin1Labels() {
         interactive: false
       });
       state.admin1Labels.push(label);
-      if (currentZoom >= 1 && currentZoom < 4) {
+      if (currentZoom >= 4) {
         label.addTo(state.map);
       }
     });
@@ -519,7 +524,9 @@ async function loadWorldAdmin1Labels() {
     data.features.forEach(feature => {
       const name = feature.properties.name;
       const coords = feature.geometry.coordinates;
+      const country = feature.properties.country;
       if (!name || !coords) return;
+      if (!COUNTRIES_WITH_ADMIN1.has(country)) return;
 
       const label = L.marker([coords[1], coords[0]], {
         icon: L.divIcon({
@@ -553,7 +560,7 @@ function updateLabelVisibility() {
     const isProvinceLabel = el.classList.contains('province-label');
 
     if (isCountryLabel) {
-      if (zoom >= 1 && zoom < 4) {
+      if (zoom >= 4) {
         if (!state.map.hasLayer(label)) state.map.addLayer(label);
       } else {
         if (state.map.hasLayer(label)) state.map.removeLayer(label);
@@ -1422,49 +1429,39 @@ function openEditMapView(event) {
 
   if (state.map) { state.map.remove(); state.map = null; }
 
-  let center, zoom, minZoom;
+  let center, zoom;
   if (event.location_lat && event.location_lng) {
     center = [event.location_lat, event.location_lng];
-    zoom = 10;
-    minZoom = 1;
+    zoom = 4;
   } else {
     const subCode = state.currentSubCategory?.code || '';
     if (subCode === 'china') {
       center = [35, 105];
       zoom = 5;
-      minZoom = 2;
     } else {
       center = [25, 30];
-      zoom = 1;
-      minZoom = 1;
+      zoom = 4;
     }
   }
 
   state.map = L.map('map', {
     center: center,
     zoom: zoom,
-    minZoom: minZoom,
-    maxZoom: 18,
+    minZoom: 4,
+    maxZoom: 16,
     zoomControl: true,
     worldCopyJump: true
   });
 
-  const subCodeForEditTile = state.currentSubCategory?.code || '';
-  if (subCodeForEditTile === 'china') {
-    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-      subdomains: ['1', '2', '3', '4'],
-      attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
-      minZoom: 1,
-      maxZoom: 18
-    }).addTo(state.map);
-  } else {
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      subdomains: ['a', 'b', 'c', 'd'],
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      minZoom: 1,
-      maxZoom: 18
-    }).addTo(state.map);
-  }
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
+    minZoom: 4,
+    maxZoom: 16
+  }).addTo(state.map);
+
+  loadChinaProvinces();
+  loadWorldAdmin1Labels();
 
   let editMarker = null;
   if (event.location_lat && event.location_lng) {
