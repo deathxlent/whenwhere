@@ -598,8 +598,7 @@ textarea.form-control {
 
 .map-view-container {
   position: relative;
-  height: calc(100vh - 140px);
-  margin: -30px;
+  height: calc(100vh - 60px);
   display: flex;
 }
 

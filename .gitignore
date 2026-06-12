@@ -313,6 +313,3 @@ build/
 */build/
 node_modules
 package-lock.json
-whenwhere.db
-ww\static\images\junior
-ww\db

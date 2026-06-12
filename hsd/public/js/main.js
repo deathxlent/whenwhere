@@ -278,9 +278,19 @@ function initMap() {
     state.map = null;
   }
 
+  let center, zoom;
+  const subCode = state.currentSubCategory?.code || '';
+  if (subCode === 'china') {
+    center = [35, 105];
+    zoom = 5;
+  } else {
+    center = [20, 10];
+    zoom = 2;
+  }
+
   state.map = L.map('map', {
-    center: [30, 105],
-    zoom: 4,
+    center: center,
+    zoom: zoom,
     minZoom: 2,
     maxZoom: 18,
     zoomControl: true
@@ -454,6 +464,8 @@ function initAddPanel() {
   initEraToggle('end-era');
   initPrecisionRow('start');
   initPrecisionRow('end');
+  bindDateFieldBounds('f-start-month', 'f-start-day');
+  bindDateFieldBounds('f-end-month', 'f-end-day');
 
   const imageArea = document.getElementById('add-image-area');
   const fileInput = document.getElementById('f-images');
@@ -480,6 +492,41 @@ function initEraToggle(groupId) {
       btn.classList.add('active');
     });
   });
+}
+
+function bindDateFieldBounds(monthId, dayId) {
+  const monthInput = document.getElementById(monthId);
+  const dayInput = document.getElementById(dayId);
+
+  if (monthInput) {
+    const enforce = () => {
+      let v = parseInt(monthInput.value);
+      if (isNaN(v) || v === '') return;
+      if (v < 1) monthInput.value = 1;
+      else if (v > 12) monthInput.value = 12;
+    };
+    monthInput.addEventListener('change', enforce);
+    monthInput.addEventListener('blur', enforce);
+    monthInput.addEventListener('input', () => {
+      let v = parseInt(monthInput.value);
+      if (!isNaN(v) && v > 12) monthInput.value = 12;
+    });
+  }
+
+  if (dayInput) {
+    const enforce = () => {
+      let v = parseInt(dayInput.value);
+      if (isNaN(v) || v === '') return;
+      if (v < 1) dayInput.value = 1;
+      else if (v > 31) dayInput.value = 31;
+    };
+    dayInput.addEventListener('change', enforce);
+    dayInput.addEventListener('blur', enforce);
+    dayInput.addEventListener('input', () => {
+      let v = parseInt(dayInput.value);
+      if (!isNaN(v) && v > 31) dayInput.value = 31;
+    });
+  }
 }
 
 function initPrecisionRow(prefix) {
@@ -895,6 +942,8 @@ function showEventForm(event = null) {
   initEraToggle('modal-end-era');
   initModalPrecisionRow('modal-start-precision-row', 'f-start-month', 'f-start-day');
   initModalPrecisionRow('modal-end-precision-row', 'f-end-month', 'f-end-day');
+  bindDateFieldBounds('f-start-month', 'f-start-day');
+  bindDateFieldBounds('f-end-month', 'f-end-day');
 
   document.getElementById('save-btn').addEventListener('click', async () => {
     const startEra = document.querySelector('#modal-start-era .era-toggle-btn.active').dataset.era;
