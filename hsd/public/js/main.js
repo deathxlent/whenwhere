@@ -223,7 +223,10 @@ async function renderMapView() {
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">结束时间</label>
+              <div class="form-label-row">
+                <label class="form-label">结束时间</label>
+                <button type="button" class="sync-btn" id="sync-end-btn">⟳ 同步开始</button>
+              </div>
               <div class="era-toggle" id="end-era">
                 <button type="button" class="era-toggle-btn active" data-era="ce">公元</button>
                 <button type="button" class="era-toggle-btn" data-era="bce">公元前</button>
@@ -296,8 +299,9 @@ function initMap() {
     zoomControl: true
   });
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
     maxZoom: 18
   }).addTo(state.map);
 
@@ -467,6 +471,23 @@ function initAddPanel() {
   bindDateFieldBounds('f-start-month', 'f-start-day');
   bindDateFieldBounds('f-end-month', 'f-end-day');
 
+  document.getElementById('sync-end-btn').addEventListener('click', () => {
+    syncEndFromStart({
+      startYearId: 'f-start-year',
+      startMonthId: 'f-start-month',
+      startDayId: 'f-start-day',
+      startEraId: 'start-era',
+      startPrecisionRowId: 'start-precision-row',
+      endYearId: 'f-end-year',
+      endMonthId: 'f-end-month',
+      endDayId: 'f-end-day',
+      endEraId: 'end-era',
+      endPrecisionRowId: 'end-precision-row',
+      endMonthGroupId: 'end-month-group',
+      endDayGroupId: 'end-day-group'
+    });
+  });
+
   const imageArea = document.getElementById('add-image-area');
   const fileInput = document.getElementById('f-images');
 
@@ -526,6 +547,59 @@ function bindDateFieldBounds(monthId, dayId) {
       let v = parseInt(dayInput.value);
       if (!isNaN(v) && v > 31) dayInput.value = 31;
     });
+  }
+}
+
+function syncEndFromStart(options) {
+  const {
+    startYearId, startMonthId, startDayId,
+    startEraId, startPrecisionRowId,
+    endYearId, endMonthId, endDayId,
+    endEraId, endPrecisionRowId,
+    endMonthGroupId, endDayGroupId
+  } = options;
+
+  const startYear = document.getElementById(startYearId).value;
+  if (!startYear) return;
+
+  const startEra = document.querySelector(`#${startEraId} .era-toggle-btn.active`).dataset.era;
+  const startPrecision = parseInt(document.querySelector(`#${startPrecisionRowId} .date-precision-btn.active`).dataset.precision);
+  const startMonth = document.getElementById(startMonthId).value;
+  const startDay = document.getElementById(startDayId).value;
+
+  const endYearInput = document.getElementById(endYearId);
+  const endMonthInput = document.getElementById(endMonthId);
+  const endDayInput = document.getElementById(endDayId);
+  const endMonthGroup = document.getElementById(endMonthGroupId);
+  const endDayGroup = document.getElementById(endDayGroupId);
+  const endPrecisionRow = document.getElementById(endPrecisionRowId);
+
+  endYearInput.value = startYear;
+
+  const endEraBtns = document.querySelectorAll(`#${endEraId} .era-toggle-btn`);
+  endEraBtns.forEach(b => b.classList.remove('active'));
+  endEraBtns.forEach(b => {
+    if (b.dataset.era === startEra) b.classList.add('active');
+  });
+
+  endPrecisionRow.querySelectorAll('.date-precision-btn').forEach(b => b.classList.remove('active'));
+  endPrecisionRow.querySelector(`[data-precision="${startPrecision}"]`).classList.add('active');
+
+  if (startPrecision === 0) {
+    endMonthGroup.style.display = 'none';
+    endDayGroup.style.display = 'none';
+    endMonthInput.value = '';
+    endDayInput.value = '';
+  } else if (startPrecision === 1) {
+    endMonthGroup.style.display = '';
+    endDayGroup.style.display = 'none';
+    endMonthInput.value = startMonth || '';
+    endDayInput.value = '';
+  } else {
+    endMonthGroup.style.display = '';
+    endDayGroup.style.display = '';
+    endMonthInput.value = startMonth || '';
+    endDayInput.value = startDay || '';
   }
 }
 
@@ -835,7 +909,7 @@ async function loadEvents() {
       const action = btn.dataset.action;
       const id = parseInt(btn.dataset.id);
       const event = state.currentEvents.find(e => e.id === id);
-      if (action === 'edit') showEventForm(event);
+      if (action === 'edit') openEditMapView(event);
       else if (action === 'delete') deleteEvent(event);
       else if (action === 'images') openImageManager(event);
     });
@@ -871,10 +945,10 @@ function showEventForm(event = null) {
               <div class="form-group year-field">
                 <input type="number" class="form-control" id="f-start-year" placeholder="年" min="1" value="${startParts.year}">
               </div>
-              <div class="form-group">
+              <div class="form-group" id="modal-start-month-group">
                 <input type="number" class="form-control" id="f-start-month" placeholder="月" min="1" max="12" value="${startParts.month}">
               </div>
-              <div class="form-group">
+              <div class="form-group" id="modal-start-day-group">
                 <input type="number" class="form-control" id="f-start-day" placeholder="日" min="1" max="31" value="${startParts.day}">
               </div>
             </div>
@@ -885,7 +959,10 @@ function showEventForm(event = null) {
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">结束时间</label>
+            <div class="form-label-row">
+              <label class="form-label">结束时间</label>
+              <button type="button" class="sync-btn" id="modal-sync-end-btn">⟳ 同步开始</button>
+            </div>
             <div class="era-toggle" id="modal-end-era">
               <button type="button" class="era-toggle-btn ${!endParts.isBce ? 'active' : ''}" data-era="ce">公元</button>
               <button type="button" class="era-toggle-btn ${endParts.isBce ? 'active' : ''}" data-era="bce">公元前</button>
@@ -894,10 +971,10 @@ function showEventForm(event = null) {
               <div class="form-group year-field">
                 <input type="number" class="form-control" id="f-end-year" placeholder="年" min="1" value="${endParts.year}">
               </div>
-              <div class="form-group">
+              <div class="form-group" id="modal-end-month-group">
                 <input type="number" class="form-control" id="f-end-month" placeholder="月" min="1" max="12" value="${endParts.month}">
               </div>
-              <div class="form-group">
+              <div class="form-group" id="modal-end-day-group">
                 <input type="number" class="form-control" id="f-end-day" placeholder="日" min="1" max="31" value="${endParts.day}">
               </div>
             </div>
@@ -940,10 +1017,27 @@ function showEventForm(event = null) {
 
   initEraToggle('modal-start-era');
   initEraToggle('modal-end-era');
-  initModalPrecisionRow('modal-start-precision-row', 'f-start-month', 'f-start-day');
-  initModalPrecisionRow('modal-end-precision-row', 'f-end-month', 'f-end-day');
+  initModalPrecisionRow('modal-start-precision-row', 'modal-start-month-group', 'modal-start-day-group');
+  initModalPrecisionRow('modal-end-precision-row', 'modal-end-month-group', 'modal-end-day-group');
   bindDateFieldBounds('f-start-month', 'f-start-day');
   bindDateFieldBounds('f-end-month', 'f-end-day');
+
+  document.getElementById('modal-sync-end-btn').addEventListener('click', () => {
+    syncEndFromStart({
+      startYearId: 'f-start-year',
+      startMonthId: 'f-start-month',
+      startDayId: 'f-start-day',
+      startEraId: 'modal-start-era',
+      startPrecisionRowId: 'modal-start-precision-row',
+      endYearId: 'f-end-year',
+      endMonthId: 'f-end-month',
+      endDayId: 'f-end-day',
+      endEraId: 'modal-end-era',
+      endPrecisionRowId: 'modal-end-precision-row',
+      endMonthGroupId: 'modal-end-month-group',
+      endDayGroupId: 'modal-end-day-group'
+    });
+  });
 
   document.getElementById('save-btn').addEventListener('click', async () => {
     const startEra = document.querySelector('#modal-start-era .era-toggle-btn.active').dataset.era;
@@ -1003,7 +1097,7 @@ function showEventForm(event = null) {
   });
 }
 
-function initModalPrecisionRow(rowId, monthId, dayId) {
+function initModalPrecisionRow(rowId, monthGroupId, dayGroupId) {
   const row = document.getElementById(rowId);
   row.querySelectorAll('.date-precision-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1011,22 +1105,420 @@ function initModalPrecisionRow(rowId, monthId, dayId) {
       btn.classList.add('active');
 
       const precision = parseInt(btn.dataset.precision);
-      const monthInput = document.getElementById(monthId);
-      const dayInput = document.getElementById(dayId);
+      const monthGroup = document.getElementById(monthGroupId);
+      const dayGroup = document.getElementById(dayGroupId);
+      const monthInput = monthGroup ? monthGroup.querySelector('input') : null;
+      const dayInput = dayGroup ? dayGroup.querySelector('input') : null;
 
       if (precision === 0) {
-        monthInput.closest('.form-group').style.display = 'none';
-        dayInput.closest('.form-group').style.display = 'none';
-        monthInput.value = '';
-        dayInput.value = '';
+        if (monthGroup) monthGroup.style.display = 'none';
+        if (dayGroup) dayGroup.style.display = 'none';
+        if (monthInput) monthInput.value = '';
+        if (dayInput) dayInput.value = '';
       } else if (precision === 1) {
-        monthInput.closest('.form-group').style.display = '';
-        dayInput.closest('.form-group').style.display = 'none';
-        dayInput.value = '';
+        if (monthGroup) monthGroup.style.display = '';
+        if (dayGroup) dayGroup.style.display = 'none';
+        if (dayInput) dayInput.value = '';
       } else {
-        monthInput.closest('.form-group').style.display = '';
-        dayInput.closest('.form-group').style.display = '';
+        if (monthGroup) monthGroup.style.display = '';
+        if (dayGroup) dayGroup.style.display = '';
       }
+    });
+  });
+}
+
+function makeDraggable(element, handle) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  const dragHandle = handle || element;
+
+  dragHandle.style.cursor = 'move';
+  dragHandle.addEventListener('mousedown', dragMouseDown);
+
+  function dragMouseDown(e) {
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.addEventListener('mouseup', closeDragElement);
+    document.addEventListener('mousemove', elementDrag);
+  }
+
+  function elementDrag(e) {
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+
+    let newTop = element.offsetTop - pos2;
+    let newLeft = element.offsetLeft - pos1;
+
+    const parent = element.parentElement;
+    const parentRect = parent.getBoundingClientRect();
+    const elemRect = element.getBoundingClientRect();
+
+    const minTop = 10;
+    const maxTop = parentRect.height - elemRect.height - 10;
+    const minLeft = 10;
+    const maxLeft = parentRect.width - elemRect.width - 10;
+
+    newTop = Math.max(minTop, Math.min(newTop, maxTop));
+    newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
+
+    element.style.top = newTop + 'px';
+    element.style.left = newLeft + 'px';
+    element.style.right = 'auto';
+    element.style.bottom = 'auto';
+  }
+
+  function closeDragElement() {
+    document.removeEventListener('mouseup', closeDragElement);
+    document.removeEventListener('mousemove', elementDrag);
+  }
+}
+
+function openEditMapView(event) {
+  state.currentEditingEvent = event;
+  setBreadcrumb(`首页 / ${state.currentCategory.name} / ${state.currentSubCategory.name} / ${event.title} / 修改`);
+
+  document.getElementById('main-view').innerHTML = `
+    <div class="map-edit-view">
+      <div id="map"></div>
+      <div class="floating-panel" id="edit-panel">
+        <div class="floating-panel-header" id="edit-panel-header">
+          <span class="floating-panel-title">修改事件</span>
+          <button class="floating-panel-close" id="edit-close-btn">&times;</button>
+        </div>
+        <div class="floating-panel-body">
+          <form id="edit-form">
+            <div class="form-group">
+              <label class="form-label required">事件名称</label>
+              <input type="text" class="form-control" id="e-title" value="${escapeHtml(event.title || '')}" placeholder="请输入事件名称">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">开始时间</label>
+                <div class="era-toggle" id="edit-start-era">
+                  <button type="button" class="era-toggle-btn" data-era="ce">公元</button>
+                  <button type="button" class="era-toggle-btn" data-era="bce">公元前</button>
+                </div>
+                <div class="date-picker-group">
+                  <div class="form-group year-field">
+                    <input type="number" class="form-control" id="e-start-year" placeholder="年" min="1">
+                  </div>
+                  <div class="form-group" id="edit-start-month-group">
+                    <input type="number" class="form-control" id="e-start-month" placeholder="月" min="1" max="12">
+                  </div>
+                  <div class="form-group" id="edit-start-day-group">
+                    <input type="number" class="form-control" id="e-start-day" placeholder="日" min="1" max="31">
+                  </div>
+                </div>
+                <div class="date-precision-row" id="edit-start-precision-row">
+                  <button type="button" class="date-precision-btn" data-precision="0">仅年</button>
+                  <button type="button" class="date-precision-btn" data-precision="1">年月</button>
+                  <button type="button" class="date-precision-btn" data-precision="2">年月日</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label">结束时间</label>
+                  <button type="button" class="sync-btn" id="edit-sync-end-btn">⟳ 同步开始</button>
+                </div>
+                <div class="era-toggle" id="edit-end-era">
+                  <button type="button" class="era-toggle-btn" data-era="ce">公元</button>
+                  <button type="button" class="era-toggle-btn" data-era="bce">公元前</button>
+                </div>
+                <div class="date-picker-group">
+                  <div class="form-group year-field">
+                    <input type="number" class="form-control" id="e-end-year" placeholder="年" min="1">
+                  </div>
+                  <div class="form-group" id="edit-end-month-group">
+                    <input type="number" class="form-control" id="e-end-month" placeholder="月" min="1" max="12">
+                  </div>
+                  <div class="form-group" id="edit-end-day-group">
+                    <input type="number" class="form-control" id="e-end-day" placeholder="日" min="1" max="31">
+                  </div>
+                </div>
+                <div class="date-precision-row" id="edit-end-precision-row">
+                  <button type="button" class="date-precision-btn" data-precision="0">仅年</button>
+                  <button type="button" class="date-precision-btn" data-precision="1">年月</button>
+                  <button type="button" class="date-precision-btn" data-precision="2">年月日</button>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">说明</label>
+              <textarea class="form-control" id="e-desc" placeholder="事件详细说明..." rows="3">${escapeHtml(event.description || '')}</textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">纬度</label>
+                <input type="number" step="any" class="form-control" id="e-lat" value="${event.location_lat ?? ''}" placeholder="39.9042">
+              </div>
+              <div class="form-group">
+                <label class="form-label">经度</label>
+                <input type="number" step="any" class="form-control" id="e-lng" value="${event.location_lng ?? ''}" placeholder="116.4074">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">地点名称</label>
+              <input type="text" class="form-control" id="e-locname" value="${escapeHtml(event.location_name || '')}" placeholder="如：北京天安门">
+            </div>
+            <div class="form-group">
+              <label class="form-label">排序</label>
+              <input type="number" class="form-control" id="e-sort" value="${event.sort_order || 0}" placeholder="数字越小越靠前">
+            </div>
+          </form>
+        </div>
+        <div class="floating-panel-footer">
+          <button class="btn btn-default" id="edit-cancel-btn">取消</button>
+          <button class="btn btn-primary" id="edit-save-btn">更新</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (state.map) { state.map.remove(); state.map = null; }
+
+  let center, zoom;
+  if (event.location_lat && event.location_lng) {
+    center = [event.location_lat, event.location_lng];
+    zoom = 10;
+  } else {
+    const subCode = state.currentSubCategory?.code || '';
+    if (subCode === 'china') {
+      center = [35, 105];
+      zoom = 5;
+    } else {
+      center = [20, 10];
+      zoom = 2;
+    }
+  }
+
+  state.map = L.map('map', {
+    center: center,
+    zoom: zoom,
+    minZoom: 2,
+    maxZoom: 18,
+    zoomControl: true
+  });
+
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
+    maxZoom: 18
+  }).addTo(state.map);
+
+  let editMarker = null;
+  if (event.location_lat && event.location_lng) {
+    editMarker = L.marker([event.location_lat, event.location_lng], {
+      draggable: true
+    }).addTo(state.map);
+
+    editMarker.on('dragend', () => {
+      const pos = editMarker.getLatLng();
+      document.getElementById('e-lat').value = pos.lat.toFixed(6);
+      document.getElementById('e-lng').value = pos.lng.toFixed(6);
+    });
+  }
+
+  const panel = document.getElementById('edit-panel');
+  const panelHeader = document.getElementById('edit-panel-header');
+  makeDraggable(panel, panelHeader);
+
+  const startParts = event.start_ts ? tsToYearMonthDay(event.start_ts) : { year: '', month: '', day: '', isBce: false };
+  const endParts = event.end_ts ? tsToYearMonthDay(event.end_ts) : { year: '', month: '', day: '', isBce: false };
+
+  document.getElementById('e-start-year').value = startParts.year;
+  document.getElementById('e-start-month').value = startParts.month;
+  document.getElementById('e-start-day').value = startParts.day;
+  document.getElementById('e-end-year').value = endParts.year;
+  document.getElementById('e-end-month').value = endParts.month;
+  document.getElementById('e-end-day').value = endParts.day;
+
+  setupEraToggle('edit-start-era', startParts.isBce);
+  setupEraToggle('edit-end-era', endParts.isBce);
+  setupPrecisionRow('edit-start-precision-row', 'edit-start-month-group', 'edit-start-day-group', event.start_precision || 2);
+  setupPrecisionRow('edit-end-precision-row', 'edit-end-month-group', 'edit-end-day-group', event.end_precision || 2);
+  bindDateFieldBounds('e-start-month', 'e-start-day');
+  bindDateFieldBounds('e-end-month', 'e-end-day');
+
+  document.getElementById('edit-sync-end-btn').addEventListener('click', () => {
+    syncEndFromStart({
+      startYearId: 'e-start-year',
+      startMonthId: 'e-start-month',
+      startDayId: 'e-start-day',
+      startEraId: 'edit-start-era',
+      startPrecisionRowId: 'edit-start-precision-row',
+      endYearId: 'e-end-year',
+      endMonthId: 'e-end-month',
+      endDayId: 'e-end-day',
+      endEraId: 'edit-end-era',
+      endPrecisionRowId: 'edit-end-precision-row',
+      endMonthGroupId: 'edit-end-month-group',
+      endDayGroupId: 'edit-end-day-group'
+    });
+  });
+
+  const latInput = document.getElementById('e-lat');
+  const lngInput = document.getElementById('e-lng');
+
+  function updateMarkerFromInputs() {
+    const lat = parseFloat(latInput.value);
+    const lng = parseFloat(lngInput.value);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      if (editMarker) {
+        editMarker.setLatLng([lat, lng]);
+      } else {
+        editMarker = L.marker([lat, lng], { draggable: true }).addTo(state.map);
+        editMarker.on('dragend', () => {
+          const pos = editMarker.getLatLng();
+          latInput.value = pos.lat.toFixed(6);
+          lngInput.value = pos.lng.toFixed(6);
+        });
+      }
+      state.map.panTo([lat, lng]);
+    }
+  }
+
+  latInput.addEventListener('change', updateMarkerFromInputs);
+  lngInput.addEventListener('change', updateMarkerFromInputs);
+
+  state.map.on('click', (e) => {
+    const { lat, lng } = e.latlng;
+    latInput.value = lat.toFixed(6);
+    lngInput.value = lng.toFixed(6);
+
+    if (editMarker) {
+      editMarker.setLatLng([lat, lng]);
+    } else {
+      editMarker = L.marker([lat, lng], { draggable: true }).addTo(state.map);
+      editMarker.on('dragend', () => {
+        const pos = editMarker.getLatLng();
+        latInput.value = pos.lat.toFixed(6);
+        lngInput.value = pos.lng.toFixed(6);
+      });
+    }
+  });
+
+  document.getElementById('edit-close-btn').addEventListener('click', renderEventList);
+  document.getElementById('edit-cancel-btn').addEventListener('click', renderEventList);
+
+  document.getElementById('edit-save-btn').addEventListener('click', async () => {
+    const title = document.getElementById('e-title').value.trim();
+    if (!title) {
+      toast('请输入事件名称', 'error');
+      return;
+    }
+
+    const startEra = document.querySelector('#edit-start-era .era-toggle-btn.active').dataset.era;
+    const startPrecision = parseInt(document.querySelector('#edit-start-precision-row .date-precision-btn.active').dataset.precision);
+    const startYear = document.getElementById('e-start-year').value;
+    const startMonth = document.getElementById('e-start-month').value;
+    const startDay = document.getElementById('e-start-day').value;
+
+    let startTs = startYear ? dateToTs(startYear, startMonth || 1, startDay || 1, startEra === 'bce') : null;
+    if (startTs !== null && startPrecision === 0) startTs = dateToTs(startYear, 1, 1, startEra === 'bce');
+    else if (startTs !== null && startPrecision === 1) startTs = dateToTs(startYear, startMonth || 1, 1, startEra === 'bce');
+
+    let endTs = null;
+    let endPrecision = 0;
+    const endYear = document.getElementById('e-end-year').value;
+    if (endYear) {
+      const endEra = document.querySelector('#edit-end-era .era-toggle-btn.active').dataset.era;
+      endPrecision = parseInt(document.querySelector('#edit-end-precision-row .date-precision-btn.active').dataset.precision);
+      const endMonth = document.getElementById('e-end-month').value;
+      const endDay = document.getElementById('e-end-day').value;
+      if (endPrecision === 0) endTs = dateToTs(endYear, 1, 1, endEra === 'bce');
+      else if (endPrecision === 1) endTs = dateToTs(endYear, endMonth || 1, 1, endEra === 'bce');
+      else endTs = dateToTs(endYear, endMonth || 1, endDay || 1, endEra === 'bce');
+    }
+
+    const data = {
+      category_id: state.currentCategory.id,
+      sub_category_id: state.currentSubCategory.id,
+      title: title,
+      start_ts: startTs,
+      start_precision: startTs !== null ? startPrecision : 0,
+      end_ts: endTs,
+      end_precision: endPrecision,
+      description: document.getElementById('e-desc').value.trim() || null,
+      location_lat: document.getElementById('e-lat').value || null,
+      location_lng: document.getElementById('e-lng').value || null,
+      location_name: document.getElementById('e-locname').value.trim() || null,
+      sort_order: parseInt(document.getElementById('e-sort').value) || 0
+    };
+
+    const res = await API.put(`/events/${event.id}`, data);
+    if (res.success) {
+      toast(res.message, 'success');
+      renderEventList();
+    } else {
+      toast(res.message, 'error');
+    }
+  });
+}
+
+function setupPrecisionRow(rowId, monthGroupId, dayGroupId, defaultPrecision = 2) {
+  const row = document.getElementById(rowId);
+  const btns = row.querySelectorAll('.date-precision-btn');
+  
+  btns.forEach(btn => {
+    if (parseInt(btn.dataset.precision) === defaultPrecision) {
+      btn.classList.add('active');
+    }
+  });
+
+  const monthGroup = document.getElementById(monthGroupId);
+  const dayGroup = document.getElementById(dayGroupId);
+  const monthInput = monthGroup ? monthGroup.querySelector('input') : null;
+  const dayInput = dayGroup ? dayGroup.querySelector('input') : null;
+
+  if (defaultPrecision === 0) {
+    if (monthGroup) monthGroup.style.display = 'none';
+    if (dayGroup) dayGroup.style.display = 'none';
+  } else if (defaultPrecision === 1) {
+    if (monthGroup) monthGroup.style.display = '';
+    if (dayGroup) dayGroup.style.display = 'none';
+  }
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const precision = parseInt(btn.dataset.precision);
+
+      if (precision === 0) {
+        if (monthGroup) monthGroup.style.display = 'none';
+        if (dayGroup) dayGroup.style.display = 'none';
+        if (monthInput) monthInput.value = '';
+        if (dayInput) dayInput.value = '';
+      } else if (precision === 1) {
+        if (monthGroup) monthGroup.style.display = '';
+        if (dayGroup) dayGroup.style.display = 'none';
+        if (dayInput) dayInput.value = '';
+      } else {
+        if (monthGroup) monthGroup.style.display = '';
+        if (dayGroup) dayGroup.style.display = '';
+      }
+    });
+  });
+}
+
+function setupEraToggle(containerId, defaultIsBce = false) {
+  const container = document.getElementById(containerId);
+  const btns = container.querySelectorAll('.era-toggle-btn');
+  
+  btns.forEach(btn => {
+    if ((defaultIsBce && btn.dataset.era === 'bce') || (!defaultIsBce && btn.dataset.era === 'ce')) {
+      btn.classList.add('active');
+    }
+  });
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
     });
   });
 }
@@ -1048,6 +1540,7 @@ function deleteEvent(event) {
 }
 
 async function openImageManager(event) {
+  state.currentEditingEvent = event;
   setBreadcrumb(`首页 / ${state.currentCategory.name} / ${state.currentSubCategory.name} / ${event.title} / 图片管理`);
 
   document.getElementById('main-view').innerHTML = `
@@ -1068,12 +1561,14 @@ async function openImageManager(event) {
         <div style="text-align:center;padding:30px;color:#718096;">加载中...</div>
       </div>
     </div>
+    <input type="file" id="replace-file-input" accept="image/*" style="display:none;">
   `;
 
   document.getElementById('back-btn').addEventListener('click', renderEventList);
 
   const uploadArea = document.getElementById('upload-area');
   const fileInput = document.getElementById('file-input');
+  const replaceFileInput = document.getElementById('replace-file-input');
 
   uploadArea.addEventListener('click', () => fileInput.click());
   uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
@@ -1091,7 +1586,57 @@ async function openImageManager(event) {
     }
   });
 
+  replaceFileInput.addEventListener('change', (e) => {
+    if (e.target.files.length) {
+      const file = e.target.files[0];
+      const imageToReplace = replaceImageHandler(file);
+      replaceFileInput.value = '';
+    }
+  });
+
   await loadImages(event.id);
+}
+
+let imageToReplaceId = null;
+
+function replaceImageHandler(file) {
+  if (!imageToReplaceId || !state.currentEditingEvent) return;
+  
+  const eventId = state.currentEditingEvent.id;
+  const oldImgId = imageToReplaceId;
+  imageToReplaceId = null;
+
+  if (!file || !file.type.startsWith('image/')) {
+    toast('请选择有效的图片文件', 'error');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('event_id', eventId);
+  formData.append('images', file);
+
+  toast('正在替换图片...', 'info');
+
+  (async () => {
+    try {
+      const uploadRes = await API.upload('/images/upload', formData);
+      if (!uploadRes.success) {
+        toast('上传失败: ' + uploadRes.message, 'error');
+        return;
+      }
+
+      const delRes = await API.delete(`/images/${oldImgId}`);
+      if (!delRes.success) {
+        toast('旧图片删除失败，但新图片已上传', 'warning');
+      } else {
+        toast('替换成功', 'success');
+      }
+
+      loadImages(eventId);
+    } catch (e) {
+      toast('替换失败: ' + e.message, 'error');
+    }
+  })();
 }
 
 async function loadImages(eventId) {
@@ -1103,11 +1648,14 @@ async function loadImages(eventId) {
     return;
   }
 
+  state.currentImages = res.data;
+
   if (res.data.length === 0) {
     container.innerHTML = `
       <div class="empty-state" style="padding:30px;">
         <div class="empty-state-icon">🖼️</div>
         <h3>暂无图片</h3>
+        <p style="margin-top:8px;font-size:13px;">请上传至少一张图片</p>
       </div>
     `;
     return;
@@ -1118,6 +1666,7 @@ async function loadImages(eventId) {
       ${res.data.map(img => `
         <div class="image-card">
           <img src="${img.url}" alt="${escapeHtml(img.original_name || '')}">
+          <button class="image-card-replace" data-id="${img.id}" title="替换">⟳</button>
           <button class="image-card-delete" data-id="${img.id}" title="删除">×</button>
           <div class="image-card-info">
             <div class="image-card-name">${escapeHtml(img.original_name || img.filename)}</div>
@@ -1131,6 +1680,10 @@ async function loadImages(eventId) {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const imgId = parseInt(btn.dataset.id);
+      if (state.currentImages && state.currentImages.length <= 1) {
+        toast('至少需要保留一张图片', 'error');
+        return;
+      }
       confirmDialog('确定删除这张图片吗？', async () => {
         const delRes = await API.delete(`/images/${imgId}`);
         if (delRes.success) {
@@ -1140,6 +1693,14 @@ async function loadImages(eventId) {
           toast(delRes.message, 'error');
         }
       });
+    });
+  });
+
+  container.querySelectorAll('.image-card-replace').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      imageToReplaceId = parseInt(btn.dataset.id);
+      document.getElementById('replace-file-input').click();
     });
   });
 }

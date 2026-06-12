@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const fs = require('fs');
+const path = require('path');
+
+const IMAGES_ROOT = path.join(__dirname, '..', '..', '..', 'ww', 'static', 'images');
 
 function tsToDisplay(ts, precision) {
   if (ts === null || ts === undefined) return '-';
@@ -148,16 +152,40 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
 
-  const event = db.prepare('SELECT * FROM events WHERE id = ?').get(id);
+  const event = db.prepare(`
+    SELECT e.*, c.code as category_code, sc.code as sub_category_code
+    FROM events e
+    JOIN categories c ON e.category_id = c.id
+    JOIN sub_categories sc ON e.sub_category_id = sc.id
+    WHERE e.id = ?
+  `).get(id);
+
   if (!event) {
     return res.json({ success: false, message: '事件不存在' });
   }
 
+  const images = db.prepare('SELECT * FROM event_images WHERE event_id = ?').all(id);
+
   const tx = db.transaction(() => {
     db.prepare('DELETE FROM event_images WHERE event_id = ?').run(id);
-    db.prepare('UPDATE events SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+    db.prepare('DELETE FROM events WHERE id = ?').run(id);
   });
   tx();
+
+  const eventDir = path.join(IMAGES_ROOT, event.category_code, event.sub_category_code, String(id));
+  try {
+    if (fs.existsSync(eventDir)) {
+      images.forEach(img => {
+        const filePath = path.join(IMAGES_ROOT, img.file_path);
+        if (fs.existsSync(filePath)) {
+          try { fs.unlinkSync(filePath); } catch (e) {}
+        }
+      });
+      try { fs.rmdirSync(eventDir, { recursive: true }); } catch (e) {}
+    }
+  } catch (e) {
+    console.error('删除图片文件失败:', e);
+  }
 
   res.json({ success: true, message: '删除成功' });
 });

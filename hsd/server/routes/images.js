@@ -140,12 +140,17 @@ router.delete('/:id', (req, res) => {
     return res.json({ success: false, message: '图片不存在' });
   }
   
+  const count = db.prepare('SELECT COUNT(*) as cnt FROM event_images WHERE event_id = ?').get(image.event_id).cnt;
+  if (count <= 1) {
+    return res.json({ success: false, message: '至少需要保留一张图片' });
+  }
+  
   const fullPath = path.join(IMAGES_ROOT, image.file_path);
   
   const tx = db.transaction(() => {
     db.prepare('DELETE FROM event_images WHERE id = ?').run(id);
-    const count = db.prepare('SELECT COUNT(*) as cnt FROM event_images WHERE event_id = ?').get(image.event_id).cnt;
-    db.prepare('UPDATE events SET image_count = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(count, image.event_id);
+    const newCount = db.prepare('SELECT COUNT(*) as cnt FROM event_images WHERE event_id = ?').get(image.event_id).cnt;
+    db.prepare('UPDATE events SET image_count = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newCount, image.event_id);
   });
   tx();
   
