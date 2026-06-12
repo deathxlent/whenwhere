@@ -319,8 +319,8 @@ function initMap() {
   state.map = L.map('map', {
     center: center,
     zoom: zoom,
-    minZoom: 4,
-    maxZoom: 16,
+    minZoom: 1,
+    maxZoom: 18,
     zoomControl: true,
     worldCopyJump: true
   });
@@ -328,8 +328,8 @@ function initMap() {
   L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
-    minZoom: 4,
-    maxZoom: 16
+    minZoom: 1,
+    maxZoom: 18
   }).addTo(state.map);
 
   loadChinaProvinces();
@@ -1447,8 +1447,8 @@ function openEditMapView(event) {
   state.map = L.map('map', {
     center: center,
     zoom: zoom,
-    minZoom: 4,
-    maxZoom: 16,
+    minZoom: 1,
+    maxZoom: 18,
     zoomControl: true,
     worldCopyJump: true
   });
@@ -1456,8 +1456,8 @@ function openEditMapView(event) {
   L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
-    minZoom: 4,
-    maxZoom: 16
+    minZoom: 1,
+    maxZoom: 18
   }).addTo(state.map);
 
   loadChinaProvinces();
