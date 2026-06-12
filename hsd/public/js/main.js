@@ -297,8 +297,8 @@ function initMap() {
     minZoom = 2;
   } else {
     center = [25, 30];
-    zoom = 1;
-    minZoom = 1;
+    zoom = 2;
+    minZoom = 2;
   }
 
   state.map = L.map('map', {
@@ -310,12 +310,22 @@ function initMap() {
     worldCopyJump: true
   });
 
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-    subdomains: ['1', '2', '3', '4'],
-    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
-    minZoom: 1,
-    maxZoom: 18
-  }).addTo(state.map);
+  const subCodeForTile = state.currentSubCategory?.code || '';
+  if (subCodeForTile === 'china') {
+    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+      subdomains: ['1', '2', '3', '4'],
+      attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
+      minZoom: 1,
+      maxZoom: 18
+    }).addTo(state.map);
+  } else {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      subdomains: ['a', 'b', 'c', 'd'],
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      minZoom: 1,
+      maxZoom: 18
+    }).addTo(state.map);
+  }
 
   loadChinaProvinces();
   loadWorldAdmin1Labels();
@@ -365,6 +375,7 @@ async function loadChinaProvinces() {
 }
 
 function addProvinceLabels(data) {
+  const currentZoom = state.map.getZoom();
   data.features.forEach(feature => {
     const name = feature.properties.name;
     if (!name) return;
@@ -372,17 +383,17 @@ function addProvinceLabels(data) {
     const bounds = L.geoJSON(feature).getBounds();
     const center = bounds.getCenter();
 
-    const zoom = state.map.getZoom();
-    if (zoom >= 4) {
-      const label = L.marker(center, {
-        icon: L.divIcon({
-          className: 'province-label',
-          html: name,
-          iconSize: [0, 0]
-        }),
-        interactive: false
-      }).addTo(state.map);
-      state.admin1Labels.push(label);
+    const label = L.marker(center, {
+      icon: L.divIcon({
+        className: 'province-label',
+        html: name,
+        iconSize: [0, 0]
+      }),
+      interactive: false
+    });
+    state.admin1Labels.push(label);
+    if (currentZoom >= 4) {
+      label.addTo(state.map);
     }
   });
 }
@@ -488,6 +499,7 @@ async function loadWorldAdmin1Labels() {
   try {
     const res = await fetch('/shared/geojson/world_admin1_labels.json');
     const data = await res.json();
+    const currentZoom = state.map.getZoom();
 
     WORLD_COUNTRIES.forEach(country => {
       const label = L.marker([country.lat, country.lng], {
@@ -499,6 +511,9 @@ async function loadWorldAdmin1Labels() {
         interactive: false
       });
       state.admin1Labels.push(label);
+      if (currentZoom >= 1 && currentZoom < 4) {
+        label.addTo(state.map);
+      }
     });
 
     data.features.forEach(feature => {
@@ -515,9 +530,11 @@ async function loadWorldAdmin1Labels() {
         interactive: false
       });
       state.admin1Labels.push(label);
+      if (currentZoom >= 4) {
+        label.addTo(state.map);
+      }
     });
 
-    updateLabelVisibility();
     state.map.on('zoomend', updateLabelVisibility);
   } catch (e) {
     console.warn('加载世界行政区划标注失败:', e);
@@ -532,16 +549,16 @@ function updateLabelVisibility() {
     const el = label.getElement();
     if (!el) return;
 
-    const iconEl = el.querySelector('.province-label, .admin1-label, .country-label');
-    if (!iconEl) return;
+    const isCountryLabel = el.classList.contains('country-label');
+    const isProvinceLabel = el.classList.contains('province-label');
 
-    if (iconEl.classList.contains('country-label')) {
+    if (isCountryLabel) {
       if (zoom >= 1 && zoom < 4) {
         if (!state.map.hasLayer(label)) state.map.addLayer(label);
       } else {
         if (state.map.hasLayer(label)) state.map.removeLayer(label);
       }
-    } else if (iconEl.classList.contains('province-label')) {
+    } else if (isProvinceLabel) {
       if (zoom >= 4) {
         if (!state.map.hasLayer(label)) state.map.addLayer(label);
       } else {
@@ -957,8 +974,7 @@ async function renderEventList() {
         <h2 class="page-title" style="margin-top:8px;">${cat.name} - ${sub.name}</h2>
       </div>
       <div style="display:flex;gap:10px;">
-        <button class="btn btn-success" id="add-map-btn">🗺️ 地图添加</button>
-        <button class="btn btn-primary" id="add-btn">+ 快速添加</button>
+        <button class="btn btn-primary" id="add-map-btn">🗺️ 地图添加</button>
       </div>
     </div>
     <div class="table-container" id="list-container">
@@ -968,7 +984,6 @@ async function renderEventList() {
 
   document.getElementById('back-btn').addEventListener('click', renderMainView);
   document.getElementById('add-map-btn').addEventListener('click', renderMapView);
-  document.getElementById('add-btn').addEventListener('click', () => showEventForm());
 
   await loadEvents();
 }
@@ -1315,7 +1330,6 @@ function openEditMapView(event) {
       <div class="floating-panel" id="edit-panel">
         <div class="floating-panel-header" id="edit-panel-header">
           <span class="floating-panel-title">修改事件</span>
-          <button class="floating-panel-close" id="edit-close-btn">&times;</button>
         </div>
         <div class="floating-panel-body">
           <form id="edit-form">
@@ -1435,12 +1449,22 @@ function openEditMapView(event) {
     worldCopyJump: true
   });
 
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-    subdomains: ['1', '2', '3', '4'],
-    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
-    minZoom: 1,
-    maxZoom: 18
-  }).addTo(state.map);
+  const subCodeForEditTile = state.currentSubCategory?.code || '';
+  if (subCodeForEditTile === 'china') {
+    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+      subdomains: ['1', '2', '3', '4'],
+      attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
+      minZoom: 1,
+      maxZoom: 18
+    }).addTo(state.map);
+  } else {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      subdomains: ['a', 'b', 'c', 'd'],
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      minZoom: 1,
+      maxZoom: 18
+    }).addTo(state.map);
+  }
 
   let editMarker = null;
   if (event.location_lat && event.location_lng) {
@@ -1534,7 +1558,6 @@ function openEditMapView(event) {
     }
   });
 
-  document.getElementById('edit-close-btn').addEventListener('click', renderEventList);
   document.getElementById('edit-cancel-btn').addEventListener('click', renderEventList);
 
   document.getElementById('edit-save-btn').addEventListener('click', async () => {
