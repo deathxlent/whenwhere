@@ -141,3 +141,145 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 }
 
 .guess-marker { background: none; border: none; }
+
+.game-actions {
+  padding: 12px 16px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.game-actions .btn { flex: 1; }
+
+.btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+.btn-warning:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(245,158,11,0.4); }
+.btn-default { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+.btn-default:hover { background: rgba(255,255,255,0.15); }
+
+.result-modal { max-width: 480px; }
+.result-failed-icon { font-size: 64px; margin-bottom: 16px; }
+.result-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.result-subtitle { color: rgba(255,255,255,0.6); font-size: 14px; }
+
+.precise-banner {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(59,130,246,0.1);
+  border: 1px dashed rgba(59,130,246,0.3);
+  border-radius: 12px;
+}
+.precise-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 4px;
+}
+.precise-location { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4); color: #34d399; }
+.precise-time { background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.4); color: #60a5fa; }
+
+.score-item { position: relative; }
+.precise-tag {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.leaderboard-section {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+  width: 100%;
+  max-width: 720px;
+}
+.leaderboard-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: rgba(255,255,255,0.9);
+}
+.leaderboard-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.leaderboard-tab {
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.leaderboard-tab.active {
+  background: rgba(59,130,246,0.2);
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+.leaderboard-list { display: none; }
+.leaderboard-list.active { display: block; }
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.03);
+}
+.leaderboard-rank {
+  width: 36px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+}
+.leaderboard-rank.top-1 { color: #fbbf24; }
+.leaderboard-rank.top-2 { color: #9ca3af; }
+.leaderboard-rank.top-3 { color: #d97706; }
+.leaderboard-username {
+  flex: 1;
+  font-size: 14px;
+  color: rgba(255,255,255,0.9);
+}
+.leaderboard-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #60a5fa;
+}
+
+.stats-period-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+.stats-period-tab {
+  padding: 8px 20px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.stats-period-tab.active {
+  background: rgba(59,130,246,0.2);
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+.main-content { justify-content: flex-start; padding-top: 80px; overflow-y: auto; }
+.main-prompt { margin-bottom: 24px; }

@@ -262,11 +262,24 @@ async function renderMapView() {
             </div>
             <div class="form-group">
               <label class="form-label required">图片（至少1张）</label>
-              <div class="add-image-area" id="add-image-area">
-                <div style="font-size:28px;">📤</div>
-                <p>点击或拖拽上传图片</p>
+              <div class="image-add-tabs">
+                <button type="button" class="image-add-tab active" data-tab="upload">📤 上传图片</button>
+                <button type="button" class="image-add-tab" data-tab="url">🔗 添加URL</button>
               </div>
-              <input type="file" id="f-images" accept="image/*" multiple style="display:none;">
+              <div class="image-tab-panel" id="tab-upload">
+                <div class="add-image-area" id="add-image-area">
+                  <div style="font-size:28px;">📤</div>
+                  <p>点击或拖拽上传图片</p>
+                </div>
+                <input type="file" id="f-images" accept="image/*" multiple style="display:none;">
+              </div>
+              <div class="image-tab-panel" id="tab-url" style="display:none;">
+                <div class="url-input-group">
+                  <input type="url" class="form-control" id="f-image-url" placeholder="粘贴图片URL (http://或https://开头)">
+                  <input type="text" class="form-control" id="f-image-name" placeholder="图片名称（可选）" style="margin-top:8px;">
+                  <button type="button" class="btn btn-primary" id="add-url-btn" style="margin-top:8px;width:100%;">+ 添加URL图片</button>
+                </div>
+              </div>
               <div class="add-image-previews" id="image-previews"></div>
             </div>
           </form>
@@ -313,7 +326,7 @@ function initMap() {
     zoom = 5;
   } else {
     center = [25, 30];
-    zoom = 4;
+    zoom = 2;
   }
 
   state.map = L.map('map', {
@@ -325,12 +338,33 @@ function initMap() {
     worldCopyJump: true
   });
 
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    subdomains: ['a', 'b', 'c'],
+    minZoom: 1,
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  });
+
+  const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
     minZoom: 1,
     maxZoom: 18
-  }).addTo(state.map);
+  });
+
+  function updateTileLayer() {
+    const z = state.map.getZoom();
+    if (z <= 3) {
+      if (state.map.hasLayer(amapLayer)) state.map.removeLayer(amapLayer);
+      if (!state.map.hasLayer(osmLayer)) osmLayer.addTo(state.map);
+    } else {
+      if (state.map.hasLayer(osmLayer)) state.map.removeLayer(osmLayer);
+      if (!state.map.hasLayer(amapLayer)) amapLayer.addTo(state.map);
+    }
+  }
+
+  updateTileLayer();
+  state.map.on('zoomend', updateTileLayer);
 
   loadChinaProvinces();
   loadWorldAdmin1Labels();
@@ -641,6 +675,16 @@ function initAddPanel() {
     });
   });
 
+  document.querySelectorAll('.image-add-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.image-add-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const tabName = tab.dataset.tab;
+      document.getElementById('tab-upload').style.display = tabName === 'upload' ? '' : 'none';
+      document.getElementById('tab-url').style.display = tabName === 'url' ? '' : 'none';
+    });
+  });
+
   const imageArea = document.getElementById('add-image-area');
   const fileInput = document.getElementById('f-images');
 
@@ -656,6 +700,33 @@ function initAddPanel() {
     addPendingImages(e.target.files);
     e.target.value = '';
   });
+
+  document.getElementById('add-url-btn').addEventListener('click', () => {
+    const urlInput = document.getElementById('f-image-url');
+    const nameInput = document.getElementById('f-image-name');
+    const url = urlInput.value.trim();
+    const name = nameInput.value.trim();
+
+    if (!url) { toast('请输入图片URL', 'error'); return; }
+    if (!/^https?:\/\//i.test(url)) { toast('URL必须以http://或https://开头', 'error'); return; }
+
+    addPendingUrlImage(url, name);
+    urlInput.value = '';
+    nameInput.value = '';
+  });
+}
+
+function addPendingUrlImage(url, name) {
+  if (state.pendingImages.length >= 20) { toast('最多添加20张图片', 'warning'); return; }
+
+  state.pendingImages.push({
+    type: 'url',
+    url: url,
+    dataUrl: url,
+    name: name || url
+  });
+  renderImagePreviews();
+  toast('URL图片已添加', 'success');
 }
 
 function initEraToggle(groupId) {
@@ -794,6 +865,7 @@ function addPendingImages(files) {
     const reader = new FileReader();
     reader.onload = (e) => {
       state.pendingImages.push({
+        type: 'file',
         file: file,
         dataUrl: e.target.result,
         name: file.name
@@ -809,6 +881,7 @@ function renderImagePreviews() {
   container.innerHTML = state.pendingImages.map((img, idx) => `
     <div class="add-image-preview">
       <img src="${img.dataUrl}" alt="${escapeHtml(img.name)}">
+      ${img.type === 'url' ? '<div class="url-image-tag">URL</div>' : ''}
       <button type="button" class="add-image-preview-remove" data-idx="${idx}">×</button>
     </div>
   `).join('');
@@ -1440,7 +1513,7 @@ function openEditMapView(event) {
       zoom = 5;
     } else {
       center = [25, 30];
-      zoom = 4;
+      zoom = 2;
     }
   }
 
@@ -1453,12 +1526,33 @@ function openEditMapView(event) {
     worldCopyJump: true
   });
 
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    subdomains: ['a', 'b', 'c'],
+    minZoom: 1,
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  });
+
+  const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
     minZoom: 1,
     maxZoom: 18
-  }).addTo(state.map);
+  });
+
+  function updateTileLayer() {
+    const z = state.map.getZoom();
+    if (z <= 3) {
+      if (state.map.hasLayer(amapLayer)) state.map.removeLayer(amapLayer);
+      if (!state.map.hasLayer(osmLayer)) osmLayer.addTo(state.map);
+    } else {
+      if (state.map.hasLayer(osmLayer)) state.map.removeLayer(osmLayer);
+      if (!state.map.hasLayer(amapLayer)) amapLayer.addTo(state.map);
+    }
+  }
+
+  updateTileLayer();
+  state.map.on('zoomend', updateTileLayer);
 
   loadChinaProvinces();
   loadWorldAdmin1Labels();

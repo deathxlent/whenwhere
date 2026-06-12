@@ -62,31 +62,6 @@ const upload = multer({
   }
 });
 
-router.get('/event/:eventId', (req, res) => {
-  const { eventId } = req.params;
-  
-  const images = db.prepare(`
-    SELECT * FROM event_images 
-    WHERE event_id = ? 
-    ORDER BY sort_order, id
-  `).all(eventId);
-  
-  const event = db.prepare(`
-    SELECT c.code as category_code, sc.code as sub_category_code
-    FROM events e
-    JOIN categories c ON e.category_id = c.id
-    JOIN sub_categories sc ON e.sub_category_id = sc.id
-    WHERE e.id = ?
-  `).get(eventId);
-  
-  const data = images.map(img => ({
-    ...img,
-    url: `/images/${event.category_code}/${event.sub_category_code}/${eventId}/${img.filename}`
-  }));
-  
-  res.json({ success: true, data });
-});
-
 router.post('/upload', (req, res) => {
   upload.array('images', 20)(req, res, (err) => {
     if (err) {
@@ -130,6 +105,93 @@ router.post('/upload', (req, res) => {
     
     res.json({ success: true, data: inserted, message: `上传成功 ${inserted.length} 张图片` });
   });
+});
+
+router.post('/add-url', (req, res) => {
+  const { event_id, url, name } = req.body;
+
+  if (!event_id || !url) {
+    return res.json({ success: false, message: '参数不完整' });
+  }
+
+  if (!/^https?:\/\//i.test(url)) {
+    return res.json({ success: false, message: 'URL必须以http://或https://开头' });
+  }
+
+  const event = db.prepare(`
+    SELECT e.id, c.code as category_code, sc.code as sub_category_code
+    FROM events e
+    JOIN categories c ON e.category_id = c.id
+    JOIN sub_categories sc ON e.sub_category_id = sc.id
+    WHERE e.id = ?
+  `).get(event_id);
+
+  if (!event) {
+    return res.json({ success: false, message: '事件不存在' });
+  }
+
+  try {
+    const urlObj = new URL(url);
+    let filename = decodeURIComponent(urlObj.pathname.split('/').pop()) || `url_${Date.now()}.jpg`;
+    if (!/\.[a-zA-Z0-9]{2,5}$/.test(filename)) {
+      filename += '.jpg';
+    }
+    filename = filename.replace(/[^a-zA-Z0-9\.\-_]/g, '_');
+    filename = `url_${Date.now()}_${filename}`;
+
+    const insertImage = db.prepare(`
+      INSERT INTO event_images (event_id, filename, original_name, file_path, file_size)
+      VALUES (?, ?, ?, ?, 0)
+    `);
+
+    const result = insertImage.run(event_id, filename, name || '', url);
+
+    const count = db.prepare('SELECT COUNT(*) as cnt FROM event_images WHERE event_id = ?').get(event_id).cnt;
+    db.prepare('UPDATE events SET image_count = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(count, event_id);
+
+    res.json({
+      success: true,
+      message: 'URL图片添加成功',
+      data: [{
+        id: result.lastInsertRowid,
+        filename,
+        original_name: name || '',
+        url: url
+      }]
+    });
+  } catch (e) {
+    res.json({ success: false, message: 'URL格式错误: ' + e.message });
+  }
+});
+
+router.get('/event/:eventId', (req, res) => {
+  const { eventId } = req.params;
+  
+  const images = db.prepare(`
+    SELECT * FROM event_images 
+    WHERE event_id = ? 
+    ORDER BY sort_order, id
+  `).all(eventId);
+  
+  const event = db.prepare(`
+    SELECT c.code as category_code, sc.code as sub_category_code
+    FROM events e
+    JOIN categories c ON e.category_id = c.id
+    JOIN sub_categories sc ON e.sub_category_id = sc.id
+    WHERE e.id = ?
+  `).get(eventId);
+  
+  const data = images.map(img => {
+    if (img.file_path && (img.file_path.startsWith('http://') || img.file_path.startsWith('https://'))) {
+      return { ...img, url: img.file_path };
+    }
+    return {
+      ...img,
+      url: `/images/${event.category_code}/${event.sub_category_code}/${eventId}/${img.filename}`
+    };
+  });
+  
+  res.json({ success: true, data });
 });
 
 router.delete('/:id', (req, res) => {

@@ -53,7 +53,9 @@ let appState = {
   provinceLayer: null,
   mapClickMarker: null,
   spacePressed: false,
-  imagesHidden: false
+  imagesHidden: false,
+  leaderboardPeriod: 'all',
+  statsPeriod: 'all'
 };
 
 const COUNTRIES_WITH_ADMIN1 = new Set([
@@ -235,7 +237,7 @@ function renderMainPage() {
       <div class="user-menu">
         <button class="user-menu-btn" id="user-menu-btn">${appState.user.username} ▾</button>
         <div class="user-menu-dropdown" id="user-menu-dropdown">
-          <div class="user-menu-item" id="menu-stats">📊 统计</div>
+          <div class="user-menu-item" id="menu-stats">📊 个人统计</div>
           <div class="user-menu-item" id="menu-logout">🚪 退出</div>
         </div>
       </div>
@@ -243,6 +245,26 @@ function renderMainPage() {
         <div class="main-prompt">请选择你要猜的内容</div>
         <div class="tabs-container" id="main-tabs"></div>
         <div id="tab-content"></div>
+        <div class="leaderboard-section" id="leaderboard-section">
+          <div class="leaderboard-header">
+            <div class="leaderboard-title">🏆 排行榜</div>
+            <div class="leaderboard-period-tabs" id="leaderboard-period-tabs">
+              <button class="period-tab ${appState.leaderboardPeriod === 'all' ? 'active' : ''}" data-period="all">全部</button>
+              <button class="period-tab ${appState.leaderboardPeriod === 'week' ? 'active' : ''}" data-period="week">本周</button>
+              <button class="period-tab ${appState.leaderboardPeriod === 'month' ? 'active' : ''}" data-period="month">本月</button>
+              <button class="period-tab ${appState.leaderboardPeriod === 'year' ? 'active' : ''}" data-period="year">本年</button>
+            </div>
+          </div>
+          <div class="leaderboard-tabs" id="leaderboard-tabs">
+            <button class="lb-tab active" data-type="by_games">玩最多局</button>
+            <button class="lb-tab" data-type="by_avg_distance">距离最近</button>
+            <button class="lb-tab" data-type="by_avg_time">时间最准</button>
+            <button class="lb-tab" data-type="by_avg_elapsed">耗时最少</button>
+            <button class="lb-tab" data-type="by_precise_location">精准位置</button>
+            <button class="lb-tab" data-type="by_precise_time">精准时间</button>
+          </div>
+          <div class="leaderboard-list" id="leaderboard-list">加载中...</div>
+        </div>
       </div>
     </div>
   `;
@@ -250,6 +272,7 @@ function renderMainPage() {
   initBgMap();
   initTabs();
   initUserMenu();
+  initLeaderboard();
 }
 
 function initBgMap() {
@@ -262,7 +285,7 @@ function initBgMap() {
 
   const map = L.map('bg-map-el', {
     center: [25, 30],
-    zoom: 3,
+    zoom: 2,
     minZoom: 1,
     maxZoom: 18,
     zoomControl: false,
@@ -273,13 +296,106 @@ function initBgMap() {
     touchZoom: false
   });
 
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    subdomains: ['a', 'b', 'c'],
+    minZoom: 1,
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  });
+
+  const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     minZoom: 1,
-    maxZoom: 18
-  }).addTo(map);
+    maxZoom: 18,
+    attribution: '&copy; 高德地图'
+  });
+
+  function updateTileLayer() {
+    const z = map.getZoom();
+    if (z <= 3) {
+      if (map.hasLayer(amapLayer)) map.removeLayer(amapLayer);
+      if (!map.hasLayer(osmLayer)) osmLayer.addTo(map);
+    } else {
+      if (map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
+      if (!map.hasLayer(amapLayer)) amapLayer.addTo(map);
+    }
+  }
+
+  updateTileLayer();
+  map.on('zoomend', updateTileLayer);
 
   appState.bgMap = map;
+}
+
+async function initLeaderboard() {
+  const periodTabs = document.getElementById('leaderboard-period-tabs');
+  const typeTabs = document.getElementById('leaderboard-tabs');
+  const listEl = document.getElementById('leaderboard-list');
+
+  periodTabs.querySelectorAll('.period-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      periodTabs.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      appState.leaderboardPeriod = btn.dataset.period;
+      loadLeaderboard();
+    });
+  });
+
+  typeTabs.querySelectorAll('.lb-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      typeTabs.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      appState._leaderboardType = btn.dataset.type;
+      renderLeaderboardList();
+    });
+  });
+
+  appState._leaderboardType = 'by_games';
+  await loadLeaderboard();
+}
+
+async function loadLeaderboard() {
+  const listEl = document.getElementById('leaderboard-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);">加载中...</div>';
+
+  const res = await API.get(`/game/leaderboard?period=${appState.leaderboardPeriod}`);
+  if (res.success) {
+    appState._leaderboardData = res.data;
+    renderLeaderboardList();
+  } else {
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);">加载失败</div>';
+  }
+}
+
+function renderLeaderboardList() {
+  const listEl = document.getElementById('leaderboard-list');
+  const type = appState._leaderboardType || 'by_games';
+  const data = appState._leaderboardData || {};
+  const list = data[type] || [];
+
+  if (list.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">暂无排行数据</div>';
+    return;
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  listEl.innerHTML = list.map((item, idx) => `
+    <div class="leaderboard-item">
+      <div class="lb-rank">
+        ${idx < 3 ? `<span class="lb-medal">${medals[idx]}</span>` : `<span>${idx + 1}</span>`}
+      </div>
+      <div class="lb-username">${escapeHtml(item.username)}</div>
+      <div class="lb-value">${item.value}</div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 function initTabs() {
@@ -383,8 +499,6 @@ function cleanupGame() {
     clearInterval(appState.timerInterval);
     appState.timerInterval = null;
   }
-  document.removeEventListener('keydown', handleSpaceKey);
-  document.removeEventListener('keyup', handleSpaceKeyUp);
   if (appState.map) {
     appState.map.remove();
     appState.map = null;
@@ -396,6 +510,7 @@ function cleanupGame() {
   appState.mapClickMarker = null;
   appState.admin1Labels = [];
   appState.provinceLayer = null;
+  appState.timedOut = false;
 }
 
 async function startGame() {
@@ -434,7 +549,7 @@ function renderGamePage() {
   const app = document.getElementById('app');
   const isChinaOnly = appState.selectedSubCodes.length === 1 && appState.selectedSubCodes.includes('china');
   const mapCenter = isChinaOnly ? [35, 105] : [25, 30];
-  const mapZoom = isChinaOnly ? 5 : 4;
+  const mapZoom = isChinaOnly ? 5 : 2;
 
   app.innerHTML = `
     <div class="game-page">
@@ -445,8 +560,11 @@ function renderGamePage() {
         <div class="timer-bar"><div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div></div>
         <div class="timer-text" id="timer-text">30</div>
         <div class="image-area" id="image-area"></div>
+        <div class="game-actions">
+          <button class="btn btn-warning" id="give-up-btn">放弃</button>
+          <button class="btn btn-default" id="restart-game-btn">再来一局</button>
+        </div>
       </div>
-      <div class="game-hint">按空格隐藏/显示图片</div>
     </div>
   `;
 
@@ -459,11 +577,33 @@ function renderGamePage() {
     worldCopyJump: true
   });
 
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    subdomains: ['a', 'b', 'c'],
+    minZoom: 1,
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  });
+
+  const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     minZoom: 1,
-    maxZoom: 18
-  }).addTo(appState.map);
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>'
+  });
+
+  function updateTileLayer() {
+    const z = appState.map.getZoom();
+    if (z <= 3) {
+      if (appState.map.hasLayer(amapLayer)) appState.map.removeLayer(amapLayer);
+      if (!appState.map.hasLayer(osmLayer)) osmLayer.addTo(appState.map);
+    } else {
+      if (appState.map.hasLayer(osmLayer)) appState.map.removeLayer(osmLayer);
+      if (!appState.map.hasLayer(amapLayer)) amapLayer.addTo(appState.map);
+    }
+  }
+
+  updateTileLayer();
+  appState.map.on('zoomend', updateTileLayer);
 
   appState.admin1Labels = [];
   loadGameMapLabels();
@@ -473,8 +613,14 @@ function renderGamePage() {
   renderCurrentImages();
   startTimer();
 
-  document.addEventListener('keydown', handleSpaceKey);
-  document.addEventListener('keyup', handleSpaceKeyUp);
+  document.getElementById('give-up-btn').addEventListener('click', () => {
+    cleanupGame();
+    renderMainPage();
+  });
+
+  document.getElementById('restart-game-btn').addEventListener('click', () => {
+    startGame();
+  });
 }
 
 async function loadGameMapLabels() {
@@ -642,11 +788,6 @@ function renderCurrentImages() {
   const area = document.getElementById('image-area');
   if (!area) return;
 
-  if (appState.imagesHidden) {
-    area.innerHTML = '<div class="no-image">图片已隐藏</div>';
-    return;
-  }
-
   const images = appState.shownImageIndices.map(i => appState.currentImages[i]).filter(Boolean);
   if (images.length === 0) {
     if (appState.currentEvent && appState.currentEvent.description) {
@@ -660,26 +801,6 @@ function renderCurrentImages() {
   area.innerHTML = images.map(img =>
     `<img src="${img.url}" alt="猜图">`
   ).join('');
-}
-
-function handleSpaceKey(e) {
-  if (e.code === 'Space' && appState.currentView === 'game') {
-    e.preventDefault();
-    if (!appState.spacePressed) {
-      appState.spacePressed = true;
-      appState.imagesHidden = true;
-      renderCurrentImages();
-    }
-  }
-}
-
-function handleSpaceKeyUp(e) {
-  if (e.code === 'Space' && appState.currentView === 'game') {
-    e.preventDefault();
-    appState.spacePressed = false;
-    appState.imagesHidden = false;
-    renderCurrentImages();
-  }
 }
 
 function startTimer() {
@@ -711,8 +832,75 @@ function startTimer() {
     if (appState.timerSeconds <= 0) {
       clearInterval(appState.timerInterval);
       appState.timerInterval = null;
+      onTimeUp();
     }
   }, 1000);
+}
+
+function onTimeUp() {
+  const elapsedSeconds = 30;
+  appState.guessLat = null;
+  appState.guessLng = null;
+  appState.guessYear = null;
+  appState.guessMonth = null;
+  appState.guessDay = null;
+  appState.timedOut = true;
+  renderFailedPage(elapsedSeconds);
+}
+
+function renderFailedPage(elapsedSeconds) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'failed-overlay';
+  overlay.innerHTML = `
+    <div class="modal-content result-modal">
+      <div style="text-align:center;">
+        <div class="result-failed-icon">⏰</div>
+        <h2 class="result-title">时间到！本轮竞猜失败</h2>
+        <p class="result-subtitle">别灰心，再来一局试试吧</p>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="failed-view-answer">查看答案</button>
+        <button class="btn btn-default" id="failed-restart">再来一局</button>
+        <button class="btn btn-secondary" id="failed-home">返回主页</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('failed-view-answer').addEventListener('click', async () => {
+    overlay.remove();
+    const res = await API.post('/game/submit', {
+      user_id: appState.user.id,
+      event_id: appState.currentEvent.id,
+      guess_lat: null,
+      guess_lng: null,
+      guess_year: null,
+      guess_month: null,
+      guess_day: null,
+      elapsed_seconds: elapsedSeconds,
+      timed_out: true
+    });
+    if (res.success) {
+      cleanupGame();
+      renderResultPage(res.data, elapsedSeconds, true);
+    }
+  });
+
+  document.getElementById('failed-restart').addEventListener('click', () => {
+    overlay.remove();
+    startGame();
+  });
+
+  document.getElementById('failed-home').addEventListener('click', () => {
+    overlay.remove();
+    cleanupGame();
+    renderMainPage();
+  });
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
 }
 
 function addNextImage() {
@@ -753,24 +941,36 @@ async function submitGuess() {
   renderResultPage(res.data, elapsedSeconds);
 }
 
-function renderResultPage(result, elapsedSeconds) {
+function renderResultPage(result, elapsedSeconds, isTimedOut) {
   appState.currentView = 'result';
   cleanupGame();
 
   const shownImages = appState.shownImageIndices.map(i => appState.currentImages[i]).filter(Boolean);
-  const distanceColor = result.distance_km <= 500 ? 'correct' : 'wrong';
-  const timeColor = result.time_in_range ? 'correct' : 'wrong';
-  const timeDiffText = result.time_in_range ? '在时间范围内' : `差距 ${result.time_diff_years} 年`;
+  const distanceColor = result.distance_km === null ? 'wrong' : (result.distance_km <= 500 ? 'correct' : 'wrong');
+  const isPreciseLocation = result.distance_km !== null && result.distance_km <= 30;
+  const isPreciseTime = result.time_diff_years !== null && Math.abs(result.time_diff_years) <= 5;
+
+  const timeColor = result.time_diff_years === null ? 'wrong' : (result.time_in_range ? 'correct' : 'wrong');
+  const distanceText = result.distance_km === null ? '未作答' : `${result.distance_km} 公里`;
+  const timeDiffText = result.time_diff_years === null ? '未作答' : (result.time_in_range ? '在时间范围内' : `差距 ${Math.abs(result.time_diff_years)} 年`);
+
+  const titleText = isTimedOut ? '时间到！结果揭晓' : '结果揭晓';
 
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="result-page">
       <div class="result-container">
-        <div class="result-title">结果揭晓</div>
+        <div class="result-title">${titleText}</div>
+        ${(isPreciseLocation || isPreciseTime ? `
+          <div class="precise-banner">
+            ${isPreciseLocation ? '<span class="precise-badge precise-location">🎯 精准位置猜中！</span>' : ''}
+            ${isPreciseTime ? '<span class="precise-badge precise-time">⏱️ 精准时间猜中！</span>' : ''}
+          </div>
+        ` : ''}
         <div class="result-card">
           <h3>已显示的图片</h3>
           <div class="result-images">
-            ${shownImages.map(img => `<img src="${img.url}" alt="图片">`).join('')}
+            ${shownImages.length > 0 ? shownImages.map(img => `<img src="${img.url}" alt="图片">`).join('') : '<div style="color:rgba(255,255,255,0.5);text-align:center;padding:20px;">暂无图片</div>'}
           </div>
         </div>
         <div class="result-card">
@@ -786,12 +986,14 @@ function renderResultPage(result, elapsedSeconds) {
           <h3>得分</h3>
           <div class="result-score">
             <div class="score-item">
-              <div class="score-value ${distanceColor}">${result.distance_km}</div>
-              <div class="score-label">距离（公里）</div>
+              <div class="score-value ${distanceColor}">${distanceText}</div>
+              <div class="score-label">距离</div>
+              ${isPreciseLocation ? '<div class="precise-tag">精准</div>' : ''}
             </div>
             <div class="score-item">
               <div class="score-value ${timeColor}">${timeDiffText}</div>
               <div class="score-label">时间</div>
+              ${isPreciseTime ? '<div class="precise-tag">精准</div>' : ''}
             </div>
             <div class="score-item">
               <div class="score-value">${elapsedSeconds.toFixed(1)}</div>
@@ -818,35 +1020,69 @@ async function renderStatsPage() {
     return;
   }
 
-  const res = await API.get(`/game/stats/${appState.user.id}`);
+  const res = await API.get(`/game/stats/${appState.user.id}?period=${appState.statsPeriod}`);
   if (!res.success) {
     alert(res.message);
     return;
   }
 
   const { daily, totals } = res.data;
+  const periodName = { all: '全部', week: '本周', month: '本月', year: '本年' }[appState.statsPeriod] || '全部';
 
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="stats-page">
       <div class="stats-container">
-        <div class="stats-title">统计数据</div>
+        <div class="stats-title">个人统计</div>
+        <div class="stats-period-tabs" id="stats-period-tabs">
+          <button class="period-tab ${appState.statsPeriod === 'all' ? 'active' : ''}" data-period="all">全部</button>
+          <button class="period-tab ${appState.statsPeriod === 'week' ? 'active' : ''}" data-period="week">本周</button>
+          <button class="period-tab ${appState.statsPeriod === 'month' ? 'active' : ''}" data-period="month">本月</button>
+          <button class="period-tab ${appState.statsPeriod === 'year' ? 'active' : ''}" data-period="year">本年</button>
+        </div>
+        <div class="stats-subtitle" style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:16px;text-align:center;">当前范围：${periodName}</div>
         <div class="stats-summary">
           <div class="stats-card">
             <div class="num">${totals.total_games}</div>
             <div class="lbl">总局数</div>
           </div>
           <div class="stats-card">
-            <div class="num">${totals.total_distance}</div>
-            <div class="lbl">总距离(公里)</div>
+            <div class="num">${totals.avg_distance ?? 0}</div>
+            <div class="lbl">平均距离(km)</div>
           </div>
           <div class="stats-card">
-            <div class="num">${totals.total_time_diff}</div>
+            <div class="num">${totals.avg_time_diff ?? 0}</div>
+            <div class="lbl">平均时间差(年)</div>
+          </div>
+          <div class="stats-card">
+            <div class="num">${totals.avg_elapsed ?? 0}</div>
+            <div class="lbl">平均耗时(秒)</div>
+          </div>
+        </div>
+        <div class="stats-summary" style="grid-template-columns:repeat(6,1fr);margin-top:12px;">
+          <div class="stats-card small">
+            <div class="num">${totals.total_distance ?? 0}</div>
+            <div class="lbl">总距离(km)</div>
+          </div>
+          <div class="stats-card small">
+            <div class="num">${totals.total_time_diff ?? 0}</div>
             <div class="lbl">总时间差(年)</div>
           </div>
-          <div class="stats-card">
-            <div class="num">${totals.total_elapsed}</div>
+          <div class="stats-card small">
+            <div class="num">${totals.total_elapsed ?? 0}</div>
             <div class="lbl">总耗时(秒)</div>
+          </div>
+          <div class="stats-card small precise-location-card">
+            <div class="num">${totals.total_precise_location ?? 0}</div>
+            <div class="lbl">精准位置数</div>
+          </div>
+          <div class="stats-card small precise-time-card">
+            <div class="num">${totals.total_precise_time ?? 0}</div>
+            <div class="lbl">精准时间数</div>
+          </div>
+          <div class="stats-card small">
+            <div class="num">${Math.round((totals.avg_precise_location ?? 0) * 1000) / 10}</div>
+            <div class="lbl">精准位置率(%)</div>
           </div>
         </div>
         ${daily.length > 0 ? `
@@ -855,9 +1091,11 @@ async function renderStatsPage() {
               <tr>
                 <th>日期</th>
                 <th>局数</th>
-                <th>距离(公里)</th>
+                <th>距离(km)</th>
                 <th>时间差(年)</th>
                 <th>耗时(秒)</th>
+                <th>精准位置</th>
+                <th>精准时间</th>
               </tr>
             </thead>
             <tbody>
@@ -868,6 +1106,8 @@ async function renderStatsPage() {
                   <td>${Math.round(d.total_distance)}</td>
                   <td>${d.total_time_diff}</td>
                   <td>${Math.round(d.total_elapsed * 10) / 10}</td>
+                  <td>${d.precise_location_count || 0}</td>
+                  <td>${d.precise_time_count || 0}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -881,6 +1121,13 @@ async function renderStatsPage() {
   `;
 
   document.getElementById('stats-back-btn').addEventListener('click', renderMainPage);
+
+  document.getElementById('stats-period-tabs').querySelectorAll('.period-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      appState.statsPeriod = btn.dataset.period;
+      renderStatsPage();
+    });
+  });
 }
 
 init();
