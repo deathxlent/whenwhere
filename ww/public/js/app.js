@@ -328,6 +328,13 @@ function initBgMap() {
   updateTileLayer();
   map.on('zoomend', updateTileLayer);
 
+  WORLD_COUNTRIES.forEach(country => {
+    L.marker([country.lat, country.lng], {
+      icon: L.divIcon({ className: 'country-label', html: country.name, iconSize: [0, 0] }),
+      interactive: false
+    }).addTo(map);
+  });
+
   appState.bgMap = map;
 }
 
