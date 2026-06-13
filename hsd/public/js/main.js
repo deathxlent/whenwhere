@@ -1014,19 +1014,45 @@ async function submitEvent() {
     const catCode = state.currentCategory.code;
     const subCode = state.currentSubCategory.code;
 
-    const formData = new FormData();
-    formData.append('event_id', eventId);
-    formData.append('category_code', catCode);
-    formData.append('sub_category_code', subCode);
-    formData.append('event_title', title);
-    state.pendingImages.forEach(img => {
-      formData.append('images', img.file);
-    });
+    const fileImages = state.pendingImages.filter(img => img.type === 'file');
+    const urlImages = state.pendingImages.filter(img => img.type === 'url');
 
-    const imgRes = await API.upload('/images/upload', formData);
+    let allSuccess = true;
+    let failMessages = [];
 
-    if (!imgRes.success) {
-      toast('事件已添加但图片上传失败: ' + (imgRes.message || ''), 'error');
+    if (fileImages.length > 0) {
+      const formData = new FormData();
+      formData.append('event_id', eventId);
+      formData.append('category_code', catCode);
+      formData.append('sub_category_code', subCode);
+      formData.append('event_title', title);
+      fileImages.forEach(img => {
+        formData.append('images', img.file);
+      });
+
+      const imgRes = await API.upload('/images/upload', formData);
+      if (!imgRes.success) {
+        allSuccess = false;
+        failMessages.push(imgRes.message || '文件图片上传失败');
+      }
+    }
+
+    if (urlImages.length > 0) {
+      for (const img of urlImages) {
+        const urlRes = await API.post('/images/add-url', {
+          event_id: eventId,
+          url: img.url,
+          name: img.name
+        });
+        if (!urlRes.success) {
+          allSuccess = false;
+          failMessages.push(urlRes.message || `URL图片添加失败: ${img.name}`);
+        }
+      }
+    }
+
+    if (!allSuccess) {
+      toast('事件已添加但部分图片处理失败: ' + failMessages.join('; '), 'error');
     } else {
       toast('添加成功！', 'success');
     }
@@ -1799,11 +1825,24 @@ async function openImageManager(event) {
       </div>
     </div>
     <div class="table-container" style="padding:24px;">
-      <div class="image-upload-area" id="upload-area">
-        <div style="font-size:40px;">📤</div>
-        <p>点击或拖拽图片到此处上传</p>
-        <p style="font-size:12px;color:#a0aec0;margin-top:4px;">支持 JPG、PNG、GIF、WEBP、BMP 格式，单张最大 10MB，一次最多上传 20 张</p>
-        <input type="file" id="file-input" accept="image/*" multiple style="display:none;">
+      <div class="image-manager-tabs">
+        <button type="button" class="img-mgr-tab active" data-tab="upload">📤 上传图片</button>
+        <button type="button" class="img-mgr-tab" data-tab="url">🔗 添加URL图片</button>
+      </div>
+      <div class="img-mgr-tab-panel" id="img-mgr-upload-panel">
+        <div class="image-upload-area" id="upload-area">
+          <div style="font-size:40px;">📤</div>
+          <p>点击或拖拽图片到此处上传</p>
+          <p style="font-size:12px;color:#a0aec0;margin-top:4px;">支持 JPG、PNG、GIF、WEBP、BMP 格式，单张最大 10MB，一次最多上传 20 张</p>
+          <input type="file" id="file-input" accept="image/*" multiple style="display:none;">
+        </div>
+      </div>
+      <div class="img-mgr-tab-panel" id="img-mgr-url-panel" style="display:none;">
+        <div class="image-url-input">
+          <input type="url" class="form-control" id="mgr-image-url" placeholder="粘贴图片URL (http://或https://开头)" style="max-width:100%;">
+          <input type="text" class="form-control" id="mgr-image-name" placeholder="图片名称（可选）" style="max-width:100%;margin-top:8px;">
+          <button class="btn btn-primary" id="mgr-add-url-btn" style="margin-top:8px;">+ 添加URL图片</button>
+        </div>
       </div>
       <div id="images-container">
         <div style="text-align:center;padding:30px;color:#718096;">加载中...</div>
@@ -1813,6 +1852,36 @@ async function openImageManager(event) {
   `;
 
   document.getElementById('back-btn').addEventListener('click', renderEventList);
+
+  document.querySelectorAll('.img-mgr-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.img-mgr-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const tabName = tab.dataset.tab;
+      document.getElementById('img-mgr-upload-panel').style.display = tabName === 'upload' ? '' : 'none';
+      document.getElementById('img-mgr-url-panel').style.display = tabName === 'url' ? '' : 'none';
+    });
+  });
+
+  document.getElementById('mgr-add-url-btn').addEventListener('click', async () => {
+    const urlInput = document.getElementById('mgr-image-url');
+    const nameInput = document.getElementById('mgr-image-name');
+    const url = urlInput.value.trim();
+    const name = nameInput.value.trim();
+
+    if (!url) { toast('请输入图片URL', 'error'); return; }
+    if (!/^https?:\/\//i.test(url)) { toast('URL必须以http://或https://开头', 'error'); return; }
+
+    const res = await API.post('/images/add-url', { event_id: event.id, url, name });
+    if (res.success) {
+      toast(res.message, 'success');
+      urlInput.value = '';
+      nameInput.value = '';
+      loadImages(event.id);
+    } else {
+      toast(res.message, 'error');
+    }
+  });
 
   const uploadArea = document.getElementById('upload-area');
   const fileInput = document.getElementById('file-input');
@@ -1911,16 +1980,19 @@ async function loadImages(eventId) {
 
   container.innerHTML = `
     <div class="images-grid">
-      ${res.data.map(img => `
+      ${res.data.map(img => {
+        const isUrl = img.file_path && (img.file_path.startsWith('http://') || img.file_path.startsWith('https://'));
+        return `
         <div class="image-card">
           <img src="${img.url}" alt="${escapeHtml(img.original_name || '')}">
-          <button class="image-card-replace" data-id="${img.id}" title="替换">⟳</button>
+          ${isUrl ? '<div class="url-image-tag">URL</div>' : ''}
+          ${!isUrl ? `<button class="image-card-replace" data-id="${img.id}" title="替换">⟳</button>` : ''}
           <button class="image-card-delete" data-id="${img.id}" title="删除">×</button>
           <div class="image-card-info">
             <div class="image-card-name">${escapeHtml(img.original_name || img.filename)}</div>
           </div>
         </div>
-      `).join('')}
+      `}).join('')}
     </div>
   `;
 

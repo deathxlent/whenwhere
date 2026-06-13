@@ -283,3 +283,78 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 
 .main-content { justify-content: flex-start; padding-top: 80px; overflow-y: auto; }
 .main-prompt { margin-bottom: 24px; }
+
+.lb-tab {
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.lb-tab.active {
+  background: rgba(59,130,246,0.2);
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+.leaderboard-period-tabs {
+  display: flex;
+  gap: 8px;
+}
+.period-tab {
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.period-tab.active {
+  background: rgba(59,130,246,0.2);
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.03);
+}
+.lb-rank {
+  width: 40px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+}
+.lb-medal { font-size: 18px; }
+.lb-username {
+  flex: 1;
+  font-size: 14px;
+  color: rgba(255,255,255,0.9);
+}
+.lb-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #60a5fa;
+}
+
+.stats-card.small .num { font-size: 20px; }
+.precise-location-card { border-color: rgba(16,185,129,0.3); }
+.precise-location-card .num { color: #34d399; }
+.precise-time-card { border-color: rgba(59,130,246,0.3); }
+.precise-time-card .num { color: #60a5fa; }

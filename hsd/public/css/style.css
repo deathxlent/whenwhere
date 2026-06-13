@@ -1056,3 +1056,63 @@ textarea.form-control {
   margin-top: 4px;
   font-size: 12px;
 }
+
+.image-add-tabs,
+.image-manager-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.image-add-tab,
+.img-mgr-tab {
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.image-add-tab:hover,
+.img-mgr-tab:hover {
+  border-color: #3182ce;
+  color: #3182ce;
+}
+
+.image-add-tab.active,
+.img-mgr-tab.active {
+  background: #3182ce;
+  border-color: #3182ce;
+  color: white;
+}
+
+.url-input-group {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.url-image-tag {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.image-url-input {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

@@ -1059,7 +1059,7 @@ async function renderStatsPage() {
             <div class="lbl">平均耗时(秒)</div>
           </div>
         </div>
-        <div class="stats-summary" style="grid-template-columns:repeat(6,1fr);margin-top:12px;">
+        <div class="stats-summary" style="grid-template-columns:repeat(7,1fr);margin-top:12px;">
           <div class="stats-card small">
             <div class="num">${totals.total_distance ?? 0}</div>
             <div class="lbl">总距离(km)</div>
@@ -1080,9 +1080,13 @@ async function renderStatsPage() {
             <div class="num">${totals.total_precise_time ?? 0}</div>
             <div class="lbl">精准时间数</div>
           </div>
-          <div class="stats-card small">
+          <div class="stats-card small precise-location-card">
             <div class="num">${Math.round((totals.avg_precise_location ?? 0) * 1000) / 10}</div>
             <div class="lbl">精准位置率(%)</div>
+          </div>
+          <div class="stats-card small precise-time-card">
+            <div class="num">${Math.round((totals.avg_precise_time ?? 0) * 1000) / 10}</div>
+            <div class="lbl">精准时间率(%)</div>
           </div>
         </div>
         ${daily.length > 0 ? `
