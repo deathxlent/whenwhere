@@ -323,33 +323,33 @@ function initMap() {
   const subCode = state.currentSubCategory?.code || '';
   if (subCode === 'china') {
     center = [35, 105];
-    zoom = 5;
+    zoom = 4;
   } else {
-    center = [25, 30];
+    center = [30, 120];
     zoom = 2;
   }
 
   state.map = L.map('map', {
     center: center,
     zoom: zoom,
-    minZoom: 1,
-    maxZoom: 18,
+    minZoom: 2,
+    maxZoom: 10,
     zoomControl: true,
     worldCopyJump: true
   });
 
   const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     subdomains: ['a', 'b', 'c'],
-    minZoom: 1,
-    maxZoom: 18,
-    attribution: '&copy; OpenStreetMap'
+    minZoom: 2,
+    maxZoom: 10,
+    attribution: '&copy; 开放街道地图'
   });
 
   const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
-    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
-    minZoom: 1,
-    maxZoom: 18
+    attribution: '&copy; 高德地图',
+    minZoom: 2,
+    maxZoom: 10
   });
 
   function updateTileLayer() {
@@ -431,7 +431,7 @@ function addProvinceLabels(data) {
       interactive: false
     });
     state.admin1Labels.push(label);
-    if (currentZoom >= 4) {
+    if (currentZoom >= 2) {
       label.addTo(state.map);
     }
   });
@@ -550,7 +550,7 @@ async function loadWorldAdmin1Labels() {
         interactive: false
       });
       state.admin1Labels.push(label);
-      if (currentZoom >= 4) {
+      if (currentZoom >= 2) {
         label.addTo(state.map);
       }
     });
@@ -571,7 +571,7 @@ async function loadWorldAdmin1Labels() {
         interactive: false
       });
       state.admin1Labels.push(label);
-      if (currentZoom >= 4) {
+      if (currentZoom >= 2) {
         label.addTo(state.map);
       }
     });
@@ -588,29 +588,11 @@ function updateLabelVisibility() {
 
   state.admin1Labels.forEach(label => {
     const el = label.getElement();
-    if (!el) return;
 
-    const isCountryLabel = el.classList.contains('country-label');
-    const isProvinceLabel = el.classList.contains('province-label');
-
-    if (isCountryLabel) {
-      if (zoom >= 4) {
-        if (!state.map.hasLayer(label)) state.map.addLayer(label);
-      } else {
-        if (state.map.hasLayer(label)) state.map.removeLayer(label);
-      }
-    } else if (isProvinceLabel) {
-      if (zoom >= 4) {
-        if (!state.map.hasLayer(label)) state.map.addLayer(label);
-      } else {
-        if (state.map.hasLayer(label)) state.map.removeLayer(label);
-      }
+    if (zoom >= 2) {
+      if (!state.map.hasLayer(label)) state.map.addLayer(label);
     } else {
-      if (zoom >= 4) {
-        if (!state.map.hasLayer(label)) state.map.addLayer(label);
-      } else {
-        if (state.map.hasLayer(label)) state.map.removeLayer(label);
-      }
+      if (state.map.hasLayer(label)) state.map.removeLayer(label);
     }
   });
 }
@@ -1536,9 +1518,9 @@ function openEditMapView(event) {
     const subCode = state.currentSubCategory?.code || '';
     if (subCode === 'china') {
       center = [35, 105];
-      zoom = 5;
+      zoom = 4;
     } else {
-      center = [25, 30];
+      center = [30, 120];
       zoom = 2;
     }
   }
@@ -1546,24 +1528,24 @@ function openEditMapView(event) {
   state.map = L.map('map', {
     center: center,
     zoom: zoom,
-    minZoom: 1,
-    maxZoom: 18,
+    minZoom: 2,
+    maxZoom: 10,
     zoomControl: true,
     worldCopyJump: true
   });
 
   const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     subdomains: ['a', 'b', 'c'],
-    minZoom: 1,
-    maxZoom: 18,
-    attribution: '&copy; OpenStreetMap'
+    minZoom: 2,
+    maxZoom: 10,
+    attribution: '&copy; 开放街道地图'
   });
 
   const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
-    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>',
-    minZoom: 1,
-    maxZoom: 18
+    attribution: '&copy; 高德地图',
+    minZoom: 2,
+    maxZoom: 10
   });
 
   function updateTileLayer() {

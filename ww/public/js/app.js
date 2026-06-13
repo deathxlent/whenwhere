@@ -288,10 +288,10 @@ function initBgMap() {
   container.innerHTML = '<div id="bg-map-el" style="width:100%;height:100%;"></div>';
 
   const map = L.map('bg-map-el', {
-    center: [25, 30],
-    zoom: 3,
-    minZoom: 3,
-    maxZoom: 18,
+    center: [30, 120],
+    zoom: 2,
+    minZoom: 2,
+    maxZoom: 10,
     zoomControl: false,
     attributionControl: false,
     dragging: false,
@@ -302,15 +302,15 @@ function initBgMap() {
 
   const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     subdomains: ['a', 'b', 'c'],
-    minZoom: 1,
-    maxZoom: 18,
-    attribution: '&copy; OpenStreetMap'
+    minZoom: 2,
+    maxZoom: 10,
+    attribution: '&copy; 开放街道地图'
   });
 
   const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
-    minZoom: 1,
-    maxZoom: 18,
+    minZoom: 2,
+    maxZoom: 10,
     attribution: '&copy; 高德地图'
   });
 
@@ -559,8 +559,8 @@ function renderGamePage() {
   appState.currentView = 'game';
   const app = document.getElementById('app');
   const isChinaOnly = appState.selectedSubCodes.length === 1 && appState.selectedSubCodes.includes('china');
-  const mapCenter = isChinaOnly ? [35, 105] : [30, 0];
-  const mapZoom = isChinaOnly ? 4 : 3;
+  const mapCenter = isChinaOnly ? [35, 105] : [30, 120];
+  const mapZoom = isChinaOnly ? 4 : 2;
 
   app.innerHTML = `
     <div class="game-page">
@@ -582,24 +582,24 @@ function renderGamePage() {
   appState.map = L.map('map', {
     center: mapCenter,
     zoom: mapZoom,
-    minZoom: 3,
-    maxZoom: 18,
+    minZoom: 2,
+    maxZoom: 10,
     zoomControl: true,
     worldCopyJump: true
   });
 
   const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     subdomains: ['a', 'b', 'c'],
-    minZoom: 1,
-    maxZoom: 18,
-    attribution: '&copy; OpenStreetMap'
+    minZoom: 2,
+    maxZoom: 10,
+    attribution: '&copy; 开放街道地图'
   });
 
   const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
-    minZoom: 1,
-    maxZoom: 18,
-    attribution: '&copy; <a href="https://www.amap.com/">高德地图</a>'
+    minZoom: 2,
+    maxZoom: 10,
+    attribution: '&copy; 高德地图'
   });
 
   function updateTileLayer() {
@@ -662,7 +662,7 @@ async function loadGameMapLabels() {
       label._isCountryLabel = false;
       label._isProvinceLabel = true;
       appState.admin1Labels.push(label);
-      if (currentZoom >= 4) label.addTo(appState.map);
+      if (currentZoom >= 2) label.addTo(appState.map);
     });
 
     WORLD_COUNTRIES.forEach(country => {
@@ -673,7 +673,7 @@ async function loadGameMapLabels() {
       label._isCountryLabel = true;
       label._isProvinceLabel = false;
       appState.admin1Labels.push(label);
-      if (currentZoom >= 3) label.addTo(appState.map);
+      if (currentZoom >= 2) label.addTo(appState.map);
     });
 
     try {
@@ -692,15 +692,14 @@ async function loadGameMapLabels() {
         label._isCountryLabel = false;
         label._isProvinceLabel = false;
         appState.admin1Labels.push(label);
-        if (currentZoom >= 4) label.addTo(appState.map);
+        if (currentZoom >= 2) label.addTo(appState.map);
       });
     } catch (e) {}
 
     appState.map.on('zoomend', () => {
       const zoom = appState.map.getZoom();
       appState.admin1Labels.forEach(label => {
-        const minZoom = label._isCountryLabel ? 3 : 4;
-        if (zoom >= minZoom) {
+        if (zoom >= 2) {
           if (!appState.map.hasLayer(label)) appState.map.addLayer(label);
         } else {
           if (appState.map.hasLayer(label)) appState.map.removeLayer(label);
