@@ -108,11 +108,15 @@ const WORLD_COUNTRIES = [
 async function init() {
   const encrypted = getCookie(COOKIE_NAME);
   if (encrypted) {
-    const res = await API.post('/auth/verify', { encrypted });
-    if (res.success) {
-      appState.user = res.data;
-      renderMainPage();
-      return;
+    try {
+      const res = await API.post('/auth/verify', { encrypted });
+      if (res.success) {
+        appState.user = res.data;
+        renderMainPage();
+        return;
+      }
+    } catch (e) {
+      console.warn('Token验证失败:', e);
     }
   }
   renderLoginPage();
@@ -285,8 +289,8 @@ function initBgMap() {
 
   const map = L.map('bg-map-el', {
     center: [25, 30],
-    zoom: 2,
-    minZoom: 1,
+    zoom: 3,
+    minZoom: 3,
     maxZoom: 18,
     zoomControl: false,
     attributionControl: false,
@@ -548,8 +552,8 @@ function renderGamePage() {
   appState.currentView = 'game';
   const app = document.getElementById('app');
   const isChinaOnly = appState.selectedSubCodes.length === 1 && appState.selectedSubCodes.includes('china');
-  const mapCenter = isChinaOnly ? [35, 105] : [25, 30];
-  const mapZoom = isChinaOnly ? 5 : 2;
+  const mapCenter = isChinaOnly ? [35, 105] : [30, 0];
+  const mapZoom = isChinaOnly ? 4 : 3;
 
   app.innerHTML = `
     <div class="game-page">
@@ -571,7 +575,7 @@ function renderGamePage() {
   appState.map = L.map('map', {
     center: mapCenter,
     zoom: mapZoom,
-    minZoom: 1,
+    minZoom: 3,
     maxZoom: 18,
     zoomControl: true,
     worldCopyJump: true
@@ -648,6 +652,8 @@ async function loadGameMapLabels() {
         icon: L.divIcon({ className: 'province-label', html: name, iconSize: [0, 0] }),
         interactive: false
       });
+      label._isCountryLabel = false;
+      label._isProvinceLabel = true;
       appState.admin1Labels.push(label);
       if (currentZoom >= 4) label.addTo(appState.map);
     });
@@ -657,8 +663,10 @@ async function loadGameMapLabels() {
         icon: L.divIcon({ className: 'country-label', html: country.name, iconSize: [0, 0] }),
         interactive: false
       });
+      label._isCountryLabel = true;
+      label._isProvinceLabel = false;
       appState.admin1Labels.push(label);
-      if (currentZoom >= 4) label.addTo(appState.map);
+      if (currentZoom >= 3) label.addTo(appState.map);
     });
 
     try {
@@ -674,6 +682,8 @@ async function loadGameMapLabels() {
           icon: L.divIcon({ className: 'admin1-label', html: name, iconSize: [0, 0] }),
           interactive: false
         });
+        label._isCountryLabel = false;
+        label._isProvinceLabel = false;
         appState.admin1Labels.push(label);
         if (currentZoom >= 4) label.addTo(appState.map);
       });
@@ -682,7 +692,8 @@ async function loadGameMapLabels() {
     appState.map.on('zoomend', () => {
       const zoom = appState.map.getZoom();
       appState.admin1Labels.forEach(label => {
-        if (zoom >= 4) {
+        const minZoom = label._isCountryLabel ? 3 : 4;
+        if (zoom >= minZoom) {
           if (!appState.map.hasLayer(label)) appState.map.addLayer(label);
         } else {
           if (appState.map.hasLayer(label)) appState.map.removeLayer(label);
@@ -966,7 +977,7 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
             ${isPreciseLocation ? '<span class="precise-badge precise-location">🎯 精准位置猜中！</span>' : ''}
             ${isPreciseTime ? '<span class="precise-badge precise-time">⏱️ 精准时间猜中！</span>' : ''}
           </div>
-        ` : ''}
+        ` : '')}
         <div class="result-card">
           <h3>已显示的图片</h3>
           <div class="result-images">
