@@ -1,153 +1,6395 @@
 {
   "type": "FeatureCollection",
   "features": [
-    {"type":"Feature","properties":{"name":"莫斯科","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[37.6173,55.7558]}},
-    {"type":"Feature","properties":{"name":"圣彼得堡","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[30.3351,59.9343]}},
-    {"type":"Feature","properties":{"name":"新西伯利亚","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[82.9356,55.0084]}},
-    {"type":"Feature","properties":{"name":"叶卡捷琳堡","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[60.6122,56.8389]}},
-    {"type":"Feature","properties":{"name":"喀山","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[49.1221,55.7887]}},
-    {"type":"Feature","properties":{"name":"下诺夫哥罗德","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[43.9823,56.3269]}},
-    {"type":"Feature","properties":{"name":"萨马拉","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[50.15,53.2]}},
-    {"type":"Feature","properties":{"name":"鄂木斯克","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[73.3692,54.9924]}},
-    {"type":"Feature","properties":{"name":"顿河畔罗斯托夫","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[39.7232,47.2357]}},
-    {"type":"Feature","properties":{"name":"符拉迪沃斯托克","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[131.9137,43.1332]}},
-    {"type":"Feature","properties":{"name":"哈巴罗夫斯克","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[135.0838,48.4827]}},
-    {"type":"Feature","properties":{"name":"加里宁格勒","country":"俄罗斯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[20.5,54.7]}},
-    {"type":"Feature","properties":{"name":"华盛顿特区","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-77.0369,38.9072]}},
-    {"type":"Feature","properties":{"name":"加利福尼亚","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-119.4179,36.7783]}},
-    {"type":"Feature","properties":{"name":"德克萨斯","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-99.5,31.0]}},
-    {"type":"Feature","properties":{"name":"佛罗里达","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-81.5158,27.6648]}},
-    {"type":"Feature","properties":{"name":"纽约","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-75.5,43.0]}},
-    {"type":"Feature","properties":{"name":"阿拉斯加","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-150.0,64.0]}},
-    {"type":"Feature","properties":{"name":"蒙大拿","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-109.4,46.9]}},
-    {"type":"Feature","properties":{"name":"科罗拉多","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-105.8,39.0]}},
-    {"type":"Feature","properties":{"name":"亚利桑那","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-111.1,34.0]}},
-    {"type":"Feature","properties":{"name":"密歇根","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-85.6,44.3]}},
-    {"type":"Feature","properties":{"name":"宾夕法尼亚","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-77.6,41.2]}},
-    {"type":"Feature","properties":{"name":"俄亥俄","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-82.9,40.4]}},
-    {"type":"Feature","properties":{"name":"伊利诺伊","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-89.2,40.0]}},
-    {"type":"Feature","properties":{"name":"夏威夷","country":"美国","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-157.5,20.5]}},
-    {"type":"Feature","properties":{"name":"圣保罗","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-46.6333,-23.5505]}},
-    {"type":"Feature","properties":{"name":"里约热内卢","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-43.1729,-22.9068]}},
-    {"type":"Feature","properties":{"name":"米纳斯吉拉斯","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-44.0,-18.5]}},
-    {"type":"Feature","properties":{"name":"巴伊亚","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-41.0,-12.0]}},
-    {"type":"Feature","properties":{"name":"巴拉那","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-51.5,-25.0]}},
-    {"type":"Feature","properties":{"name":"南里奥格兰德","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-53.0,-30.0]}},
-    {"type":"Feature","properties":{"name":"亚马孙","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-63.0,-3.5]}},
-    {"type":"Feature","properties":{"name":"塞阿拉","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-39.5,-5.0]}},
-    {"type":"Feature","properties":{"name":"伯南布哥","country":"巴西","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-37.5,-8.5]}},
-    {"type":"Feature","properties":{"name":"新南威尔士","country":"澳大利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[149.0,-33.0]}},
-    {"type":"Feature","properties":{"name":"维多利亚","country":"澳大利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[145.0,-37.0]}},
-    {"type":"Feature","properties":{"name":"昆士兰","country":"澳大利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[146.0,-20.0]}},
-    {"type":"Feature","properties":{"name":"西澳大利亚","country":"澳大利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[120.0,-25.0]}},
-    {"type":"Feature","properties":{"name":"南澳大利亚","country":"澳大利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[136.0,-30.0]}},
-    {"type":"Feature","properties":{"name":"塔斯马尼亚","country":"澳大利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[147.0,-42.0]}},
-    {"type":"Feature","properties":{"name":"北领地","country":"澳大利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[133.0,-19.5]}},
-    {"type":"Feature","properties":{"name":"北方邦","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[80.0,27.0]}},
-    {"type":"Feature","properties":{"name":"马哈拉施特拉","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[74.0,19.0]}},
-    {"type":"Feature","properties":{"name":"比哈尔","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[85.0,25.5]}},
-    {"type":"Feature","properties":{"name":"西孟加拉","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[88.0,23.0]}},
-    {"type":"Feature","properties":{"name":"中央邦","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[78.0,23.5]}},
-    {"type":"Feature","properties":{"name":"泰米尔纳德","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[79.0,11.0]}},
-    {"type":"Feature","properties":{"name":"拉贾斯坦","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[73.0,27.0]}},
-    {"type":"Feature","properties":{"name":"卡纳塔克","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[76.0,15.0]}},
-    {"type":"Feature","properties":{"name":"古吉拉特","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[72.0,22.0]}},
-    {"type":"Feature","properties":{"name":"安得拉邦","country":"印度","admin_level":"1"},"geometry":{"type":"Point","coordinates":[80.0,15.5]}},
-    {"type":"Feature","properties":{"name":"布宜诺斯艾利斯","country":"阿根廷","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-58.4,-34.6]}},
-    {"type":"Feature","properties":{"name":"科尔多瓦","country":"阿根廷","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-64.0,-31.5]}},
-    {"type":"Feature","properties":{"name":"圣菲","country":"阿根廷","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-61.0,-30.5]}},
-    {"type":"Feature","properties":{"name":"门多萨","country":"阿根廷","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-68.5,-33.0]}},
-    {"type":"Feature","properties":{"name":"图库曼","country":"阿根廷","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-65.0,-26.8]}},
-    {"type":"Feature","properties":{"name":"巴塔哥尼亚","country":"阿根廷","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-68.0,-42.0]}},
-    {"type":"Feature","properties":{"name":"阿斯塔纳","country":"哈萨克斯坦","admin_level":"1"},"geometry":{"type":"Point","coordinates":[71.4,51.1]}},
-    {"type":"Feature","properties":{"name":"阿拉木图","country":"哈萨克斯坦","admin_level":"1"},"geometry":{"type":"Point","coordinates":[76.9,43.3]}},
-    {"type":"Feature","properties":{"name":"奇姆肯特","country":"哈萨克斯坦","admin_level":"1"},"geometry":{"type":"Point","coordinates":[69.6,42.3]}},
-    {"type":"Feature","properties":{"name":"卡拉干达","country":"哈萨克斯坦","admin_level":"1"},"geometry":{"type":"Point","coordinates":[73.1,49.8]}},
-    {"type":"Feature","properties":{"name":"阿尔及尔","country":"阿尔及利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[3.0,36.7]}},
-    {"type":"Feature","properties":{"name":"奥兰","country":"阿尔及利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-0.6,35.7]}},
-    {"type":"Feature","properties":{"name":"君士坦丁","country":"阿尔及利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[6.6,36.3]}},
-    {"type":"Feature","properties":{"name":"加奈姆","country":"阿尔及利亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[3.0,27.0]}},
-    {"type":"Feature","properties":{"name":"金沙萨","country":"刚果(金)","admin_level":"1"},"geometry":{"type":"Point","coordinates":[15.3,-4.3]}},
-    {"type":"Feature","properties":{"name":"加丹加","country":"刚果(金)","admin_level":"1"},"geometry":{"type":"Point","coordinates":[26.0,-10.0]}},
-    {"type":"Feature","properties":{"name":"赤道省","country":"刚果(金)","admin_level":"1"},"geometry":{"type":"Point","coordinates":[21.0,0.5]}},
-    {"type":"Feature","properties":{"name":"开赛","country":"刚果(金)","admin_level":"1"},"geometry":{"type":"Point","coordinates":[23.0,-5.0]}},
-    {"type":"Feature","properties":{"name":"利雅得","country":"沙特阿拉伯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[46.7,24.7]}},
-    {"type":"Feature","properties":{"name":"麦加","country":"沙特阿拉伯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[39.8,21.4]}},
-    {"type":"Feature","properties":{"name":"麦地那","country":"沙特阿拉伯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[39.6,24.5]}},
-    {"type":"Feature","properties":{"name":"东部省","country":"沙特阿拉伯","admin_level":"1"},"geometry":{"type":"Point","coordinates":[50.0,25.0]}},
-    {"type":"Feature","properties":{"name":"墨西哥城","country":"墨西哥","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-99.1,19.4]}},
-    {"type":"Feature","properties":{"name":"哈利斯科","country":"墨西哥","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-103.5,20.5]}},
-    {"type":"Feature","properties":{"name":"新莱昂","country":"墨西哥","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-100.3,25.5]}},
-    {"type":"Feature","properties":{"name":"普埃布拉","country":"墨西哥","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-98.0,19.0]}},
-    {"type":"Feature","properties":{"name":"瓦哈卡","country":"墨西哥","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-96.7,17.0]}},
-    {"type":"Feature","properties":{"name":"恰帕斯","country":"墨西哥","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-93.0,16.5]}},
-    {"type":"Feature","properties":{"name":"尤卡坦","country":"墨西哥","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-89.0,21.0]}},
-    {"type":"Feature","properties":{"name":"雅加达","country":"印度尼西亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[106.8,-6.2]}},
-    {"type":"Feature","properties":{"name":"东爪哇","country":"印度尼西亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[112.7,-7.5]}},
-    {"type":"Feature","properties":{"name":"西爪哇","country":"印度尼西亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[107.5,-6.9]}},
-    {"type":"Feature","properties":{"name":"中爪哇","country":"印度尼西亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[110.0,-7.0]}},
-    {"type":"Feature","properties":{"name":"苏门答腊","country":"印度尼西亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[102.0,-1.0]}},
-    {"type":"Feature","properties":{"name":"加里曼丹","country":"印度尼西亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[112.0,-1.5]}},
-    {"type":"Feature","properties":{"name":"苏拉威西","country":"印度尼西亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[120.0,-3.0]}},
-    {"type":"Feature","properties":{"name":"巴布亚","country":"印度尼西亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[138.0,-4.0]}},
-    {"type":"Feature","properties":{"name":"喀土穆","country":"苏丹","admin_level":"1"},"geometry":{"type":"Point","coordinates":[32.5,15.5]}},
-    {"type":"Feature","properties":{"name":"达尔富尔","country":"苏丹","admin_level":"1"},"geometry":{"type":"Point","coordinates":[24.0,13.0]}},
-    {"type":"Feature","properties":{"name":"科尔多凡","country":"苏丹","admin_level":"1"},"geometry":{"type":"Point","coordinates":[30.0,12.0]}},
-    {"type":"Feature","properties":{"name":"的黎波里","country":"利比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[13.2,32.9]}},
-    {"type":"Feature","properties":{"name":"班加西","country":"利比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[20.1,32.1]}},
-    {"type":"Feature","properties":{"name":"费赞","country":"利比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[13.0,26.0]}},
-    {"type":"Feature","properties":{"name":"德黑兰","country":"伊朗","admin_level":"1"},"geometry":{"type":"Point","coordinates":[51.4,35.7]}},
-    {"type":"Feature","properties":{"name":"伊斯法罕","country":"伊朗","admin_level":"1"},"geometry":{"type":"Point","coordinates":[51.7,32.7]}},
-    {"type":"Feature","properties":{"name":"呼罗珊","country":"伊朗","admin_level":"1"},"geometry":{"type":"Point","coordinates":[58.0,35.0]}},
-    {"type":"Feature","properties":{"name":"法尔斯","country":"伊朗","admin_level":"1"},"geometry":{"type":"Point","coordinates":[52.5,29.0]}},
-    {"type":"Feature","properties":{"name":"阿塞拜疆","country":"伊朗","admin_level":"1"},"geometry":{"type":"Point","coordinates":[46.5,37.5]}},
-    {"type":"Feature","properties":{"name":"克尔曼","country":"伊朗","admin_level":"1"},"geometry":{"type":"Point","coordinates":[57.0,29.5]}},
-    {"type":"Feature","properties":{"name":"乌兰巴托","country":"蒙古","admin_level":"1"},"geometry":{"type":"Point","coordinates":[106.9,47.9]}},
-    {"type":"Feature","properties":{"name":"南戈壁","country":"蒙古","admin_level":"1"},"geometry":{"type":"Point","coordinates":[105.0,43.0]}},
-    {"type":"Feature","properties":{"name":"杭爱","country":"蒙古","admin_level":"1"},"geometry":{"type":"Point","coordinates":[100.0,47.0]}},
-    {"type":"Feature","properties":{"name":"东方省","country":"蒙古","admin_level":"1"},"geometry":{"type":"Point","coordinates":[114.0,48.0]}},
-    {"type":"Feature","properties":{"name":"利马","country":"秘鲁","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-77.0,-12.0]}},
-    {"type":"Feature","properties":{"name":"库斯科","country":"秘鲁","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-72.0,-13.5]}},
-    {"type":"Feature","properties":{"name":"阿雷基帕","country":"秘鲁","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-71.5,-16.4]}},
-    {"type":"Feature","properties":{"name":"拉利伯塔德","country":"秘鲁","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-78.0,-8.0]}},
-    {"type":"Feature","properties":{"name":"皮乌拉","country":"秘鲁","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-80.5,-5.2]}},
-    {"type":"Feature","properties":{"name":"恩贾梅纳","country":"乍得","admin_level":"1"},"geometry":{"type":"Point","coordinates":[15.0,12.1]}},
-    {"type":"Feature","properties":{"name":"萨拉马特","country":"乍得","admin_level":"1"},"geometry":{"type":"Point","coordinates":[20.0,9.0]}},
-    {"type":"Feature","properties":{"name":"加奈姆","country":"乍得","admin_level":"1"},"geometry":{"type":"Point","coordinates":[16.0,14.0]}},
-    {"type":"Feature","properties":{"name":"尼亚美","country":"尼日尔","admin_level":"1"},"geometry":{"type":"Point","coordinates":[2.1,13.5]}},
-    {"type":"Feature","properties":{"name":"阿加德兹","country":"尼日尔","admin_level":"1"},"geometry":{"type":"Point","coordinates":[7.9,17.0]}},
-    {"type":"Feature","properties":{"name":"马拉迪","country":"尼日尔","admin_level":"1"},"geometry":{"type":"Point","coordinates":[7.1,13.5]}},
-    {"type":"Feature","properties":{"name":"津德尔","country":"尼日尔","admin_level":"1"},"geometry":{"type":"Point","coordinates":[9.0,13.8]}},
-    {"type":"Feature","properties":{"name":"罗安达","country":"安哥拉","admin_level":"1"},"geometry":{"type":"Point","coordinates":[13.2,-8.8]}},
-    {"type":"Feature","properties":{"name":"万博","country":"安哥拉","admin_level":"1"},"geometry":{"type":"Point","coordinates":[15.7,-12.4]}},
-    {"type":"Feature","properties":{"name":"本格拉","country":"安哥拉","admin_level":"1"},"geometry":{"type":"Point","coordinates":[13.4,-12.6]}},
-    {"type":"Feature","properties":{"name":"加丹加","country":"安哥拉","admin_level":"1"},"geometry":{"type":"Point","coordinates":[19.0,-12.0]}},
-    {"type":"Feature","properties":{"name":"巴马科","country":"马里","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-7.9,12.6]}},
-    {"type":"Feature","properties":{"name":"加奥","country":"马里","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-0.1,16.3]}},
-    {"type":"Feature","properties":{"name":"莫普提","country":"马里","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-4.2,14.5]}},
-    {"type":"Feature","properties":{"name":"锡卡索","country":"马里","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-5.7,11.3]}},
-    {"type":"Feature","properties":{"name":"比勒陀利亚","country":"南非","admin_level":"1"},"geometry":{"type":"Point","coordinates":[28.2,-25.7]}},
-    {"type":"Feature","properties":{"name":"开普敦","country":"南非","admin_level":"1"},"geometry":{"type":"Point","coordinates":[18.4,-33.9]}},
-    {"type":"Feature","properties":{"name":"德班","country":"南非","admin_level":"1"},"geometry":{"type":"Point","coordinates":[31.0,-29.9]}},
-    {"type":"Feature","properties":{"name":"约翰内斯堡","country":"南非","admin_level":"1"},"geometry":{"type":"Point","coordinates":[28.0,-26.2]}},
-    {"type":"Feature","properties":{"name":"东开普","country":"南非","admin_level":"1"},"geometry":{"type":"Point","coordinates":[27.0,-32.0]}},
-    {"type":"Feature","properties":{"name":"波哥大","country":"哥伦比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-74.1,4.7]}},
-    {"type":"Feature","properties":{"name":"安蒂奥基亚","country":"哥伦比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-75.5,7.0]}},
-    {"type":"Feature","properties":{"name":"考卡山谷","country":"哥伦比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-76.5,3.5]}},
-    {"type":"Feature","properties":{"name":"大西洋省","country":"哥伦比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-75.0,10.7]}},
-    {"type":"Feature","properties":{"name":"亚的斯亚贝巴","country":"埃塞俄比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[38.7,9.0]}},
-    {"type":"Feature","properties":{"name":"奥罗米亚","country":"埃塞俄比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[39.0,7.5]}},
-    {"type":"Feature","properties":{"name":"阿姆哈拉","country":"埃塞俄比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[38.0,11.5]}},
-    {"type":"Feature","properties":{"name":"索马里州","country":"埃塞俄比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[43.0,7.0]}},
-    {"type":"Feature","properties":{"name":"提格里","country":"埃塞俄比亚","admin_level":"1"},"geometry":{"type":"Point","coordinates":[39.5,14.0]}},
-    {"type":"Feature","properties":{"name":"安大略","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-85.0,50.0]}},
-    {"type":"Feature","properties":{"name":"魁北克","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-72.0,52.0]}},
-    {"type":"Feature","properties":{"name":"不列颠哥伦比亚","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-125.0,53.0]}},
-    {"type":"Feature","properties":{"name":"阿尔伯塔","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-115.0,55.0]}},
-    {"type":"Feature","properties":{"name":"马尼托巴","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-98.0,54.0]}},
-    {"type":"Feature","properties":{"name":"萨斯喀彻温","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-106.0,54.5]}},
-    {"type":"Feature","properties":{"name":"努纳武特","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-95.0,68.0]}},
-    {"type":"Feature","properties":{"name":"西北地区","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-115.0,64.0]}},
-    {"type":"Feature","properties":{"name":"育空","country":"加拿大","admin_level":"1"},"geometry":{"type":"Point","coordinates":[-135.0,63.0]}}
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "莫斯科",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.6173,
+          55.7558
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圣彼得堡",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.3351,
+          59.9343
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "新西伯利亚",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          82.9356,
+          55.0084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "叶卡捷琳堡",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          60.6122,
+          56.8519
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "下诺夫哥罗德",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          44.0075,
+          56.3287
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "喀山",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          49.1221,
+          55.7887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "车里雅宾斯克",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          61.4008,
+          55.1602
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "萨马拉",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.1776,
+          53.2415
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "鄂木斯克",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.3962,
+          54.9914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "顿河畔罗斯托夫",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.7015,
+          47.2357
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "符拉迪沃斯托克",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          131.8735,
+          43.1198
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "哈巴罗夫斯克",
+        "country": "俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.0763,
+          48.4802
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "加利福尼亚",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.4179,
+          36.7783
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "得克萨斯",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -99.9018,
+          31.9686
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "纽约",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.006,
+          40.7128
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "佛罗里达",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.7603,
+          27.6648
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伊利诺伊",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.9861,
+          40.6331
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "宾夕法尼亚",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.86,
+          41.2033
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "俄亥俄",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.9071,
+          40.4173
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "密歇根",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.6024,
+          44.3148
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "佐治亚",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.9071,
+          32.1656
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华盛顿",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.7401,
+          47.7511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马萨诸塞",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.3824,
+          42.4072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "弗吉尼亚",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.6569,
+          37.4316
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "亚利桑那",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.0937,
+          34.0489
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "印第安纳",
+        "country": "美国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.1349,
+          40.2672
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "安大略",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.3832,
+          43.6532
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "魁北克",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.5673,
+          45.5017
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "不列颠哥伦比亚",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -123.1207,
+          49.2827
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿尔伯塔",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -113.4909,
+          53.5444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马尼托巴",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.1385,
+          49.8954
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "萨斯喀彻温",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.6067,
+          50.4452
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "新斯科舍",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.5752,
+          44.6488
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "新不伦瑞克",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.0653,
+          45.9636
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "纽芬兰",
+        "country": "加拿大",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -52.733,
+          47.5605
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圣保罗",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.6333,
+          -23.5505
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "里约热内卢",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -43.1729,
+          -22.9068
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "米纳斯吉拉斯",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -43.9378,
+          -19.9167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴伊亚",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -38.5014,
+          -12.9714
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "南里奥格兰德",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -51.2177,
+          -30.0346
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴拉那",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -49.2713,
+          -25.4284
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伯南布哥",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -34.877,
+          -8.0543
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塞阿拉",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -38.5267,
+          -3.7172
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "戈亚斯",
+        "country": "巴西",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -49.2539,
+          -16.6869
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "新南威尔士",
+        "country": "澳大利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.2093,
+          -33.8688
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "维多利亚",
+        "country": "澳大利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          144.9631,
+          -37.8136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "昆士兰",
+        "country": "澳大利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          153.0281,
+          -27.4698
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西澳大利亚",
+        "country": "澳大利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          115.8613,
+          -31.9505
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "南澳大利亚",
+        "country": "澳大利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.6007,
+          -34.9285
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塔斯马尼亚",
+        "country": "澳大利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          147.325,
+          -42.8821
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "北领地",
+        "country": "澳大利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.8418,
+          -12.4628
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马哈拉施特拉邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8777,
+          19.076
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "北方邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.9462,
+          26.8467
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "泰米尔纳德邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.2707,
+          13.0827
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卡纳塔克邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.5946,
+          12.9716
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "古吉拉特邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.5714,
+          23.0225
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西孟加拉邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          88.3639,
+          22.5726
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "拉贾斯坦邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          75.7873,
+          26.9124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "中央邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.4126,
+          23.2599
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "安得拉邦",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.6198,
+          16.5062
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "德里",
+        "country": "印度",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.209,
+          28.6139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "布宜诺斯艾利斯",
+        "country": "阿根廷",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -58.3816,
+          -34.6037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "科尔多瓦",
+        "country": "阿根廷",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -64.1888,
+          -31.4201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "罗萨里奥",
+        "country": "阿根廷",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -60.6394,
+          -32.9442
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "门多萨",
+        "country": "阿根廷",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -68.8458,
+          -32.8895
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圣菲",
+        "country": "阿根廷",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -60.6762,
+          -31.6488
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "图库曼",
+        "country": "阿根廷",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -65.2226,
+          -26.8241
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿拉木图",
+        "country": "哈萨克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          76.9286,
+          43.2565
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿斯塔纳",
+        "country": "哈萨克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          71.4461,
+          51.1694
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奇姆肯特",
+        "country": "哈萨克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          69.5931,
+          42.3417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卡拉干达",
+        "country": "哈萨克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.102,
+          49.8087
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿尔及尔",
+        "country": "阿尔及利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.2165,
+          36.7538
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奥兰",
+        "country": "阿尔及利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.6349,
+          35.6969
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "君士坦丁",
+        "country": "阿尔及利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.6147,
+          36.365
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "安纳巴",
+        "country": "阿尔及利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.7445,
+          36.9012
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "金沙萨",
+        "country": "刚果(金)",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.2663,
+          -4.4419
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卢本巴希",
+        "country": "刚果(金)",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.4907,
+          -11.668
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "戈马",
+        "country": "刚果(金)",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.229,
+          -1.657
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "基桑加尼",
+        "country": "刚果(金)",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.188,
+          0.5157
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "利雅得",
+        "country": "沙特阿拉伯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6753,
+          24.7136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "吉达",
+        "country": "沙特阿拉伯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1728,
+          21.4858
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "麦加",
+        "country": "沙特阿拉伯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.8262,
+          21.4225
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "麦地那",
+        "country": "沙特阿拉伯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.6142,
+          24.5247
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "墨西哥城",
+        "country": "墨西哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -99.1332,
+          19.4326
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "瓜达拉哈拉",
+        "country": "墨西哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3918,
+          20.6597
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蒙特雷",
+        "country": "墨西哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -100.3161,
+          25.6866
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "普埃布拉",
+        "country": "墨西哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -98.2063,
+          19.0379
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蒂华纳",
+        "country": "墨西哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.0382,
+          32.5149
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "莱昂",
+        "country": "墨西哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -101.681,
+          21.1619
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华雷斯城",
+        "country": "墨西哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4609,
+          31.6904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "雅加达",
+        "country": "印度尼西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.8456,
+          -6.2088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "泗水",
+        "country": "印度尼西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.7521,
+          -7.2575
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万隆",
+        "country": "印度尼西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6098,
+          -6.9175
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "棉兰",
+        "country": "印度尼西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          98.656,
+          3.5952
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巨港",
+        "country": "印度尼西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.7569,
+          -2.9761
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "望加锡",
+        "country": "印度尼西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.4327,
+          -5.1477
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "登巴萨",
+        "country": "印度尼西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          115.2126,
+          -8.65
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴东",
+        "country": "印度尼西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.353,
+          -0.9515
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "德黑兰",
+        "country": "伊朗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          51.389,
+          35.6892
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马什哈德",
+        "country": "伊朗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          59.566,
+          36.2605
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伊斯法罕",
+        "country": "伊朗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          51.6746,
+          32.6546
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "设拉子",
+        "country": "伊朗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          52.5388,
+          29.5918
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大不里士",
+        "country": "伊朗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.2919,
+          38.073
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "库姆",
+        "country": "伊朗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.88,
+          34.6399
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "利马",
+        "country": "秘鲁",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.0428,
+          -12.0464
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿雷基帕",
+        "country": "秘鲁",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.535,
+          -16.409
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "特鲁希略",
+        "country": "秘鲁",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.0299,
+          -8.116
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奇克拉约",
+        "country": "秘鲁",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.8454,
+          -6.7726
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "库斯科",
+        "country": "秘鲁",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.9741,
+          -13.532
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "豪登省",
+        "country": "南非",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.0473,
+          -26.2041
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "夸祖鲁-纳塔尔省",
+        "country": "南非",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.0292,
+          -29.8587
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西开普省",
+        "country": "南非",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.4241,
+          -33.9249
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "东开普省",
+        "country": "南非",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.6022,
+          -33.9608
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "林波波省",
+        "country": "南非",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.4689,
+          -23.9158
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "亚的斯亚贝巴",
+        "country": "埃塞俄比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.7578,
+          9.03
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奥罗米亚州",
+        "country": "埃塞俄比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.45,
+          8.55
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "提格雷州",
+        "country": "埃塞俄比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.3,
+          13.5
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿姆哈拉州",
+        "country": "埃塞俄比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.5,
+          11.5
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "索马里州",
+        "country": "埃塞俄比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          42,
+          8
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "喀土穆",
+        "country": "苏丹",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.5599,
+          15.5007
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "北达尔富尔州",
+        "country": "苏丹",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25,
+          14.5
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "科尔多凡",
+        "country": "苏丹",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.5,
+          13
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "的黎波里",
+        "country": "利比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.1876,
+          32.8872
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "班加西",
+        "country": "利比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.0655,
+          32.1167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "米苏拉塔",
+        "country": "利比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.0918,
+          32.3754
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "乌兰巴托",
+        "country": "蒙古",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.9057,
+          47.8864
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "额尔登特",
+        "country": "蒙古",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.048,
+          49.0377
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "达尔汗",
+        "country": "蒙古",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.9333,
+          49.4833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "乔巴山",
+        "country": "蒙古",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.5333,
+          48.0667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "恩贾梅纳",
+        "country": "乍得",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.0444,
+          12.1348
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿贝歇",
+        "country": "乍得",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.8131,
+          13.8396
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蒙杜",
+        "country": "乍得",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          16.85,
+          9.5
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "尼亚美",
+        "country": "尼日尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.1254,
+          13.5116
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "津德尔",
+        "country": "尼日尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.99,
+          13.8075
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿加德兹",
+        "country": "尼日尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.99,
+          16.9744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马拉迪",
+        "country": "尼日尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.56,
+          13.49
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "罗安达",
+        "country": "安哥拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.2343,
+          -8.839
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "本格拉",
+        "country": "安哥拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.4055,
+          -12.5735
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卢班戈",
+        "country": "安哥拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.5432,
+          -14.9114
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万博",
+        "country": "安哥拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.74,
+          -12.77
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴马科",
+        "country": "马里",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.0029,
+          12.6392
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塞古",
+        "country": "马里",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.23,
+          13.43
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "莫普提",
+        "country": "马里",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.1958,
+          14.5337
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "通布图",
+        "country": "马里",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -3.0094,
+          16.7735
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "波哥大",
+        "country": "哥伦比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0721,
+          4.711
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "麦德林",
+        "country": "哥伦比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5659,
+          6.2442
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卡利",
+        "country": "哥伦比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.5225,
+          3.4516
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴兰基亚",
+        "country": "哥伦比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.802,
+          10.9685
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "拉巴斯",
+        "country": "玻利维亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -68.1193,
+          -16.4897
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圣克鲁斯",
+        "country": "玻利维亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.1812,
+          -17.7833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "科恰班巴",
+        "country": "玻利维亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.175,
+          -17.4139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奥鲁罗",
+        "country": "玻利维亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -67.1027,
+          -17.9667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "波托西",
+        "country": "玻利维亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -65.7581,
+          -19.5833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "努瓦克肖特",
+        "country": "毛里塔尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.9785,
+          18.0735
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿塔尔",
+        "country": "毛里塔尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -12.9833,
+          20.5167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "祖埃拉特",
+        "country": "毛里塔尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -12.6167,
+          22.8833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "开罗",
+        "country": "埃及",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.2357,
+          30.0444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "亚历山大",
+        "country": "埃及",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.9187,
+          31.2001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "吉萨",
+        "country": "埃及",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.1342,
+          30.0131
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卢克索",
+        "country": "埃及",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.5498,
+          25.6872
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿斯旺",
+        "country": "埃及",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.8934,
+          24.0889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塞得港",
+        "country": "埃及",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.3019,
+          31.2611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "多多马",
+        "country": "坦桑尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.7389,
+          -6.163
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "达累斯萨拉姆",
+        "country": "坦桑尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.2026,
+          -6.7924
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿鲁沙",
+        "country": "坦桑尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.3428,
+          -3.3667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "姆万扎",
+        "country": "坦桑尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.9,
+          -2.5167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "拉各斯",
+        "country": "尼日利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.3792,
+          6.5244
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿布贾",
+        "country": "尼日利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.4951,
+          9.0579
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卡诺",
+        "country": "尼日利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5167,
+          12
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伊巴丹",
+        "country": "尼日利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.9059,
+          7.3775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "哈科特港",
+        "country": "尼日利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0028,
+          4.8156
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卡杜纳",
+        "country": "尼日利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.4333,
+          10.5167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "加拉加斯",
+        "country": "委内瑞拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.9036,
+          10.4806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马拉开波",
+        "country": "委内瑞拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.6124,
+          10.6427
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "瓦伦西亚",
+        "country": "委内瑞拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -68.0033,
+          10.162
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴塞罗那",
+        "country": "委内瑞拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -64.685,
+          10.1367
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "梅里达",
+        "country": "委内瑞拉",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.1472,
+          8.5952
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "温得和克",
+        "country": "纳米比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          17.0658,
+          -22.5594
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "鲸湾港",
+        "country": "纳米比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.5058,
+          -22.9575
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "基特曼斯胡普",
+        "country": "纳米比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.13,
+          -26.65
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马普托",
+        "country": "莫桑比克",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.5732,
+          -25.9692
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "贝拉",
+        "country": "莫桑比克",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.8353,
+          -19.8339
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "楠普拉",
+        "country": "莫桑比克",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.2667,
+          -15.1167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "克利马内",
+        "country": "莫桑比克",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.9367,
+          -16.4767
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "旁遮普省",
+        "country": "巴基斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          74.3289,
+          31.5204
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "信德省",
+        "country": "巴基斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          67.0011,
+          24.8607
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伊斯兰堡",
+        "country": "巴基斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.0479,
+          33.6844
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "开伯尔-普什图省",
+        "country": "巴基斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          71.5249,
+          34
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "俾路支省",
+        "country": "巴基斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          66.9905,
+          30.1798
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伊斯坦布尔",
+        "country": "土耳其",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.9784,
+          41.0082
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "安卡拉",
+        "country": "土耳其",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.8597,
+          39.9334
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伊兹密尔",
+        "country": "土耳其",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.1408,
+          38.4237
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "布尔萨",
+        "country": "土耳其",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.061,
+          40.1826
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿达纳",
+        "country": "土耳其",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.3235,
+          36.9914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圣地亚哥",
+        "country": "智利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.6693,
+          -33.4489
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "瓦尔帕莱索",
+        "country": "智利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.6251,
+          -33.0458
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "康塞普西翁",
+        "country": "智利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.05,
+          -36.8201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "安托法加斯塔",
+        "country": "智利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.3031,
+          -23.6509
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蓬塔阿雷纳斯",
+        "country": "智利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.9078,
+          -53.1638
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卢萨卡",
+        "country": "赞比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.2871,
+          -15.3875
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "基特韦",
+        "country": "赞比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.217,
+          -12.8029
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "恩多拉",
+        "country": "赞比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.637,
+          -12.9692
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "利文斯顿",
+        "country": "赞比亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.8545,
+          -17.8419
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "仰光",
+        "country": "缅甸",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          96.1951,
+          16.8661
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "内比都",
+        "country": "缅甸",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          96.0667,
+          19.75
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "曼德勒",
+        "country": "缅甸",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          96.0891,
+          21.9588
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "勃固",
+        "country": "缅甸",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          96.4708,
+          17.342
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "喀布尔",
+        "country": "阿富汗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          69.1761,
+          34.5553
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "坎大哈",
+        "country": "阿富汗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          65.7101,
+          31.61
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "赫拉特",
+        "country": "阿富汗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          62.203,
+          34.3529
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马扎里沙里夫",
+        "country": "阿富汗",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          67.1095,
+          36.7113
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "摩加迪沙",
+        "country": "索马里",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          45.3182,
+          2.0469
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "哈尔格萨",
+        "country": "索马里",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          44.064,
+          9.56
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "基斯马尤",
+        "country": "索马里",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          42.5434,
+          -0.3578
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "班吉",
+        "country": "中非",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.5582,
+          4.3947
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "比劳",
+        "country": "中非",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          22.8469,
+          10.77
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "班加苏",
+        "country": "中非",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          22.6833,
+          5.0833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "基辅",
+        "country": "乌克兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.5234,
+          50.4501
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "哈尔科夫",
+        "country": "乌克兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.2304,
+          49.9935
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "敖德萨",
+        "country": "乌克兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.7233,
+          46.4825
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "第聂伯罗",
+        "country": "乌克兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.9821,
+          48.4647
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "利沃夫",
+        "country": "乌克兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.0322,
+          49.8429
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塔那那利佛",
+        "country": "马达加斯加",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          47.5079,
+          -18.8792
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "图阿马西纳",
+        "country": "马达加斯加",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          49.4,
+          -18.1667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "穆龙达瓦",
+        "country": "马达加斯加",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          44.2833,
+          -20.2833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "哈博罗内",
+        "country": "博茨瓦纳",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.9068,
+          -24.6282
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "弗朗西斯敦",
+        "country": "博茨瓦纳",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.8333,
+          -21.1667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塞罗韦",
+        "country": "博茨瓦纳",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          26.7167,
+          -22.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "内罗毕",
+        "country": "肯尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.8219,
+          -1.2921
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蒙巴萨",
+        "country": "肯尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.6682,
+          -4.0435
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "基苏木",
+        "country": "肯尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7675,
+          -0.0912
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奈洛比",
+        "country": "肯尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.8219,
+          -1.2921
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴黎",
+        "country": "法国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.3522,
+          48.8566
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马赛",
+        "country": "法国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.3698,
+          43.2965
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "里昂",
+        "country": "法国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8357,
+          45.764
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "图卢兹",
+        "country": "法国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.4442,
+          43.6047
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "尼斯",
+        "country": "法国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.2613,
+          43.7102
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "萨那",
+        "country": "也门",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          44.191,
+          15.3694
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "亚丁",
+        "country": "也门",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          45.036,
+          12.7794
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塔伊兹",
+        "country": "也门",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          44.0227,
+          13.58
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "曼谷",
+        "country": "泰国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.5018,
+          13.7563
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "清迈",
+        "country": "泰国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          98.9862,
+          18.7904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "普吉",
+        "country": "泰国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          98.3922,
+          7.9519
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "孔敬",
+        "country": "泰国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.8333,
+          16.4333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马德里",
+        "country": "西班牙",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -3.7038,
+          40.4168
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴塞罗那",
+        "country": "西班牙",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.1734,
+          41.3851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "瓦伦西亚",
+        "country": "西班牙",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.3763,
+          39.4699
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塞维利亚",
+        "country": "西班牙",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.9845,
+          37.3891
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "毕尔巴鄂",
+        "country": "西班牙",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.9245,
+          43.263
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿什哈巴德",
+        "country": "土库曼斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          58.3833,
+          37.9667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "达沙古兹",
+        "country": "土库曼斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          59.97,
+          41.8333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "土库曼巴希",
+        "country": "土库曼斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          52.95,
+          40.0333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "雅温得",
+        "country": "喀麦隆",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.5014,
+          3.848
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "杜阿拉",
+        "country": "喀麦隆",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7086,
+          4.0511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "加鲁阿",
+        "country": "喀麦隆",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3667,
+          9.3
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "莫尔兹比港",
+        "country": "巴布亚新几内亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          147.1391,
+          -9.4431
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "莱城",
+        "country": "巴布亚新几内亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          147,
+          -6.8
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马当",
+        "country": "巴布亚新几内亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.8,
+          -5.2
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "斯德哥尔摩",
+        "country": "瑞典",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.0686,
+          59.3293
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "哥德堡",
+        "country": "瑞典",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.9736,
+          57.7089
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马尔默",
+        "country": "瑞典",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.0007,
+          55.6049
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "乌普萨拉",
+        "country": "瑞典",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          17.6322,
+          59.8581
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塔什干",
+        "country": "乌兹别克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          69.2401,
+          41.2995
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "撒马尔罕",
+        "country": "乌兹别克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          66.975,
+          39.6542
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "布哈拉",
+        "country": "乌兹别克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          64.4167,
+          39.7667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "拉巴特",
+        "country": "摩洛哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.8498,
+          33.9716
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卡萨布兰卡",
+        "country": "摩洛哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -7.5898,
+          33.5731
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马拉喀什",
+        "country": "摩洛哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -7.9893,
+          31.6295
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "丹吉尔",
+        "country": "摩洛哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.803,
+          35.7595
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "非斯",
+        "country": "摩洛哥",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.9806,
+          34.0333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴格达",
+        "country": "伊拉克",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          44.3615,
+          33.3152
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "巴士拉",
+        "country": "伊拉克",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          47.7804,
+          30.5092
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "摩苏尔",
+        "country": "伊拉克",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          43.1267,
+          36.3351
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "埃尔比勒",
+        "country": "伊拉克",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          43.9639,
+          36.1911
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "亚松森",
+        "country": "巴拉圭",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -57.5759,
+          -25.2637
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "东方市",
+        "country": "巴拉圭",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -54.61,
+          -25.52
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "恩卡纳西翁",
+        "country": "巴拉圭",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -55.8667,
+          -27.3333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "哈拉雷",
+        "country": "津巴布韦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.0453,
+          -17.8252
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "布拉瓦约",
+        "country": "津巴布韦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.5833,
+          -20.15
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圭洛",
+        "country": "津巴布韦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.8167,
+          -19.45
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "东京",
+        "country": "日本",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6917,
+          35.6895
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大阪",
+        "country": "日本",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.5023,
+          34.6937
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "北海道",
+        "country": "日本",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.3469,
+          43.0618
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "京都",
+        "country": "日本",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.7681,
+          35.0116
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "爱知",
+        "country": "日本",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.9064,
+          35.1815
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "神奈川",
+        "country": "日本",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6355,
+          35.4437
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "兵库",
+        "country": "日本",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          134.8876,
+          34.6914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "福冈",
+        "country": "日本",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.4017,
+          33.5902
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "柏林",
+        "country": "德国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.405,
+          52.52
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "慕尼黑",
+        "country": "德国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.582,
+          48.1351
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "汉堡",
+        "country": "德国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9937,
+          53.5511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "科隆",
+        "country": "德国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9578,
+          50.9375
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "法兰克福",
+        "country": "德国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6821,
+          50.1109
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "多特蒙德",
+        "country": "德国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.4658,
+          51.5136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "斯图加特",
+        "country": "德国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.1829,
+          48.7758
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "杜塞尔多夫",
+        "country": "德国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.7735,
+          51.2277
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "布拉柴维尔",
+        "country": "刚果(布)",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.2663,
+          -4.2634
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "黑角",
+        "country": "刚果(布)",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.85,
+          -4.79
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "多利西",
+        "country": "刚果(布)",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.67,
+          -4.2
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "赫尔辛基",
+        "country": "芬兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.9458,
+          60.1699
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "埃斯波",
+        "country": "芬兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.6559,
+          60.2055
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "坦佩雷",
+        "country": "芬兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          23.7577,
+          61.4978
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奥卢",
+        "country": "芬兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.4682,
+          65.0121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "河内",
+        "country": "越南",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.8492,
+          21.0278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "胡志明市",
+        "country": "越南",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.6297,
+          10.8231
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "岘港",
+        "country": "越南",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2202,
+          16.0471
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "海防",
+        "country": "越南",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.6881,
+          20.8449
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "芹苴",
+        "country": "越南",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.7827,
+          10.0452
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "吉隆坡",
+        "country": "马来西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          101.6869,
+          3.139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "槟城",
+        "country": "马来西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.3308,
+          5.4164
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "柔佛",
+        "country": "马来西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.7618,
+          1.4927
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "沙巴",
+        "country": "马来西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.1019,
+          5.9677
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "砂拉越",
+        "country": "马来西亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.3593,
+          1.5535
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奥斯陆",
+        "country": "挪威",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7522,
+          59.9139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "卑尔根",
+        "country": "挪威",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.3221,
+          60.3913
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "特隆赫姆",
+        "country": "挪威",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.3951,
+          63.4305
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "特罗姆瑟",
+        "country": "挪威",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.9551,
+          69.6492
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿比让",
+        "country": "科特迪瓦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.0083,
+          5.3204
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "亚穆苏克罗",
+        "country": "科特迪瓦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.2659,
+          6.8276
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "布瓦凯",
+        "country": "科特迪瓦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.25,
+          7.6833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华沙",
+        "country": "波兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.0122,
+          52.2297
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "克拉科夫",
+        "country": "波兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.945,
+          50.0647
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "弗罗茨瓦夫",
+        "country": "波兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          17.0385,
+          51.1079
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "波兹南",
+        "country": "波兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          16.9252,
+          52.4082
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "格但斯克",
+        "country": "波兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.6464,
+          54.3722
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "罗马",
+        "country": "意大利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4964,
+          41.9028
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "米兰",
+        "country": "意大利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.1859,
+          45.4642
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "那不勒斯",
+        "country": "意大利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.2681,
+          40.8518
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "都灵",
+        "country": "意大利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.6869,
+          45.0703
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "佛罗伦萨",
+        "country": "意大利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.2558,
+          43.7696
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "威尼斯",
+        "country": "意大利",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3155,
+          45.4408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马尼拉",
+        "country": "菲律宾",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9842,
+          14.5995
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "宿务",
+        "country": "菲律宾",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          123.8854,
+          10.3157
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "达沃",
+        "country": "菲律宾",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          125.6014,
+          7.0765
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "吕宋",
+        "country": "菲律宾",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.96,
+          16
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "棉兰老",
+        "country": "菲律宾",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          125,
+          8
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "基多",
+        "country": "厄瓜多尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.4678,
+          -0.1807
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "瓜亚基尔",
+        "country": "厄瓜多尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.8999,
+          -2.1962
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "昆卡",
+        "country": "厄瓜多尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79,
+          -2.9
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "瓦加杜古",
+        "country": "布基纳法索",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5339,
+          12.3714
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "博博迪乌拉索",
+        "country": "布基纳法索",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.2972,
+          11.1714
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "库杜古",
+        "country": "布基纳法索",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.67,
+          12.25
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奥克兰",
+        "country": "新西兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          174.7633,
+          -36.8485
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "惠灵顿",
+        "country": "新西兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          174.7633,
+          -41.2865
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "坎特伯雷",
+        "country": "新西兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          172.63,
+          -43.53
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "怀卡托",
+        "country": "新西兰",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          175.2793,
+          -37.787
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "利伯维尔",
+        "country": "加蓬",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.4673,
+          0.4162
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "让蒂尔港",
+        "country": "加蓬",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.78,
+          -0.7167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "弗朗斯维尔",
+        "country": "加蓬",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.58,
+          -1.62
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "科纳克里",
+        "country": "几内亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -13.6775,
+          9.5092
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "康康",
+        "country": "几内亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.3,
+          10.3833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "恩泽雷科雷",
+        "country": "几内亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -10.85,
+          7.45
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伦敦",
+        "country": "英国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1276,
+          51.5072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "伯明翰",
+        "country": "英国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.8904,
+          52.4862
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "曼彻斯特",
+        "country": "英国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.2426,
+          53.4808
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "爱丁堡",
+        "country": "英国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -3.1883,
+          55.9533
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "格拉斯哥",
+        "country": "英国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.2518,
+          55.8642
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "利物浦",
+        "country": "英国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.9907,
+          53.4084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "坎帕拉",
+        "country": "乌干达",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.5825,
+          0.3476
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "金贾",
+        "country": "乌干达",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.2026,
+          0.4479
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "姆巴拉拉",
+        "country": "乌干达",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.65,
+          -0.6167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿克拉",
+        "country": "加纳",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1869,
+          5.6037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "库马西",
+        "country": "加纳",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6241,
+          6.6885
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塔科拉迪",
+        "country": "加纳",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.75,
+          4.8833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "布加勒斯特",
+        "country": "罗马尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          26.1025,
+          44.4268
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "克卢日-纳波卡",
+        "country": "罗马尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          23.5894,
+          46.7712
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蒂米什瓦拉",
+        "country": "罗马尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.2273,
+          45.758
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "雅西",
+        "country": "罗马尼亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.5869,
+          47.1585
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万象",
+        "country": "老挝",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.6331,
+          17.9757
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "琅勃拉邦",
+        "country": "老挝",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.1333,
+          19.8833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "沙湾拿吉",
+        "country": "老挝",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.75,
+          16.5667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "乔治敦",
+        "country": "圭亚那",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -58.1551,
+          6.8013
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "林登",
+        "country": "圭亚那",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -58.3,
+          6
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "新阿姆斯特丹",
+        "country": "圭亚那",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -57.5167,
+          6.25
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "明斯克",
+        "country": "白俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.555,
+          53.9045
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "戈梅利",
+        "country": "白俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.9878,
+          52.4412
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "莫吉廖夫",
+        "country": "白俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.3314,
+          53.9138
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "维捷布斯克",
+        "country": "白俄罗斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.2049,
+          55.1848
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "比什凯克",
+        "country": "吉尔吉斯斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          74.5698,
+          42.8746
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "奥什",
+        "country": "吉尔吉斯斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8161,
+          40.5283
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "贾拉拉巴德",
+        "country": "吉尔吉斯斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9833,
+          40.9333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "达喀尔",
+        "country": "塞内加尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -17.4467,
+          14.6928
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圣路易",
+        "country": "塞内加尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.95,
+          16.0167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "捷斯",
+        "country": "塞内加尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -16.95,
+          14.75
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大马士革",
+        "country": "叙利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.3024,
+          33.5104
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿勒颇",
+        "country": "叙利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.1585,
+          36.2013
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "霍姆斯",
+        "country": "叙利亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.7167,
+          34.7333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "金边",
+        "country": "柬埔寨",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.8869,
+          11.5449
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "暹粒",
+        "country": "柬埔寨",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8461,
+          13.367
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马德望",
+        "country": "柬埔寨",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.1999,
+          13.1
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蒙得维的亚",
+        "country": "乌拉圭",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -56.1645,
+          -34.9011
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "萨尔托",
+        "country": "乌拉圭",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -58.1,
+          -31.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "梅塞德斯",
+        "country": "乌拉圭",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -58.0333,
+          -33.25
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "帕拉马里博",
+        "country": "苏里南",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -55.2038,
+          5.852
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "帕拉",
+        "country": "苏里南",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -55.1,
+          5.6
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万尼克",
+        "country": "苏里南",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -54.35,
+          5.8
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "突尼斯市",
+        "country": "突尼斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1815,
+          36.8065
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "斯法克斯",
+        "country": "突尼斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7603,
+          34.7406
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "苏塞",
+        "country": "突尼斯",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.637,
+          35.8256
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "达卡",
+        "country": "孟加拉国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          90.4125,
+          23.8103
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "吉大港",
+        "country": "孟加拉国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.7833,
+          22.3569
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "拉吉沙希",
+        "country": "孟加拉国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          88.6042,
+          24.374
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "加德满都",
+        "country": "尼泊尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          85.324,
+          27.7172
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "博卡拉",
+        "country": "尼泊尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          83.9833,
+          28.2083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "比拉德讷格尔",
+        "country": "尼泊尔",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          87.2833,
+          26.45
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "杜尚别",
+        "country": "塔吉克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          68.7791,
+          38.5598
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "苦盏",
+        "country": "塔吉克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          69.6192,
+          40.2757
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "库洛布",
+        "country": "塔吉克斯坦",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          69.7833,
+          37.9167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "雅典",
+        "country": "希腊",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          23.7275,
+          37.9838
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "塞萨洛尼基",
+        "country": "希腊",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          22.9442,
+          40.6401
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "克里特",
+        "country": "希腊",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.1,
+          35.1
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马那瓜",
+        "country": "尼加拉瓜",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.2362,
+          12.115
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "莱昂",
+        "country": "尼加拉瓜",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.8769,
+          12.4357
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马萨亚",
+        "country": "尼加拉瓜",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.1,
+          11.9833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿斯马拉",
+        "country": "厄立特里亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.9318,
+          15.3229
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "克伦",
+        "country": "厄立特里亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.47,
+          15.7767
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "阿萨布",
+        "country": "厄立特里亚",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          42.74,
+          12.98
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "平壤",
+        "country": "朝鲜",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          125.7459,
+          39.0188
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "咸镜北道",
+        "country": "朝鲜",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.75,
+          41.5
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "平安南道",
+        "country": "朝鲜",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          125.75,
+          39.3
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "慈江道",
+        "country": "朝鲜",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.6,
+          41
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "首尔",
+        "country": "韩国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.978,
+          37.5665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "釜山",
+        "country": "韩国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.0756,
+          35.1796
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "仁川",
+        "country": "韩国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.7052,
+          37.4563
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大邱",
+        "country": "韩国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.6014,
+          35.8714
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "光州",
+        "country": "韩国",
+        "admin_level": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.8526,
+          35.1595
+        ]
+      }
+    }
   ]
 }

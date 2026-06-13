@@ -333,38 +333,17 @@ function initMap() {
     center: center,
     zoom: zoom,
     minZoom: 2,
-    maxZoom: 10,
+    maxZoom: 8,
     zoomControl: true,
     worldCopyJump: true
   });
 
-  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    subdomains: ['a', 'b', 'c'],
-    minZoom: 2,
-    maxZoom: 10,
-    attribution: '&copy; 开放街道地图'
-  });
-
-  const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; 高德地图',
     minZoom: 2,
-    maxZoom: 10
-  });
-
-  function updateTileLayer() {
-    const z = state.map.getZoom();
-    if (z <= 3) {
-      if (state.map.hasLayer(amapLayer)) state.map.removeLayer(amapLayer);
-      if (!state.map.hasLayer(osmLayer)) osmLayer.addTo(state.map);
-    } else {
-      if (state.map.hasLayer(osmLayer)) state.map.removeLayer(osmLayer);
-      if (!state.map.hasLayer(amapLayer)) amapLayer.addTo(state.map);
-    }
-  }
-
-  updateTileLayer();
-  state.map.on('zoomend', updateTileLayer);
+    maxZoom: 8
+  }).addTo(state.map);
 
   loadChinaProvinces();
   loadWorldAdmin1Labels();
@@ -430,8 +409,9 @@ function addProvinceLabels(data) {
       }),
       interactive: false
     });
+    label._isCountryLabel = false;
     state.admin1Labels.push(label);
-    if (currentZoom >= 2) {
+    if (currentZoom >= 4) {
       label.addTo(state.map);
     }
   });
@@ -549,6 +529,7 @@ async function loadWorldAdmin1Labels() {
         }),
         interactive: false
       });
+      label._isCountryLabel = true;
       state.admin1Labels.push(label);
       if (currentZoom >= 2) {
         label.addTo(state.map);
@@ -570,8 +551,9 @@ async function loadWorldAdmin1Labels() {
         }),
         interactive: false
       });
+      label._isCountryLabel = false;
       state.admin1Labels.push(label);
-      if (currentZoom >= 2) {
+      if (currentZoom >= 4) {
         label.addTo(state.map);
       }
     });
@@ -587,9 +569,8 @@ function updateLabelVisibility() {
   const zoom = state.map.getZoom();
 
   state.admin1Labels.forEach(label => {
-    const el = label.getElement();
-
-    if (zoom >= 2) {
+    const minZoom = label._isCountryLabel ? 2 : 4;
+    if (zoom >= minZoom) {
       if (!state.map.hasLayer(label)) state.map.addLayer(label);
     } else {
       if (state.map.hasLayer(label)) state.map.removeLayer(label);
@@ -1529,38 +1510,17 @@ function openEditMapView(event) {
     center: center,
     zoom: zoom,
     minZoom: 2,
-    maxZoom: 10,
+    maxZoom: 8,
     zoomControl: true,
     worldCopyJump: true
   });
 
-  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    subdomains: ['a', 'b', 'c'],
-    minZoom: 2,
-    maxZoom: 10,
-    attribution: '&copy; 开放街道地图'
-  });
-
-  const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; 高德地图',
     minZoom: 2,
-    maxZoom: 10
-  });
-
-  function updateTileLayer() {
-    const z = state.map.getZoom();
-    if (z <= 3) {
-      if (state.map.hasLayer(amapLayer)) state.map.removeLayer(amapLayer);
-      if (!state.map.hasLayer(osmLayer)) osmLayer.addTo(state.map);
-    } else {
-      if (state.map.hasLayer(osmLayer)) state.map.removeLayer(osmLayer);
-      if (!state.map.hasLayer(amapLayer)) amapLayer.addTo(state.map);
-    }
-  }
-
-  updateTileLayer();
-  state.map.on('zoomend', updateTileLayer);
+    maxZoom: 8
+  }).addTo(state.map);
 
   loadChinaProvinces();
   loadWorldAdmin1Labels();

@@ -291,7 +291,7 @@ function initBgMap() {
     center: [30, 120],
     zoom: 2,
     minZoom: 2,
-    maxZoom: 10,
+    maxZoom: 8,
     zoomControl: false,
     attributionControl: false,
     dragging: false,
@@ -300,33 +300,12 @@ function initBgMap() {
     touchZoom: false
   });
 
-  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    subdomains: ['a', 'b', 'c'],
-    minZoom: 2,
-    maxZoom: 10,
-    attribution: '&copy; 开放街道地图'
-  });
-
-  const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     minZoom: 2,
-    maxZoom: 10,
+    maxZoom: 8,
     attribution: '&copy; 高德地图'
-  });
-
-  function updateTileLayer() {
-    const z = map.getZoom();
-    if (z <= 3) {
-      if (map.hasLayer(amapLayer)) map.removeLayer(amapLayer);
-      if (!map.hasLayer(osmLayer)) osmLayer.addTo(map);
-    } else {
-      if (map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
-      if (!map.hasLayer(amapLayer)) amapLayer.addTo(map);
-    }
-  }
-
-  updateTileLayer();
-  map.on('zoomend', updateTileLayer);
+  }).addTo(map);
 
   WORLD_COUNTRIES.forEach(country => {
     L.marker([country.lat, country.lng], {
@@ -583,38 +562,17 @@ function renderGamePage() {
     center: mapCenter,
     zoom: mapZoom,
     minZoom: 2,
-    maxZoom: 10,
+    maxZoom: 8,
     zoomControl: true,
     worldCopyJump: true
   });
 
-  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    subdomains: ['a', 'b', 'c'],
-    minZoom: 2,
-    maxZoom: 10,
-    attribution: '&copy; 开放街道地图'
-  });
-
-  const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     minZoom: 2,
-    maxZoom: 10,
+    maxZoom: 8,
     attribution: '&copy; 高德地图'
-  });
-
-  function updateTileLayer() {
-    const z = appState.map.getZoom();
-    if (z <= 3) {
-      if (appState.map.hasLayer(amapLayer)) appState.map.removeLayer(amapLayer);
-      if (!appState.map.hasLayer(osmLayer)) osmLayer.addTo(appState.map);
-    } else {
-      if (appState.map.hasLayer(osmLayer)) appState.map.removeLayer(osmLayer);
-      if (!appState.map.hasLayer(amapLayer)) amapLayer.addTo(appState.map);
-    }
-  }
-
-  updateTileLayer();
-  appState.map.on('zoomend', updateTileLayer);
+  }).addTo(appState.map);
 
   appState.admin1Labels = [];
   loadGameMapLabels();
@@ -662,7 +620,7 @@ async function loadGameMapLabels() {
       label._isCountryLabel = false;
       label._isProvinceLabel = true;
       appState.admin1Labels.push(label);
-      if (currentZoom >= 2) label.addTo(appState.map);
+      if (currentZoom >= 4) label.addTo(appState.map);
     });
 
     WORLD_COUNTRIES.forEach(country => {
@@ -692,14 +650,15 @@ async function loadGameMapLabels() {
         label._isCountryLabel = false;
         label._isProvinceLabel = false;
         appState.admin1Labels.push(label);
-        if (currentZoom >= 2) label.addTo(appState.map);
+        if (currentZoom >= 4) label.addTo(appState.map);
       });
     } catch (e) {}
 
     appState.map.on('zoomend', () => {
       const zoom = appState.map.getZoom();
       appState.admin1Labels.forEach(label => {
-        if (zoom >= 2) {
+        const minZoom = label._isCountryLabel ? 2 : 4;
+        if (zoom >= minZoom) {
           if (!appState.map.hasLayer(label)) appState.map.addLayer(label);
         } else {
           if (appState.map.hasLayer(label)) appState.map.removeLayer(label);
