@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  font-family: system-ui, sans-serif;
   background: #f0f2f5;
   color: #1f1f1f;
   line-height: 1.6;
@@ -968,41 +968,30 @@ textarea.form-control {
 }
 
 .leaflet-container {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  font-family: system-ui, sans-serif;
 }
 
-.province-label {
+.province-label, .country-label, .admin1-label {
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  color: #000;
   font-size: 11px;
-  color: #2d3748;
-  font-weight: 500;
-  text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
+  font-weight: normal;
+  font-family: system-ui, sans-serif;
   white-space: nowrap;
-}
-
-.admin1-label {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  font-size: 10px;
-  color: #4a5568;
-  font-weight: 400;
-  text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
-  white-space: nowrap;
+  pointer-events: none;
 }
 
 .country-label {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  font-size: 15px;
-  color: #1a202c;
-  font-weight: 700;
-  text-shadow: 2px 2px 3px white, -2px -2px 3px white, 2px -2px 3px white, -2px 2px 3px white;
-  white-space: nowrap;
-  letter-spacing: 1px;
+  font-size: 12px;
+  font-weight: normal;
+  color: #000;
+}
+
+.admin1-label {
+  font-size: 9px;
+  color: #000;
 }
 
 .event-marker-popup .popup-title {
