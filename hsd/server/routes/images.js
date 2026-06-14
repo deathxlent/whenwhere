@@ -9,7 +9,7 @@ const IMAGES_ROOT = path.join(__dirname, '..', '..', '..', 'ww', 'static', 'imag
 
 const ensureDir = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
+    fs.mkdirSync(dirPath, { recursive: true }.recursive.;
   }
 };
 
