@@ -1547,3 +1547,43 @@ textarea.form-control {
 
 .status-dot.green { background: #38a169; }
 .status-dot.gray { background: #a0aec0; }
+
+.map-bind-subs {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border: 1px solid #e2e8f0;
+}
+
+.bind-subs-title {
+  font-size: 12px;
+  color: #4a5568;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.bind-subs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bind-sub-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #ebf8ff;
+  color: #2b6cb0;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #bee3f8;
+}
+
+.info-panel strong {
+  color: #2c5282;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+}

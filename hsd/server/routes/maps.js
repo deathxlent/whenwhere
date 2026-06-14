@@ -5,11 +5,23 @@ const db = require('../db');
 router.get('/', (req, res) => {
   const maps = db.prepare(`
     SELECT m.*,
-      (SELECT COUNT(*) FROM sub_categories sc WHERE sc.map_id = m.id) as bind_count
+      (SELECT COUNT(*) FROM sub_categories sc WHERE sc.map_id = m.id AND sc.is_active = 1) as bind_count
     FROM maps m
     WHERE m.is_active = 1
     ORDER BY m.sort_order, m.id
   `).all();
+
+  maps.forEach(map => {
+    const subs = db.prepare(`
+      SELECT sc.id, sc.code, sc.name, sc.category_id, c.name as category_name, c.code as category_code
+      FROM sub_categories sc
+      JOIN categories c ON sc.category_id = c.id
+      WHERE sc.map_id = ? AND sc.is_active = 1 AND c.is_active = 1
+      ORDER BY c.sort_order, sc.sort_order
+    `).all(map.id);
+    map.bind_subs = subs;
+  });
+
   res.json({ success: true, data: maps });
 });
 

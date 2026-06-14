@@ -275,7 +275,7 @@ async function loadCategoryDetail(category) {
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-default" id="edit-cat-btn">✏️ 编辑类别</button>
-        <button class="btn btn-danger" id="delete-cat-btn">🗑️ 删除</button>
+        <button class="btn btn-danger" id="delete-cat-btn" title="删除整个大类别（包括所有子类和事件）">⚠️ 删除大类</button>
         <button class="btn btn-primary" id="add-sub-btn">+ 添加子类别</button>
       </div>
     </div>
@@ -400,7 +400,7 @@ function openCategoryModal(category = null) {
 }
 
 function confirmDeleteCategory(category) {
-  confirmDialog(`确定要删除大类别「${category.name}」吗？`, async () => {
+  confirmDialog(`⚠️ 确定要删除大类别「${category.name}」吗？`, async () => {
     const res = await API.delete(`/categories/${category.id}`);
     if (res.success) {
       toast(res.message, 'success');
@@ -408,7 +408,7 @@ function confirmDeleteCategory(category) {
     } else {
       toast(res.message, 'error');
     }
-  }, '该操作将同时删除所有关联的子类别和事件，无法撤销');
+  }, '此操作是【删除整个大类别】，同时会禁用该大类下所有关联的子类别和事件，数据不可恢复，请谨慎操作！');
 }
 
 function confirmDeleteSubCategory(sub, category) {
@@ -544,6 +544,14 @@ async function renderMapsView() {
 
   const cardsHtml = state.maps.map(map => {
     const isBound = (map.bind_count || 0) > 0;
+    const bindSubsHtml = (map.bind_subs && map.bind_subs.length > 0) ?
+      `<div class="map-bind-subs">
+        <div class="bind-subs-title">🔗 已绑定的子类：</div>
+        <div class="bind-subs-list">
+          ${map.bind_subs.map(s => `<span class="bind-sub-tag">${escapeHtml(s.category_name)} / ${escapeHtml(s.name)}</span>`).join('')}
+        </div>
+      </div>` : '';
+
     return `
     <div class="map-card ${isBound ? 'map-card-bound' : ''}" data-id="${map.id}">
       <div class="map-preview">🗺️</div>
@@ -560,6 +568,7 @@ async function renderMapsView() {
         <span>🔍 缩放:${map.min_zoom || 0}-${map.max_zoom || 18}</span>
         <span>🔗 绑定:${map.bind_count || 0} 个子类</span>
       </div>
+      ${bindSubsHtml}
       <div class="map-card-actions">
         <button class="btn btn-default btn-sm" data-action="view" data-id="${map.id}">👁️ 查看</button>
         <button class="btn btn-default btn-sm" data-action="edit" data-id="${map.id}" ${isBound ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>✏️ 编辑</button>
@@ -572,6 +581,28 @@ async function renderMapsView() {
     <div class="section-header">
       <h2 class="section-title">🗺️ 地图管理</h2>
       <button class="btn btn-primary" id="add-map-btn">+ 新增地图</button>
+    </div>
+    <div class="info-panel" style="margin-bottom:16px;background:#ebf8ff;border:1px solid #bee3f8;border-radius:8px;padding:16px;">
+      <div style="font-weight:600;color:#2c5282;margin-bottom:10px;">📖 地图配置规范与说明</div>
+      <div style="color:#2d3748;font-size:13px;line-height:1.8;">
+        <div><strong>一、瓦片类型说明：</strong></div>
+        <div>• <strong>🌐 OSM标准</strong>：开源地图，需外网访问</div>
+        <div>• <strong>🛣️ 高德街道</strong>：国内常用街道图，需外网访问高德API</div>
+        <div>• <strong>🛰️ 高德卫星</strong>：卫星影像图，需外网访问高德API</div>
+        <div>• <strong>🎯 混合(推荐)</strong>：本地OSM瓦片(缩放2-3) + 高德街道(缩放4+)，兼顾离线可用和清晰度</div>
+        <div>• <strong>⚙️ 自定义</strong>：自定义瓦片URL，适合特殊历史地图、中东史等定制地图</div>
+        <div style="margin-top:10px;"><strong>二、如何添加「中东史」等自定义地图：</strong></div>
+        <div>1. 点击右上角「+ 新增地图」按钮</div>
+        <div>2. 填写地图代码（如：middle_east）、名称（如：中东地图）</div>
+        <div>3. 选择瓦片类型：推荐「🎯 混合」用于通用区域地图</div>
+        <div>4. 如需特定历史地图瓦片，选择「⚙️ 自定义」并填写瓦片URL模板（格式：https://{s}.domain.com/{z}/{x}/{y}.png）</div>
+        <div>5. 设置合适的缩放范围（建议min=2, max=8~12）和排序</div>
+        <div>6. 保存后，到「类别管理」中给对应子类绑定此新地图</div>
+        <div style="margin-top:10px;"><strong>三、注意事项：</strong></div>
+        <div>• 地图一旦被子类绑定则无法直接编辑/删除，需先解除所有子类的绑定才能修改</div>
+        <div>• 建议设置合理的中心点（经纬度）和默认缩放级别，提升用户体验</div>
+        <div>• 自定义瓦片服务需确保CORS跨域配置正确</div>
+      </div>
     </div>
     <div style="margin-bottom:20px;padding:14px;background:#fff5f5;border-radius:8px;color:#742a2a;font-size:13px;">
       ⚠️ <strong>注意：</strong>已有子类别绑定的地图无法编辑和删除，需要先解除绑定才能操作。
