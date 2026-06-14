@@ -338,10 +338,15 @@ function initMap() {
     worldCopyJump: true
   });
 
+  L.tileLayer('/shared/tiles/osm/{z}/{x}/{y}.png', {
+    minZoom: 2,
+    maxZoom: 2
+  }).addTo(state.map);
+
   L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; 高德地图',
-    minZoom: 2,
+    minZoom: 3,
     maxZoom: 8
   }).addTo(state.map);
 
@@ -1515,10 +1520,15 @@ function openEditMapView(event) {
     worldCopyJump: true
   });
 
+  L.tileLayer('/shared/tiles/osm/{z}/{x}/{y}.png', {
+    minZoom: 2,
+    maxZoom: 2
+  }).addTo(state.map);
+
   L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; 高德地图',
-    minZoom: 2,
+    minZoom: 3,
     maxZoom: 8
   }).addTo(state.map);
 

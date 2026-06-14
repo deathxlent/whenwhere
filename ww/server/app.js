@@ -16,6 +16,7 @@ app.use(express.static(PUBLIC_PATH));
 app.use('/images', express.static(path.join(STATIC_PATH, 'images')));
 app.use('/geojson', express.static(path.join(STATIC_PATH, 'geojson')));
 app.use('/lib', express.static(path.join(STATIC_PATH, 'lib')));
+app.use('/tiles', express.static(path.join(STATIC_PATH, 'tiles')));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/game', require('./routes/game'));
