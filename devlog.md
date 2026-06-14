@@ -1,121 +1,187 @@
 # 开发日志 (devlog.md)
 
-## [1.0.0] - 2026-06-11
+## [2.0.0] - 2026-06-12
 
 ### 本次版本变更总结
 
-完成了项目基础架构搭建和 HSD（heshidi）维护应用的首个可用版本。
+完成了类别和子类别体系的全面改造，新增地图管理模块，实现WW应用的动态Tab加载，完成HSD和WW两个应用之间的联动。核心改造包括：新增maps表实现可配置的地图资源、子类别强制绑定地图、独立配置每个子类的地图中心点和缩放参数、HSD新增地图管理导航页面、WW从API动态加载类别和子类（仅显示已绑地图+有事件的可用子类）、其余情况显示"建设中"。同时修复了之前的多个问题（排行榜显示、标签样式、国家名称、精准判断规则、字体统一等）。
 
 ---
 
 ### 新增内容
 
-#### 1. 项目目录结构
-- 创建双应用独立目录：`hsd/`（维护应用）、`ww/`（展示应用）
-- 创建共享资源目录：`ww/db/`（数据库）、`ww/static/images/`（图片存储）
-- 创建图片分层目录：`junior/china`、`junior/world`
+#### 1. 地图管理模块
 
-#### 2. 数据库模块 (SQLite)
-- **文件**: `hsd/server/init-db.js`, `hsd/server/db.js`
-- 设计 4 张核心表：categories, sub_categories, events, event_images
-- 使用 better-sqlite3 驱动，启用 WAL 模式和外键约束
-- 预置 5 个分类数据（初中、高中、人类、宇宙、虚拟）
-- 预置"初中"分类下的 2 个子分类（中国史、世界史）
-- 建立必要的索引优化查询性能
+**后端数据库 (`hsd/server/init-db.js`)**
+- 新增 `maps` 表：存储地图配置信息
+  - 字段：name, code(唯一), description, tile_type, tile_url, tile_subdomains, min_zoom, max_zoom, sort_order, is_active
+  - 预置两条默认地图：「世界地图」(code:world)、「中国地图」(code:china)
+  - 瓦片类型支持5种：hybrid(混合-本地OSM+高德街道)、osm(OpenStreetMap)、amap_street、amap_satellite、custom(自定义URL)
+- `sub_categories` 表新增地图绑定相关字段
+  - map_id(FK) → 关联到maps表
+  - center_lat / center_lng → 地图中心点坐标
+  - default_zoom → 默认缩放级别
+  - min_zoom / max_zoom → 缩放上下限（与地图本身限制取交集）
+- 为已有的「初中-中国史」绑定中国地图，「初中-世界史」绑定世界地图，并设置默认参数
 
-#### 3. Node.js 后端服务 (Express)
-- **主文件**: `hsd/server/app.js` (端口 3001)
-- **路由模块**:
-  - `categories.js` - 分类/子分类查询接口
-  - `events.js` - 事件 CRUD 接口（软删除）
-  - `images.js` - 图片上传/查询/删除/排序接口
-- 集成 Multer 中间件处理文件上传
-- 配置 CORS 跨域支持
-- 静态文件服务：前端页面 + WW 共享图片目录
-- 统一 JSON 响应格式
+**后端API (`hsd/server/routes/maps.js`)**
+- `GET /api/maps` → 获取全部地图（附带绑定子类数量 bind_count）
+- `GET /api/maps/:id` → 单张地图详情
+- `POST /api/maps` → 新增地图
+- `PUT /api/maps/:id` → 修改地图（**仅允许未绑定子类的地图**）
+- `DELETE /api/maps/:id` → 删除地图（**仅允许未绑定子类的地图**，软删除 is_active=0）
 
-#### 4. 前端页面 (原生 HTML/CSS/JS)
-- **首页**: `hsd/public/index.html`
-  - 5 个 Tab 切换导航栏
-  - 面包屑导航显示当前位置
-  - 高中/人类/宇宙/虚拟 Tab 显示"建设中"占位页
+**前端HSD页面 (`hsd/public/js/main.js`)**
+- 新增顶部导航栏：🏠首页 / 📂类别管理 / 🗺️地图管理
+- 地图管理页：
+  - 卡片网格展示所有地图（名称、编码、瓦片类型、缩放范围、绑定子类数）
+  - 已绑定子类的地图显示灰色锁定状态、不可编辑/删除，悬停提示
+  - 未绑定的地图显示编辑、删除按钮
+  - 新增/编辑地图弹窗表单（瓦片类型切换显示对应字段）
 
-- **初中模块**
-  - 子分类单选组件（中国史 / 世界史）
-  - 必须选择后"进入维护"按钮才可点击
+#### 2. 类别管理体系改造
 
-- **事件列表页**
-  - 表格展示：事件、开始时间、结束时间、说明、地点坐标、地点名称、图片个数
-  - 操作列：图片管理、修改、删除按钮
-  - 顶部添加按钮
-  - 返回首页导航
-  - 空状态提示
+**后端API (`hsd/server/routes/categories.js`)**
+- 完整重写，提供大类和子类的CRUD全套接口
+- 大类：`GET/POST/PUT/DELETE /api/categories` 及详情
+- 子类：`GET/POST/PUT/DELETE /api/categories/:id/sub-categories`
+- 子类创建/修改时必须带 map_id，可配置：
+  - 地图选择（下拉）
+  - 中心点经纬度（center_lat, center_lng）
+  - 默认缩放（default_zoom）
+  - 缩放上下限（min_zoom, max_zoom）
+- 子类列表返回事件数 event_count、地图名称/编码/瓦片参数等完整信息
+- 大类列表返回：子类总数 total_sub_count、可用子类数 available_sub_count（已绑地图+有事件）、事件总数
 
-- **事件表单弹窗**
-  - 新增/修改共用表单
-  - 字段：事件名称、开始/结束时间、说明、纬度、经度、地点名称、排序
-  - 表单校验和友好提示
+**前端HSD页面**
+- 首页：显示各大类卡片，展示可用子类数/事件数
+- 类别管理页：
+  - 左侧大类列表（增删改查+排序）
+  - 右侧子类别列表（增删改查）
+  - 子类表单：地图下拉、经纬度输入、缩放参数输入
+  - 每个子类显示绑定的地图名、事件数
+  - 「进入维护」按钮进入事件列表
 
-- **图片管理页**
-  - 点击/拖拽上传区域，支持批量（最多 20 张）
-  - 图片网格预览展示
-  - 单张删除功能（带确认弹窗）
-  - 支持格式：JPG/PNG/GIF/WEBP/BMP，单张最大 10MB
+#### 3. WW应用动态Tab和地图参数
 
-#### 5. 公共组件库
-- **文件**: `hsd/public/js/common.js`
-  - 统一 API 封装（GET/POST/PUT/DELETE/UPLOAD）
-  - Toast 消息提示组件（成功/错误/信息）
-  - Modal 弹窗组件
-  - 确认对话框
-  - HTML 转义、文件大小格式化等工具函数
+**后端API (`ww/server/routes/categories.js`)**
+- 新增 `GET /api/categories`：返回所有大类 + 子类统计（可用子类数）
+- 新增 `GET /api/categories/:id/sub-categories`：返回子类详情（含地图配置和事件数）
 
-#### 6. 样式系统
-- **文件**: `hsd/public/css/style.css`
-  - 深色渐变头部 + 浅色主体配色
-  - 响应式 Tab、表单、表格、按钮等组件
-  - 卡片式布局，圆角阴影设计
-  - 流畅的过渡动画和状态反馈
-
-#### 7. 启动脚本和文档
-- **文件**: `start-hsd.bat` - Windows 一键启动脚本（自动安装依赖、初始化DB、启动服务）
-- **文件**: `README.md` - 项目说明文档（架构、目录、API、使用说明）
-- **文件**: `devlog.md` - 开发日志（本文件）
+**前端WW改造 (`ww/public/js/app.js`)**
+- 状态扩展：新增 categories、subCategoriesMap、currentSubConfigs 字段
+- `renderMainPage()` → 先异步加载类别再初始化Tab
+- `initTabs()` → 从API动态渲染大类Tab按钮，不再硬编码
+- `renderTabContent(categoryId)` → 按以下规则渲染：
+  - 大类 available_sub_count = 0 → 显示「🏗️ 建设中，敬请期待...」
+  - 否则异步拉取子类列表，过滤掉「未绑地图 or 事件数=0」的
+  - 过滤后为空 → 同样显示建设中
+  - 有可用子类 → 渲染复选框（默认全选，显示事件数）+ 开始按钮
+- `renderGamePage()` → 使用第一个选中子类的地图参数：
+  - 中心点、默认缩放、最小/最大缩放（子类限制和地图限制取交集）
+  - 瓦片类型和URL
+- 新增 `addTileLayersToMap(map, tileType, url, sd, minZ, maxZ)` 通用瓦片加载函数
+  - 支持 hybrid/osm/amap_street/amap_satellite/custom 五种模式
 
 ---
 
-### 技术选型决策
+### 修复和优化的问题
 
-| 决策项 | 选择 | 理由 |
-|--------|------|------|
-| 前端框架 | 原生 JS | 需求简单，避免过度工程化，加载快 |
-| 后端框架 | Express | Node.js 生态成熟，轻量灵活 |
-| 数据库 | SQLite | 无需独立服务，文件型便于共享和迁移 |
-| 数据库驱动 | better-sqlite3 | 同步 API，性能优异，事务支持好 |
-| 图片存储 | 文件系统 | 按分类层级目录组织，URL 映射简单 |
-| 删除策略 | 事件软删+图片硬删 | 事件保留数据追溯，图片节省空间 |
+#### 1. 精准判断规则调整 (`ww/server/routes/game.js`)
+- **位置精准阈值**：30公里 → **50公里**（≤50km算精准）
+- **精准时统计误差**：从记录实际值改为 **误差算0**
+  - `preciseLocation`时 `distanceForStats = 0`
+  - `preciseTime`时 `timeForStats = 0`
+- **时间精准公式**：
+  - Y = |事件年份 - 2026|
+  - 精准阈值 = Y × 1%
+  - |猜测 - 实际| ≤ 阈值即精准
+  - 例：1926年(Y=100) → 100×1%=1年 → 1925~1927都精准
+
+#### 2. 排行榜显示修复 (`ww/public/css/style.css`)
+- 修复 `.leaderboard-list` 被设为 `display:none` 导致排行榜始终空白的问题
+- 改为 `display:block`，正常渲染榜单内容
+
+#### 3. 地图标签样式优化
+- HSD+WW：地图标签从「白色+阴影」→ **黑色无阴影、不加粗**
+- 文字拥挤：字体大小调整（国家12px、省份11px、大国一级9px）
+- 最终字体：全部改用系统默认字体 `system-ui, sans-serif`，避免宋体兼容性问题
+
+#### 4. 国家名称全显示 (`ww/public/js/app.js`)
+- `WORLD_COUNTRIES` 数组扩展至约150个国家，不再仅显示≥日本面积的国家
+- 所有国家在缩放≥2级时显示名称标签
+
+#### 5. 全应用字体统一
+- HSD和WW所有页面的 `font-family` 改为 `system-ui, sans-serif`
+- 大小、粗体、位置等其他样式保留不变，仅字体族替换
+
+#### 6. HSD启动报错修复
+- `hsd/server/routes/images.js` 第12行语法错误：
+  - 错误写法 `{ recursive: true }.recursive.;`
+  - 修正为 `{ recursive: true }`
+
+#### 7. 数据库初始化顺序修复
+- 修复 maps表和sub_categories外键依赖顺序导致的 `no such column: map_id` 错误
+- 执行顺序调整为：先建maps → 再建categories → 再建sub_categories（存在则添加map相关字段）→ 最后建events和event_images
+- 避免重复添加列的代码执行两遍
+
+#### 8. 路由注册遗漏修复
+- `hsd/server/app.js` 补充 `app.use('/api/maps', require('./routes/maps'))`，原未注册导致地图API 404
+
+---
+
+### 修改文件清单
+
+| 文件 | 修改类型 | 说明 |
+|------|----------|------|
+| `hsd/server/init-db.js` | 重写 | 新增maps表、sub_categories扩展字段、预置数据 |
+| `hsd/server/routes/maps.js` | 新增 | 地图管理增删查API（绑子类的地图只读） |
+| `hsd/server/routes/categories.js` | 重写 | 大类/子类完整CRUD，支持地图绑定和缩放配置 |
+| `hsd/server/routes/images.js` | 修复 | 修复mkdirSync语法错误 |
+| `hsd/server/app.js` | 修改 | 注册maps路由 |
+| `hsd/public/index.html` | 修改 | 新增顶部导航栏（首页/类别管理/地图管理） |
+| `hsd/public/css/style.css` | 修改 | 地图标签样式+系统字体+管理页布局样式 |
+| `hsd/public/js/main.js` | 重写 | 三大视图+导航+地图管理+类别管理+事件维护 |
+| `ww/server/routes/categories.js` | 新增 | WW端类别/子类查询API |
+| `ww/server/routes/game.js` | 修改 | 精准规则(50km/Y×1%)+精准时误差算0 |
+| `ww/server/app.js` | 修改 | 注册categories路由 |
+| `ww/public/css/style.css` | 修改 | 修复排行榜+标签黑色无阴影+系统字体 |
+| `ww/public/js/app.js` | 修改 | 动态Tab+动态子类渲染+子类地图参数配置+150国家 |
+| `README.md` | 重写 | 全量更新最新功能（非更新日志形式） |
+| `devlog.md` | 修改 | 新增本次版本2.0.0的完整变更说明 |
 
 ---
 
 ### 已验证功能清单
 
-- [x] 服务健康检查接口 `/api/health` 返回正常
-- [x] 分类列表接口返回 5 条预置数据
-- [x] 初中分类下子分类返回 2 条（中国史、世界史）
-- [x] 前端页面可正常访问 http://localhost:3001
-- [x] Tab 切换功能正常
-- [x] 子分类单选交互和按钮启用逻辑正常
+- [x] maps表创建成功，2条默认地图数据插入正常
+- [x] sub_categories表字段扩展成功，中国史/世界史各自绑定对应地图
+- [x] HSD地图管理：新增、编辑（仅未绑）、删除（仅未绑）功能正常
+- [x] 已绑定子类的地图编辑/删除按钮正确禁用并提示
+- [x] HSD类别管理：大类/子类CRUD正常，子类地图下拉和缩放参数保存正常
+- [x] HSD事件维护：原有列表视图和地图添加视图均正常工作
+- [x] WW首页：5个大类Tab从API动态渲染，非硬编码
+- [x] WW初中Tab：显示中国史/世界史复选框（带事件数）可开始游戏
+- [x] WW其他Tab（高中/人类/宇宙/虚拟）：正确显示「建设中」
+- [x] WW游戏内地图：中国史默认居中中国+缩放4，世界史居中欧亚+缩放2
+- [x] WW位置精准：50公里内标记绿色精准标签，统计距离=0
+- [x] WW时间精准：按1%规则正确判定，统计时间差=0
+- [x] 排行榜内容正常渲染，不再空白
+- [x] 地图标签黑色不加粗，全应用系统字体生效
+- [x] 150个国家名称正常显示（缩放≥2）
+- [x] HSD启动无报错，images.js语法错误已修复
 
 ---
 
 ### 后续计划（TODO）
 
-- [ ] WW 展示应用前端代码开发
-- [ ] 高中/人类/宇宙/虚拟模块的子分类设计和开发
-- [ ] 事件图片排序 UI 支持（拖拽排序）
-- [ ] 批量导入/导出数据功能
-- [ ] 操作日志记录
-- [ ] 数据搜索和筛选功能
+- [ ] WW多子类混玩时的地图切换策略（当前用第一个子类的配置）
+- [ ] HSD子类中心点支持直接在地图上拾取而非手动输入经纬度
+- [ ] 事件批量导入（Excel/CSV）和批量导出功能
+- [ ] 子类图标/颜色自定义配置
+- [ ] WW内猜完后可选择是否继续用同配置下一题
+- [ ] 操作日志记录谁在何时增删改了哪条数据
+- [ ] 数据搜索和高级筛选（按时间范围、地点范围、关键字）
 
 ---
 
@@ -130,91 +196,74 @@
 ### 新增内容
 
 #### 1. 地图交互视图
-- **集成**: Leaflet.js + OpenStreetMap 开源瓦片（轻量免费）
-- **位置**: 地图库资源存放在 `ww/static/lib/leaflet/`
+- **集成**: Leaflet.js + OpenStreetMap 开源瓦片
 - 进入"初中→中国史/世界史"后点击"进入地图添加"打开全屏交互地图
-- 地图默认中心点中国（30°N, 105°E），初始缩放级别4
-- 支持鼠标滚轮缩放（2-18级）
 - 点击地图任意位置放置标记点并弹出右侧添加面板
-- 工具栏提供"返回"和"列表视图"切换按钮
-- 底部提示条引导用户操作
 
 #### 2. 中国省份显示
-- **数据源**: 阿里云DataV行政区划数据
-- **文件**: `ww/static/geojson/china_provinces.json`（~570KB）
 - 省份边界虚线叠加层
 - 省份名称标注（DivIcon，缩放≥4级显示）
-- 鼠标悬停省份时显示tooltip
 
 #### 3. 大国一级行政区划标注
-- **文件**: `ww/static/geojson/world_admin1_labels.json`
-- 覆盖面积≥日本的国家（约20+国）：俄罗斯、美国、加拿大、巴西、澳大利亚、印度、阿根廷、哈萨克斯坦、阿尔及利亚、刚果(金)、沙特、墨西哥、印度尼西亚、苏丹、利比亚、伊朗、蒙古、秘鲁、乍得、尼日尔、安哥拉、马里、南非、哥伦比亚、埃塞俄比亚
-- 每国标注主要一级行政区名称和中心坐标
-- 缩放≥5级时显示，避免低缩放级别标注拥挤
+- 覆盖面积≥日本的约20+国家（俄罗斯、美国、加拿大、巴西等）
+- 缩放≥5级时显示
 
 #### 4. 自定义时间选择器
-- **公元/公元前切换按钮**：支持历史事件（如公元前221年）
-- **年/月/日三段式输入**：年份输入框较宽
-- **精度选择按钮**：仅年/年月/年月日，切换时自动隐藏/清空不相关字段
-- **编码方案**：
-  - 公元时间戳 = 年×10000 + 月×100 + 日（例：20240615）
-  - 公元前时间戳 = -(|年|×10000 - 月×100 - 日)（例：-2210101 表示公元前221年）
-  - precision: 0=仅年, 1=年月, 2=年月日
-- 后端 `tsToDisplay()` 函数统一转换为中文显示格式
+- 公元/公元前切换按钮
+- 年/月/日三段式输入
+- 精度选择：仅年/年月/年月日
+- 编码方案：年×10000+月×100+日；公元前取负数
 
-#### 5. 地图添加面板
-- 右侧滑出面板（420px宽），包含完整添加表单
-- 坐标自动显示（来自地图点击位置）
-- 事件名称、地点名称、开始/结束时间、说明字段
-- 图片拖拽/点击上传区域（至少1张）
-- 图片缩略图预览，支持单张删除
-- 添加成功后自动清除标记和表单，可立即开始下一次添加
-
-#### 6. 数据库Schema更新
-- **删除字段**: `start_date`, `end_date`（文本类型）
-- **新增字段**: `start_ts` INTEGER, `start_precision` INTEGER DEFAULT 0, `end_ts` INTEGER, `end_precision` INTEGER DEFAULT 0
-- 需要删除旧数据库重新初始化
-
-#### 7. 后端API更新
-- `events.js` 全面改写，处理新的时间戳和精度字段
-- POST/PUT 接口接收 start_ts/start_precision/end_ts/end_precision
-- GET 接口返回 start_display/end_display 中文格式化时间
-- 列表页和地图视图共用同一API
-
-#### 8. 列表视图更新
-- 适配新的时间显示格式（start_display/end_display）
-- 增加"地图添加"按钮和"快速添加"按钮
-- 地点列合并显示地点名称和坐标
-
-#### 9. 布局模式切换
-- 地图模式：紧凑头部、全宽内容区、无padding
-- 列表模式：恢复常规布局
-- 自动切换，退出地图时恢复
+#### 5. 数据库Schema更新
+- 删除start_date/end_date文本字段
+- 新增start_ts/start_precision/end_ts/end_precision
 
 ---
 
-### 修改的文件清单
+### 修改文件清单
 
-| 文件 | 修改类型 | 说明 |
-|------|----------|------|
-| `hsd/server/init-db.js` | 修改 | events表替换为timestamp+precision字段 |
-| `hsd/server/routes/events.js` | 重写 | 全部CRUD适配新时间戳方案，增加tsToDisplay() |
-| `hsd/server/app.js` | 修改 | 添加/shared静态路径映射ww/static |
-| `hsd/public/index.html` | 修改 | 引入Leaflet CSS和JS |
-| `hsd/public/css/style.css` | 修改 | 添加地图视图、添加面板、时间选择器等200+行样式 |
-| `hsd/public/js/main.js` | 重写 | 地图视图、添加面板、时间选择器、图片上传等全部交互逻辑 |
-| `ww/static/lib/leaflet/*` | 新增 | Leaflet库文件（JS/CSS/图标） |
-| `ww/static/geojson/china_provinces.json` | 新增 | 中国省级行政区GeoJSON数据 |
-| `ww/static/geojson/world_admin1_labels.json` | 新增 | 世界大国一级行政区标注数据 |
+| 文件 | 修改类型 |
+|------|----------|
+| `hsd/server/init-db.js` | 修改 |
+| `hsd/server/routes/events.js` | 重写 |
+| `hsd/server/app.js` | 修改 |
+| `hsd/public/index.html` | 修改 |
+| `hsd/public/css/style.css` | 修改 |
+| `hsd/public/js/main.js` | 重写 |
+| `ww/static/lib/leaflet/*` | 新增 |
+| `ww/static/geojson/china_provinces.json` | 新增 |
+| `ww/static/geojson/world_admin1_labels.json` | 新增 |
 
 ---
 
-### 已验证功能清单
+## [1.0.0] - 2026-06-11
 
-- [x] API健康检查正常
-- [x] 事件添加API正确处理时间戳和精度（公元/公元前）
-- [x] 时间戳→中文显示转换正确（20240615→"2024年6月15日"，-2210101→"公元前221年"）
-- [x] Leaflet静态资源通过/shared路径正常访问
-- [x] 中国省份GeoJSON正常加载
-- [x] 大国行政区划标注文件正常加载
-- [x] 前端HTML页面正常返回
+### 本次版本变更总结
+
+完成了项目基础架构搭建和 HSD（heshidi）维护应用的首个可用版本。
+
+---
+
+### 新增内容
+
+- 双应用独立目录结构：`hsd/`（维护应用）、`ww/`（展示应用）
+- 数据库4张核心表：categories, sub_categories, events, event_images
+- 预置5个大类+初中下2个子类
+- HSD后端三大路由：分类/事件/图片 + Multer文件上传
+- HSD前端页面：首页Tab、子分类单选、事件列表、事件表单、图片管理
+- 公共组件库：API封装、Toast、Modal、确认对话框、工具函数
+- Windows一键启动脚本 start-hsd.bat
+- 完整文档 README.md 和 devlog.md
+
+---
+
+### 技术选型决策
+
+| 决策项 | 选择 | 理由 |
+|--------|------|------|
+| 前端框架 | 原生 JS | 需求简单，避免过度工程化 |
+| 后端框架 | Express | Node.js 生态成熟，轻量灵活 |
+| 数据库 | SQLite | 无需独立服务，文件型便于共享和迁移 |
+| 数据库驱动 | better-sqlite3 | 同步API，性能优异，事务支持好 |
+| 图片存储 | 文件系统 | 按分类层级目录组织，URL映射简单 |
+| 删除策略 | 事件软删+图片硬删 | 事件保留数据追溯，图片节省空间 |

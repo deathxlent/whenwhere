@@ -34,8 +34,11 @@ function deleteCookie(name) {
 let appState = {
   user: null,
   currentView: 'login',
+  categories: [],
+  subCategoriesMap: {},
   selectedTab: 'junior',
-  selectedSubCodes: ['china', 'world'],
+  selectedSubCodes: [],
+  currentSubConfigs: [],
   currentEvent: null,
   currentImages: [],
   shownImageIndices: [],
@@ -304,7 +307,7 @@ function showTokenDialog(token, username, userId) {
   });
 }
 
-function renderMainPage() {
+async function renderMainPage() {
   appState.currentView = 'main';
   const app = document.getElementById('app');
   app.innerHTML = `
@@ -319,7 +322,7 @@ function renderMainPage() {
       </div>
       <div class="main-content">
         <div class="main-prompt">请选择你要猜的内容</div>
-        <div class="tabs-container" id="main-tabs"></div>
+        <div class="tabs-container" id="main-tabs"><div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);">加载中...</div></div>
         <div id="tab-content"></div>
         <div class="leaderboard-section" id="leaderboard-section">
           <div class="leaderboard-header">
@@ -346,9 +349,22 @@ function renderMainPage() {
   `;
 
   initBgMap();
-  initTabs();
   initUserMenu();
   initLeaderboard();
+  await loadCategoriesAndInitTabs();
+}
+
+async function loadCategoriesAndInitTabs() {
+  try {
+    const res = await API.get('/categories');
+    if (res.success) {
+      appState.categories = res.data;
+    }
+  } catch (e) {
+    console.warn('加载类别失败:', e);
+    appState.categories = [];
+  }
+  initTabs();
 }
 
 function initBgMap() {
@@ -465,18 +481,23 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function initTabs() {
-  const tabs = [
-    { code: 'junior', name: '初中' },
-    { code: 'senior', name: '高中' },
-    { code: 'human', name: '人类' },
-    { code: 'universe', name: '宇宙' },
-    { code: 'virtual', name: '虚拟' }
-  ];
-
+async function initTabs() {
+  const categories = appState.categories || [];
   const tabsContainer = document.getElementById('main-tabs');
-  tabsContainer.innerHTML = tabs.map(t =>
-    `<button class="tab-btn ${t.code === appState.selectedTab ? 'active' : ''}" data-code="${t.code}">${t.name}</button>`
+
+  if (categories.length === 0) {
+    tabsContainer.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5);">暂无可用类别</div>';
+    document.getElementById('tab-content').innerHTML = '';
+    return;
+  }
+
+  const firstAvailableId = categories[0].id;
+  if (!appState.selectedTab || !categories.find(c => c.code === appState.selectedTab)) {
+    appState.selectedTab = categories[0].code;
+  }
+
+  tabsContainer.innerHTML = categories.map(c =>
+    `<button class="tab-btn ${c.code === appState.selectedTab ? 'active' : ''}" data-code="${c.code}" data-id="${c.id}">${escapeHtml(c.name)}</button>`
   ).join('');
 
   tabsContainer.querySelectorAll('.tab-btn').forEach(btn => {
@@ -484,48 +505,73 @@ function initTabs() {
       tabsContainer.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       appState.selectedTab = btn.dataset.code;
-      renderTabContent();
+      renderTabContent(btn.dataset.id);
     });
   });
 
-  renderTabContent();
+  const activeCat = categories.find(c => c.code === appState.selectedTab);
+  renderTabContent(activeCat ? activeCat.id : firstAvailableId);
 }
 
-function renderTabContent() {
+async function renderTabContent(categoryId) {
   const content = document.getElementById('tab-content');
-  if (appState.selectedTab !== 'junior') {
+  const category = appState.categories.find(c => c.id == categoryId);
+
+  if (!category || (category.available_sub_count || 0) === 0) {
     content.innerHTML = '<div class="options-panel"><div class="construction-text">🏗️ 建设中，敬请期待...</div></div>';
     return;
   }
 
+  let subCategories = appState.subCategoriesMap[categoryId];
+  if (!subCategories) {
+    content.innerHTML = '<div class="options-panel"><div style="color:rgba(255,255,255,0.6);padding:20px;text-align:center;">加载中...</div></div>';
+    try {
+      const res = await API.get(`/categories/${categoryId}/sub-categories`);
+      if (res.success) {
+        subCategories = res.data.filter(s => s.map_id != null && (s.event_count || 0) > 0);
+        appState.subCategoriesMap[categoryId] = subCategories;
+      }
+    } catch (e) {
+      subCategories = [];
+    }
+  }
+
+  if (!subCategories || subCategories.length === 0) {
+    content.innerHTML = '<div class="options-panel"><div class="construction-text">🏗️ 建设中，敬请期待...</div></div>';
+    return;
+  }
+
+  appState.selectedSubCodes = [];
+  appState.currentSubConfigs = subCategories;
+
+  const checkboxesHtml = subCategories.map(s => `
+    <div class="checkbox-item">
+      <input type="checkbox" id="chk-${s.code}" checked>
+      <label for="chk-${s.code}">${escapeHtml(s.name)} <span style="color:rgba(255,255,255,0.45);font-size:12px;">(${s.event_count}题)</span></label>
+    </div>
+  `).join('');
+
   content.innerHTML = `
     <div class="options-panel">
-      <div class="checkbox-item">
-        <input type="checkbox" id="chk-china" ${appState.selectedSubCodes.includes('china') ? 'checked' : ''}>
-        <label for="chk-china">中国史</label>
-      </div>
-      <div class="checkbox-item">
-        <input type="checkbox" id="chk-world" ${appState.selectedSubCodes.includes('world') ? 'checked' : ''}>
-        <label for="chk-world">世界史</label>
-      </div>
+      ${checkboxesHtml}
     </div>
     <button class="btn btn-primary" id="start-btn" style="min-width:200px;">开始</button>
   `;
 
-  const chkChina = document.getElementById('chk-china');
-  const chkWorld = document.getElementById('chk-world');
+  const checkboxes = content.querySelectorAll('input[type="checkbox"]');
   const startBtn = document.getElementById('start-btn');
 
   const updateStartBtn = () => {
     const codes = [];
-    if (chkChina.checked) codes.push('china');
-    if (chkWorld.checked) codes.push('world');
+    checkboxes.forEach(chk => {
+      const code = chk.id.replace('chk-', '');
+      if (chk.checked) codes.push(code);
+    });
     appState.selectedSubCodes = codes;
     startBtn.disabled = codes.length === 0;
   };
 
-  chkChina.addEventListener('change', updateStartBtn);
-  chkWorld.addEventListener('change', updateStartBtn);
+  checkboxes.forEach(chk => chk.addEventListener('change', updateStartBtn));
   updateStartBtn();
 
   startBtn.addEventListener('click', () => {
@@ -614,9 +660,32 @@ async function startGame() {
 function renderGamePage() {
   appState.currentView = 'game';
   const app = document.getElementById('app');
-  const isChinaOnly = appState.selectedSubCodes.length === 1 && appState.selectedSubCodes.includes('china');
-  const mapCenter = isChinaOnly ? [35, 105] : [30, 120];
-  const mapZoom = isChinaOnly ? 4 : 2;
+
+  let mapCenter = [30, 120];
+  let mapZoom = 2;
+  let minZoom = 2;
+  let maxZoom = 8;
+  let tileType = 'hybrid';
+  let tileUrl = '';
+  let tileSd = '';
+
+  const selectedSubs = appState.currentSubConfigs || [];
+  const firstSelectedCode = appState.selectedSubCodes[0];
+  const subConfig = selectedSubs.find(s => s.code === firstSelectedCode);
+
+  if (subConfig) {
+    if (subConfig.center_lat != null && subConfig.center_lng != null) {
+      mapCenter = [parseFloat(subConfig.center_lat), parseFloat(subConfig.center_lng)];
+    }
+    if (subConfig.default_zoom != null) mapZoom = parseInt(subConfig.default_zoom);
+    if (subConfig.min_zoom != null) minZoom = parseInt(subConfig.min_zoom);
+    if (subConfig.max_zoom != null) maxZoom = parseInt(subConfig.max_zoom);
+    if (subConfig.map_min_zoom != null) minZoom = Math.max(minZoom, parseInt(subConfig.map_min_zoom));
+    if (subConfig.map_max_zoom != null) maxZoom = Math.min(maxZoom, parseInt(subConfig.map_max_zoom));
+    tileType = subConfig.map_tile_type || 'hybrid';
+    tileUrl = subConfig.map_tile_url || '';
+    tileSd = subConfig.map_tile_subdomains || 'a,b,c';
+  }
 
   app.innerHTML = `
     <div class="game-page">
@@ -638,23 +707,13 @@ function renderGamePage() {
   appState.map = L.map('map', {
     center: mapCenter,
     zoom: mapZoom,
-    minZoom: 2,
-    maxZoom: 8,
+    minZoom: minZoom,
+    maxZoom: maxZoom,
     zoomControl: true,
     worldCopyJump: true
   });
 
-  L.tileLayer('/tiles/osm/{z}/{x}/{y}.png', {
-    minZoom: 2,
-    maxZoom: 2
-  }).addTo(appState.map);
-
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-    subdomains: ['1', '2', '3', '4'],
-    minZoom: 3,
-    maxZoom: 8,
-    attribution: '&copy; 高德地图'
-  }).addTo(appState.map);
+  addTileLayersToMap(appState.map, tileType, tileUrl, tileSd, minZoom, maxZoom);
 
   appState.admin1Labels = [];
   loadGameMapLabels();
@@ -672,6 +731,66 @@ function renderGamePage() {
   document.getElementById('restart-game-btn').addEventListener('click', () => {
     startGame();
   });
+}
+
+function addTileLayersToMap(map, tileType = 'hybrid', customUrl = '', customSd = 'a,b,c', minZoom = 2, maxZoom = 8) {
+  const sdArr = customSd ? customSd.split(',').map(s => s.trim()).filter(Boolean) : ['1','2','3','4'];
+
+  if (tileType === 'custom' && customUrl) {
+    L.tileLayer(customUrl, {
+      subdomains: sdArr.length > 0 ? sdArr : undefined,
+      minZoom: minZoom,
+      maxZoom: maxZoom
+    }).addTo(map);
+    return;
+  }
+
+  if (tileType === 'osm') {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      subdomains: ['a','b','c'],
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    return;
+  }
+
+  if (tileType === 'amap_street') {
+    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+      subdomains: ['1','2','3','4'],
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      attribution: '&copy; 高德地图'
+    }).addTo(map);
+    return;
+  }
+
+  if (tileType === 'amap_satellite') {
+    L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
+      subdomains: ['1','2','3','4'],
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      attribution: '&copy; 高德卫星'
+    }).addTo(map);
+    L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', {
+      subdomains: ['1','2','3','4'],
+      minZoom: Math.max(minZoom, 3),
+      maxZoom: maxZoom
+    }).addTo(map);
+    return;
+  }
+
+  L.tileLayer('/tiles/osm/{z}/{x}/{y}.png', {
+    minZoom: minZoom,
+    maxZoom: Math.min(maxZoom, 2)
+  }).addTo(map);
+
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    minZoom: Math.max(minZoom, 3),
+    maxZoom: maxZoom,
+    attribution: '&copy; 高德地图'
+  }).addTo(map);
 }
 
 async function loadGameMapLabels() {

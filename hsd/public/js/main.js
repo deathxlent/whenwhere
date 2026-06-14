@@ -1,5 +1,6 @@
 let state = {
   categories: [],
+  maps: [],
   currentCategory: null,
   currentSubCategory: null,
   currentEvents: [],
@@ -36,13 +37,710 @@ function tsToYearMonthDay(ts) {
 
 async function init() {
   try {
-    const res = await API.get('/categories');
-    if (res.success) {
-      state.categories = res.data;
-      renderMainView();
-    }
+    const [catRes, mapRes] = await Promise.all([
+      API.get('/categories'),
+      API.get('/maps')
+    ]);
+    if (catRes.success) state.categories = catRes.data;
+    if (mapRes.success) state.maps = mapRes.data;
+    bindNavLinks();
+    renderView('home');
   } catch (e) {
-    toast('加载数据失败', 'error');
+    toast('加载数据失败: ' + e.message, 'error');
+  }
+}
+
+function bindNavLinks() {
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      const view = link.dataset.view;
+      if (state.map) { state.map.remove(); state.map = null; }
+      renderView(view);
+    });
+  });
+}
+
+function renderView(view) {
+  state.currentView = view;
+  restoreLayout();
+  if (view === 'home') renderHomeView();
+  else if (view === 'categories') renderCategoriesView();
+  else if (view === 'maps') renderMapsView();
+}
+
+async function renderHomeView() {
+  setBreadcrumb('首页');
+  const res = await API.get('/categories');
+  if (res.success) state.categories = res.data;
+
+  const cardsHtml = state.categories.map(cat => {
+    const hasAvailable = (cat.available_sub_count || 0) > 0;
+    return `
+    <div class="home-category-card ${hasAvailable ? '' : 'inactive'}" data-id="${cat.id}" data-code="${cat.code}">
+      <div class="home-category-card-header">
+        <div>
+          <div class="home-category-name">${escapeHtml(cat.name)}</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px;">${escapeHtml(cat.code)}</div>
+        </div>
+        <div class="home-category-icon">${getCategoryIcon(cat.code)}</div>
+      </div>
+      <div class="home-category-desc">${escapeHtml(cat.description || '暂无描述')}</div>
+      <div class="home-category-stats">
+        <div class="home-stat">
+          <div class="home-stat-value">${cat.total_sub_count || 0}</div>
+          <div class="home-stat-label">子类别数</div>
+        </div>
+        <div class="home-stat">
+          <div class="home-stat-value" style="color:#38a169;">${cat.available_sub_count || 0}</div>
+          <div class="home-stat-label">可用子类</div>
+        </div>
+        <div class="home-stat">
+          <div class="home-stat-value" style="color:#718096;">${cat.total_event_count || 0}</div>
+          <div class="home-stat-label">事件总数</div>
+        </div>
+      </div>
+    </div>
+  `}).join('');
+
+  document.getElementById('main-view').innerHTML = `
+    <div class="section-header">
+      <h2 class="section-title">📂 选择类别</h2>
+      <div style="font-size:13px;color:#718096;">
+        可用子类 = 已绑定地图 + 已有事件
+      </div>
+    </div>
+    <div class="home-category-grid">${cardsHtml}</div>
+  `;
+
+  document.querySelectorAll('.home-category-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const cat = state.categories.find(c => c.id == card.dataset.id);
+      state.currentCategory = cat;
+      if ((cat.available_sub_count || 0) > 0) {
+        openCategoryForEditing(cat);
+      } else {
+        toast('该类别下暂无可用子类，请先在「类别管理」中绑定地图并添加事件', 'warning');
+      }
+    });
+  });
+}
+
+function getCategoryIcon(code) {
+  const icons = {
+    junior: '🏫',
+    senior: '🎓',
+    university: '🏛️',
+    world: '🌍',
+    china: '🇨🇳',
+    ancient: '📜',
+    modern: '🏭',
+    war: '⚔️',
+    culture: '🎨',
+    science: '🔬',
+    tech: '💻'
+  };
+  return icons[code] || '📁';
+}
+
+function openCategoryForEditing(category) {
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.querySelector('.nav-link[data-view="categories"]').classList.add('active');
+  renderCategoriesView(category.id);
+}
+
+async function renderCategoriesView(selectedCategoryId = null) {
+  setBreadcrumb('类别管理');
+
+  const [catRes, mapRes] = await Promise.all([
+    API.get('/categories'),
+    API.get('/maps')
+  ]);
+  if (catRes.success) state.categories = catRes.data;
+  if (mapRes.success) state.maps = mapRes.data;
+
+  const listHtml = state.categories.map(cat => `
+    <div class="category-list-item ${selectedCategoryId == cat.id ? 'selected' : ''}" data-id="${cat.id}">
+      <div class="category-list-name">
+        <span style="margin-right:8px;">${getCategoryIcon(cat.code)}</span>
+        ${escapeHtml(cat.name)}
+      </div>
+      <div class="category-list-meta">${escapeHtml(cat.code)}</div>
+      <div class="stats-row">
+        <span class="stat-badge blue">${cat.total_sub_count || 0} 子类</span>
+        <span class="stat-badge green">${cat.available_sub_count || 0} 可用</span>
+        <span class="stat-badge gray">${cat.total_event_count || 0} 事件</span>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('main-view').innerHTML = `
+    <div class="management-layout">
+      <div class="sidebar-panel">
+        <div class="panel-title">
+          <span>大类别列表</span>
+          <button class="btn btn-primary btn-sm" id="add-category-btn">+ 新增</button>
+        </div>
+        <div id="category-list-container">${listHtml}</div>
+      </div>
+      <div class="main-panel">
+        <div id="category-detail-panel">
+          ${selectedCategoryId ? '<div style="text-align:center;padding:40px;color:#718096;">加载中...</div>' :
+            '<div style="text-align:center;padding:80px 20px;color:#a0aec0;"><div style="font-size:48px;margin-bottom:16px;">👈</div>请从左侧选择一个大类别</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.category-list-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const cat = state.categories.find(c => c.id == item.dataset.id);
+      state.currentCategory = cat;
+      document.querySelectorAll('.category-list-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      loadCategoryDetail(cat);
+    });
+  });
+
+  document.getElementById('add-category-btn').addEventListener('click', openAddCategoryModal);
+
+  if (selectedCategoryId) {
+    const cat = state.categories.find(c => c.id == selectedCategoryId);
+    if (cat) loadCategoryDetail(cat);
+  }
+}
+
+async function loadCategoryDetail(category) {
+  const panel = document.getElementById('category-detail-panel');
+  panel.innerHTML = '<div style="text-align:center;padding:40px;color:#718096;">加载中...</div>';
+
+  const res = await API.get(`/categories/${category.id}/sub-categories`);
+  if (!res.success) {
+    panel.innerHTML = '<div style="text-align:center;padding:40px;color:#e53e3e;">加载失败</div>';
+    return;
+  }
+
+  const subs = res.data;
+  const subCards = subs.map(sub => {
+    const hasMap = sub.map_id != null;
+    const hasEvents = (sub.event_count || 0) > 0;
+    const isAvailable = hasMap && hasEvents;
+    const borderClass = hasMap ? (hasEvents ? 'has-events' : 'has-map') : '';
+
+    return `
+    <div class="subcategory-card ${borderClass}" data-id="${sub.id}">
+      <div class="subcategory-header">
+        <div>
+          <div class="subcategory-name">
+            ${isAvailable ? '<span class="status-dot green"></span>' : '<span class="status-dot gray"></span>'}
+            ${escapeHtml(sub.name)}
+            <span style="font-size:12px;color:#718096;font-weight:normal;margin-left:8px;">(${escapeHtml(sub.code)})</span>
+          </div>
+          <div style="margin-top:4px;font-size:12px;color:#718096;">
+            ${hasMap ? `🗺️ ${escapeHtml(sub.map_name || '未知地图')}` : '⚠️ 未绑定地图'}
+            &nbsp;|&nbsp;
+            ${hasEvents ? `📋 ${sub.event_count} 个事件` : '⚠️ 暂无事件'}
+          </div>
+        </div>
+        <div class="subcategory-actions">
+          ${hasMap ? `<button class="btn btn-default btn-sm" data-action="events" data-id="${sub.id}">📋 事件</button>` : ''}
+          <button class="btn btn-default btn-sm" data-action="edit" data-id="${sub.id}">✏️ 编辑</button>
+          <button class="btn btn-danger btn-sm" data-action="delete" data-id="${sub.id}">🗑️</button>
+        </div>
+      </div>
+      ${hasMap ? `
+        <div class="subcategory-info">
+          <div class="info-item">
+            <span class="info-label">中心点:</span>
+            <span class="info-value">(${Number(sub.center_lat || 0).toFixed(4)}, ${Number(sub.center_lng || 0).toFixed(4)})</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">瓦片类型:</span>
+            <span class="info-value">${getTileTypeName(sub.map_tile_type)}</span>
+          </div>
+        </div>
+        <div class="zoom-info">
+          缩放: 默认 ${sub.default_zoom || 2} &nbsp;|&nbsp; 范围 ${sub.min_zoom || 0} - ${sub.max_zoom || 18}
+        </div>
+      ` : ''}
+    </div>
+  `}).join('');
+
+  panel.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">${escapeHtml(category.name)} <span style="font-size:14px;color:#718096;font-weight:normal;">(${escapeHtml(category.code)})</span></h2>
+        <p style="color:#718096;margin-top:8px;font-size:13px;">${escapeHtml(category.description || '暂无描述')}</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" id="edit-cat-btn">✏️ 编辑类别</button>
+        <button class="btn btn-danger" id="delete-cat-btn">🗑️ 删除</button>
+        <button class="btn btn-primary" id="add-sub-btn">+ 添加子类别</button>
+      </div>
+    </div>
+    <div id="subcategory-container">
+      ${subs.length === 0 ?
+        `<div class="empty-subs">
+          <div style="font-size:40px;margin-bottom:12px;">📂</div>
+          <h3>暂无子类别</h3>
+          <p style="margin-top:8px;font-size:13px;">点击右上角「+ 添加子类别」来创建</p>
+        </div>` : subCards}
+    </div>
+  `;
+
+  document.getElementById('add-sub-btn').addEventListener('click', () => openSubCategoryModal(null, category.id));
+  document.getElementById('edit-cat-btn').addEventListener('click', () => openCategoryModal(category));
+  document.getElementById('delete-cat-btn').addEventListener('click', () => confirmDeleteCategory(category));
+
+  panel.querySelectorAll('[data-action="edit"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sub = subs.find(s => s.id == btn.dataset.id);
+      if (sub) openSubCategoryModal(sub, category.id);
+    });
+  });
+
+  panel.querySelectorAll('[data-action="delete"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sub = subs.find(s => s.id == btn.dataset.id);
+      if (sub) confirmDeleteSubCategory(sub, category);
+    });
+  });
+
+  panel.querySelectorAll('[data-action="events"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sub = subs.find(s => s.id == btn.dataset.id);
+      if (sub) {
+        state.currentSubCategory = sub;
+        setBreadcrumb(`类别管理 / ${category.name} / ${sub.name} / 事件列表`);
+        renderEventList();
+      }
+    });
+  });
+}
+
+function getTileTypeName(type) {
+  const map = {
+    osm: 'OSM标准',
+    amap_street: '高德街道',
+    amap_satellite: '高德卫星',
+    hybrid: '混合图层',
+    custom: '自定义'
+  };
+  return map[type] || (type || '未知');
+}
+
+function openAddCategoryModal() {
+  openCategoryModal(null);
+}
+
+function openCategoryModal(category = null) {
+  const isEdit = category != null;
+  const html = `
+    <div class="modal-overlay" id="cat-modal">
+      <div class="modal" style="max-width:500px;">
+        <div class="modal-header">
+          <div class="modal-title">${isEdit ? '编辑' : '添加'}大类别</div>
+          <button class="modal-close" onclick="document.getElementById('cat-modal').remove();">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div>
+              <label class="form-label">类别名称 *</label>
+              <input class="form-control" id="cat-name" value="${isEdit ? escapeHtml(category.name) : ''}" placeholder="如：初中历史">
+            </div>
+            <div>
+              <label class="form-label">类别代码 *</label>
+              <input class="form-control" id="cat-code" value="${isEdit ? escapeHtml(category.code) : ''}" placeholder="如：junior（英文唯一标识）" ${isEdit ? 'readonly' : ''}>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:14px;">
+            <div style="grid-column:span 2;">
+              <label class="form-label">描述</label>
+              <textarea class="form-control" id="cat-desc" rows="2" placeholder="简短描述">${isEdit ? escapeHtml(category.description || '') : ''}</textarea>
+            </div>
+            <div>
+              <label class="form-label">排序</label>
+              <input class="form-control" type="number" id="cat-sort" value="${isEdit ? (category.sort_order || 0) : 0}">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default" onclick="document.getElementById('cat-modal').remove();">取消</button>
+          <button class="btn btn-primary" id="save-cat-btn">保存</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+
+  document.getElementById('save-cat-btn').addEventListener('click', async () => {
+    const name = document.getElementById('cat-name').value.trim();
+    const code = document.getElementById('cat-code').value.trim();
+    const description = document.getElementById('cat-desc').value.trim() || null;
+    const sort_order = parseInt(document.getElementById('cat-sort').value) || 0;
+
+    if (!name || !code) { toast('请填写名称和代码', 'error'); return; }
+
+    let res;
+    if (isEdit) {
+      res = await API.put(`/categories/${category.id}`, { name, description, sort_order });
+    } else {
+      res = await API.post('/categories', { name, code, description, sort_order });
+    }
+
+    if (res.success) {
+      toast(res.message, 'success');
+      document.getElementById('cat-modal').remove();
+      renderCategoriesView(isEdit ? category.id : res.data?.id);
+    } else {
+      toast(res.message, 'error');
+    }
+  });
+}
+
+function confirmDeleteCategory(category) {
+  confirmDialog(`确定要删除大类别「${category.name}」吗？`, async () => {
+    const res = await API.delete(`/categories/${category.id}`);
+    if (res.success) {
+      toast(res.message, 'success');
+      renderCategoriesView();
+    } else {
+      toast(res.message, 'error');
+    }
+  }, '该操作将同时删除所有关联的子类别和事件，无法撤销');
+}
+
+function confirmDeleteSubCategory(sub, category) {
+  confirmDialog(`确定要删除子类别「${sub.name}」吗？`, async () => {
+    const res = await API.delete(`/categories/${category.id}/sub-categories/${sub.id}`);
+    if (res.success) {
+      toast(res.message, 'success');
+      loadCategoryDetail(category);
+    } else {
+      toast(res.message, 'error');
+    }
+  }, '该操作将同时删除所有关联的事件，无法撤销');
+}
+
+async function openSubCategoryModal(sub = null, categoryId) {
+  const isEdit = sub != null;
+  const mapOptions = state.maps.map(m =>
+    `<option value="${m.id}" ${(sub?.map_id || '') == m.id ? 'selected' : ''}>
+      ${escapeHtml(m.name)} (${escapeHtml(m.code)}) - 缩放:${m.min_zoom || 0}-${m.max_zoom || 18}
+    </option>`
+  ).join('');
+
+  const html = `
+    <div class="modal-overlay" id="sub-modal">
+      <div class="modal" style="max-width:650px;max-height:90vh;overflow-y:auto;">
+        <div class="modal-header">
+          <div class="modal-title">${isEdit ? '编辑' : '添加'}子类别</div>
+          <button class="modal-close" onclick="document.getElementById('sub-modal').remove();">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div>
+              <label class="form-label">子类别名称 *</label>
+              <input class="form-control" id="sub-name" value="${isEdit ? escapeHtml(sub.name) : ''}" placeholder="如：中国古代史">
+            </div>
+            <div>
+              <label class="form-label">子类别代码 *</label>
+              <input class="form-control" id="sub-code" value="${isEdit ? escapeHtml(sub.code) : ''}" placeholder="如：ancient_china（英文唯一）" ${isEdit ? 'readonly' : ''}>
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <label class="form-label">绑定地图 *</label>
+            <div class="select-wrapper">
+              <select class="form-control" id="sub-map-id">
+                <option value="">-- 请选择地图 --</option>
+                ${mapOptions}
+              </select>
+            </div>
+            <div style="font-size:12px;color:#718096;margin-top:4px;">⚠️ 子类别必须绑定地图才能使用</div>
+          </div>
+          <div style="margin-top:14px;padding:14px;background:#f7fafc;border-radius:8px;">
+            <div style="font-weight:600;color:#2d3748;margin-bottom:10px;">📍 显示设置（ww中默认）</div>
+            <div class="form-grid">
+              <div>
+                <label class="form-label">中心点 纬度</label>
+                <input class="form-control" type="number" step="0.000001" id="sub-center-lat" value="${isEdit && sub.center_lat != null ? sub.center_lat : 0}">
+              </div>
+              <div>
+                <label class="form-label">中心点 经度</label>
+                <input class="form-control" type="number" step="0.000001" id="sub-center-lng" value="${isEdit && sub.center_lng != null ? sub.center_lng : 0}">
+              </div>
+              <div>
+                <label class="form-label">默认缩放</label>
+                <input class="form-control" type="number" min="0" max="18" id="sub-default-zoom" value="${isEdit && sub.default_zoom != null ? sub.default_zoom : 2}">
+              </div>
+              <div>
+                <label class="form-label">最小缩放</label>
+                <input class="form-control" type="number" min="0" max="18" id="sub-min-zoom" value="${isEdit && sub.min_zoom != null ? sub.min_zoom : 2}">
+              </div>
+              <div>
+                <label class="form-label">最大缩放</label>
+                <input class="form-control" type="number" min="0" max="18" id="sub-max-zoom" value="${isEdit && sub.max_zoom != null ? sub.max_zoom : 8}">
+              </div>
+              <div>
+                <label class="form-label">排序</label>
+                <input class="form-control" type="number" id="sub-sort" value="${isEdit ? (sub.sort_order || 0) : 0}">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default" onclick="document.getElementById('sub-modal').remove();">取消</button>
+          <button class="btn btn-primary" id="save-sub-btn">保存</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+
+  document.getElementById('save-sub-btn').addEventListener('click', async () => {
+    const name = document.getElementById('sub-name').value.trim();
+    const code = document.getElementById('sub-code').value.trim();
+    const map_id = document.getElementById('sub-map-id').value || null;
+    const center_lat = parseFloat(document.getElementById('sub-center-lat').value);
+    const center_lng = parseFloat(document.getElementById('sub-center-lng').value);
+    const default_zoom = parseInt(document.getElementById('sub-default-zoom').value);
+    const min_zoom = parseInt(document.getElementById('sub-min-zoom').value);
+    const max_zoom = parseInt(document.getElementById('sub-max-zoom').value);
+    const sort_order = parseInt(document.getElementById('sub-sort').value) || 0;
+
+    if (!name || !code) { toast('请填写名称和代码', 'error'); return; }
+    if (!map_id) { toast('请选择绑定的地图', 'error'); return; }
+    if (isNaN(center_lat) || isNaN(center_lng)) { toast('中心点格式错误', 'error'); return; }
+
+    const data = {
+      name, code, map_id: parseInt(map_id),
+      center_lat, center_lng, default_zoom, min_zoom, max_zoom, sort_order
+    };
+
+    let res;
+    if (isEdit) {
+      res = await API.put(`/categories/${categoryId}/sub-categories/${sub.id}`, data);
+    } else {
+      res = await API.post(`/categories/${categoryId}/sub-categories`, data);
+    }
+
+    if (res.success) {
+      toast(res.message, 'success');
+      document.getElementById('sub-modal').remove();
+      loadCategoryDetail(state.categories.find(c => c.id == categoryId));
+    } else {
+      toast(res.message, 'error');
+    }
+  });
+}
+
+async function renderMapsView() {
+  setBreadcrumb('地图管理');
+  restoreLayout();
+
+  const res = await API.get('/maps');
+  if (res.success) state.maps = res.data;
+
+  const cardsHtml = state.maps.map(map => {
+    const isBound = (map.bind_count || 0) > 0;
+    return `
+    <div class="map-card ${isBound ? 'map-card-bound' : ''}" data-id="${map.id}">
+      <div class="map-preview">🗺️</div>
+      <div class="map-card-header">
+        <div>
+          <div class="map-card-name">${escapeHtml(map.name)}</div>
+          <div style="margin-top:4px;"><span class="map-card-code">${escapeHtml(map.code)}</span></div>
+        </div>
+        ${isBound ? '<span class="bound-tag">🔒 已绑定</span>' : '<span class="free-tag">✓ 可编辑</span>'}
+      </div>
+      <div class="map-card-desc">${escapeHtml(map.description || '暂无描述')}</div>
+      <div class="map-card-meta">
+        <span>🧩 ${getTileTypeName(map.tile_type)}</span>
+        <span>🔍 缩放:${map.min_zoom || 0}-${map.max_zoom || 18}</span>
+        <span>🔗 绑定:${map.bind_count || 0} 个子类</span>
+      </div>
+      <div class="map-card-actions">
+        <button class="btn btn-default btn-sm" data-action="view" data-id="${map.id}">👁️ 查看</button>
+        <button class="btn btn-default btn-sm" data-action="edit" data-id="${map.id}" ${isBound ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>✏️ 编辑</button>
+        <button class="btn btn-danger btn-sm" data-action="delete" data-id="${map.id}" ${isBound ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>🗑️</button>
+      </div>
+    </div>
+  `}).join('');
+
+  document.getElementById('main-view').innerHTML = `
+    <div class="section-header">
+      <h2 class="section-title">🗺️ 地图管理</h2>
+      <button class="btn btn-primary" id="add-map-btn">+ 新增地图</button>
+    </div>
+    <div style="margin-bottom:20px;padding:14px;background:#fff5f5;border-radius:8px;color:#742a2a;font-size:13px;">
+      ⚠️ <strong>注意：</strong>已有子类别绑定的地图无法编辑和删除，需要先解除绑定才能操作。
+    </div>
+    <div class="three-col-grid">${cardsHtml || '<div style="grid-column:span 3;text-align:center;padding:60px;color:#a0aec0;"><div style="font-size:48px;margin-bottom:16px;">🗺️</div>暂无地图，点击右上角「+ 新增地图」</div>'}</div>
+  `;
+
+  document.getElementById('add-map-btn').addEventListener('click', () => openMapModal(null));
+
+  document.querySelectorAll('[data-action="view"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const m = state.maps.find(x => x.id == btn.dataset.id);
+      if (m) openMapModal(m, true);
+    });
+  });
+
+  document.querySelectorAll('[data-action="edit"]').forEach(btn => {
+    if (btn.disabled) return;
+    btn.addEventListener('click', () => {
+      const m = state.maps.find(x => x.id == btn.dataset.id);
+      if (m) openMapModal(m, false);
+    });
+  });
+
+  document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+    if (btn.disabled) return;
+    btn.addEventListener('click', () => {
+      const m = state.maps.find(x => x.id == btn.dataset.id);
+      if (m) confirmDeleteMap(m);
+    });
+  });
+}
+
+function confirmDeleteMap(map) {
+  confirmDialog(`确定要删除地图「${map.name}」吗？`, async () => {
+    const res = await API.delete(`/maps/${map.id}`);
+    if (res.success) {
+      toast(res.message, 'success');
+      renderMapsView();
+    } else {
+      toast(res.message, 'error');
+    }
+  });
+}
+
+function openMapModal(map = null, isViewOnly = false) {
+  const isEdit = map != null && !isViewOnly;
+  const mode = isViewOnly ? '查看' : (isEdit ? '编辑' : '添加');
+  const disabled = isViewOnly ? 'disabled' : '';
+  const tileType = map?.tile_type || 'hybrid';
+
+  const html = `
+    <div class="modal-overlay" id="map-modal">
+      <div class="modal" style="max-width:650px;max-height:90vh;overflow-y:auto;">
+        <div class="modal-header">
+          <div class="modal-title">${mode}地图</div>
+          <button class="modal-close" onclick="document.getElementById('map-modal').remove();">&times;</button>
+        </div>
+        <div class="modal-body">
+          ${(map && (map.bind_count || 0) > 0 && !isViewOnly) ?
+            `<div class="disabled-hint">⚠️ 该地图已绑定 ${map.bind_count} 个子类别，只能编辑名称、描述、排序，其他字段无法修改</div>` : ''}
+          ${isViewOnly ? `<div class="disabled-hint" style="background:#ebf8ff;color:#2c5282;">🔍 查看模式，内容不可编辑</div>` : ''}
+          <div class="form-grid">
+            <div>
+              <label class="form-label">地图名称 *</label>
+              <input class="form-control" id="map-name" value="${map ? escapeHtml(map.name) : ''}" placeholder="如：世界地图" ${disabled}>
+            </div>
+            <div>
+              <label class="form-label">地图代码 *</label>
+              <input class="form-control" id="map-code" value="${map ? escapeHtml(map.code) : ''}" placeholder="如：world（英文唯一）" ${isEdit || isViewOnly ? 'readonly' : ''}>
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <label class="form-label">描述</label>
+            <textarea class="form-control" id="map-desc" rows="2" ${disabled}>${map ? escapeHtml(map.description || '') : ''}</textarea>
+          </div>
+          <div style="margin-top:14px;">
+            <label class="form-label">瓦片类型</label>
+            <div class="tile-type-options" id="tile-type-options">
+              <div class="tile-type-option ${tileType === 'osm' ? 'selected' : ''}" data-type="osm">🌐 OSM标准</div>
+              <div class="tile-type-option ${tileType === 'amap_street' ? 'selected' : ''}" data-type="amap_street">🛣️ 高德街道</div>
+              <div class="tile-type-option ${tileType === 'amap_satellite' ? 'selected' : ''}" data-type="amap_satellite">🛰️ 高德卫星</div>
+              <div class="tile-type-option ${tileType === 'hybrid' ? 'selected' : ''}" data-type="hybrid">🎯 混合(推荐)</div>
+              <div class="tile-type-option ${tileType === 'custom' ? 'selected' : ''}" data-type="custom">⚙️ 自定义</div>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:14px;">
+            <div>
+              <label class="form-label">最小缩放</label>
+              <input class="form-control" type="number" min="0" max="18" id="map-min-zoom" value="${map ? (map.min_zoom || 0) : 2}" ${disabled}>
+            </div>
+            <div>
+              <label class="form-label">最大缩放</label>
+              <input class="form-control" type="number" min="0" max="18" id="map-max-zoom" value="${map ? (map.max_zoom || 18) : 8}" ${disabled}>
+            </div>
+            <div>
+              <label class="form-label">排序</label>
+              <input class="form-control" type="number" id="map-sort" value="${map ? (map.sort_order || 0) : 0}">
+            </div>
+          </div>
+          <div id="custom-tile-fields" style="margin-top:14px;display:${tileType === 'custom' ? '' : 'none'};">
+            <div style="font-weight:600;color:#2d3748;margin-bottom:8px;">⚙️ 自定义瓦片配置</div>
+            <div class="form-grid">
+              <div style="grid-column:span 2;">
+                <label class="form-label">瓦片URL模板</label>
+                <input class="form-control" id="map-tile-url" value="${map && map.tile_url ? escapeHtml(map.tile_url) : ''}" placeholder="https://{s}.tile.example.com/{z}/{x}/{y}.png" ${disabled}>
+              </div>
+              <div>
+                <label class="form-label">子域名（逗号分隔）</label>
+                <input class="form-control" id="map-tile-sd" value="${map && map.tile_subdomains ? escapeHtml(map.tile_subdomains) : 'a,b,c'}" placeholder="a,b,c" ${disabled}>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default" onclick="document.getElementById('map-modal').remove();">关闭</button>
+          ${!isViewOnly ? '<button class="btn btn-primary" id="save-map-btn">保存</button>' : ''}
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+
+  let selectedTileType = tileType;
+  document.querySelectorAll('#tile-type-options .tile-type-option').forEach(opt => {
+    if (isViewOnly || (map && (map.bind_count || 0) > 0)) return;
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('#tile-type-options .tile-type-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      selectedTileType = opt.dataset.type;
+      document.getElementById('custom-tile-fields').style.display = selectedTileType === 'custom' ? '' : 'none';
+    });
+  });
+
+  const saveBtn = document.getElementById('save-map-btn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const name = document.getElementById('map-name').value.trim();
+      const code = document.getElementById('map-code').value.trim();
+      const description = document.getElementById('map-desc').value.trim() || null;
+      const min_zoom = parseInt(document.getElementById('map-min-zoom').value) || 0;
+      const max_zoom = parseInt(document.getElementById('map-max-zoom').value) || 18;
+      const sort_order = parseInt(document.getElementById('map-sort').value) || 0;
+      let tile_url = document.getElementById('map-tile-url').value.trim() || null;
+      let tile_subdomains = document.getElementById('map-tile-sd').value.trim() || null;
+
+      if (!name || !code) { toast('请填写名称和代码', 'error'); return; }
+
+      const data = { name, code, description, tile_type: selectedTileType, min_zoom, max_zoom, sort_order };
+      if (selectedTileType === 'custom') {
+        data.tile_url = tile_url;
+        data.tile_subdomains = tile_subdomains;
+      }
+
+      let res;
+      if (isEdit) {
+        res = await API.put(`/maps/${map.id}`, data);
+      } else {
+        res = await API.post('/maps', data);
+      }
+
+      if (res.success) {
+        toast(res.message, 'success');
+        document.getElementById('map-modal').remove();
+        renderMapsView();
+      } else {
+        toast(res.message, 'error');
+      }
+    });
   }
 }
 
