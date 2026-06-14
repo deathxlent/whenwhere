@@ -1042,42 +1042,112 @@ const COUNTRIES_WITH_ADMIN1 = new Set([
   '尼加拉瓜', '厄立特里亚', '朝鲜', '韩国'
 ]);
 
+function addTileLayersToMap(map, tileType, customUrl, customSd, minZoom, maxZoom) {
+  const sdArr = customSd ? customSd.split(',').map(s => s.trim()).filter(Boolean) : ['1','2','3','4'];
+
+  if (tileType === 'custom' && customUrl) {
+    L.tileLayer(customUrl, {
+      subdomains: sdArr.length > 0 ? sdArr : undefined,
+      minZoom: minZoom,
+      maxZoom: maxZoom
+    }).addTo(map);
+    return;
+  }
+
+  if (tileType === 'osm') {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      subdomains: ['a','b','c'],
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    return;
+  }
+
+  if (tileType === 'amap_street') {
+    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+      subdomains: ['1','2','3','4'],
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      attribution: '&copy; 高德地图'
+    }).addTo(map);
+    return;
+  }
+
+  if (tileType === 'amap_satellite') {
+    L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
+      subdomains: ['1','2','3','4'],
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      attribution: '&copy; 高德卫星'
+    }).addTo(map);
+    L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', {
+      subdomains: ['1','2','3','4'],
+      minZoom: Math.max(minZoom, 3),
+      maxZoom: maxZoom
+    }).addTo(map);
+    return;
+  }
+
+  L.tileLayer('/shared/tiles/osm/{z}/{x}/{y}.png', {
+    minZoom: minZoom,
+    maxZoom: Math.min(maxZoom, 2)
+  }).addTo(map);
+
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1','2','3','4'],
+    minZoom: Math.max(minZoom, 3),
+    maxZoom: maxZoom,
+    attribution: '&copy; 高德地图'
+  }).addTo(map);
+}
+
 function initMap() {
   if (state.map) {
     state.map.remove();
     state.map = null;
   }
 
-  let center, zoom;
-  const subCode = state.currentSubCategory?.code || '';
-  if (subCode === 'china') {
-    center = [35, 105];
-    zoom = 4;
-  } else {
-    center = [30, 120];
-    zoom = 2;
+  const sub = state.currentSubCategory;
+  let center, zoom, minZoom, maxZoom;
+  let tileType = 'hybrid';
+  let tileUrl = '';
+  let tileSd = 'a,b,c';
+
+  if (sub) {
+    if (sub.center_lat != null && sub.center_lng != null) {
+      center = [parseFloat(sub.center_lat), parseFloat(sub.center_lng)];
+    }
+    if (sub.default_zoom != null) zoom = parseInt(sub.default_zoom);
+    if (sub.map_min_zoom != null) minZoom = parseInt(sub.map_min_zoom);
+    if (sub.map_max_zoom != null) maxZoom = parseInt(sub.map_max_zoom);
+    if (sub.map_tile_type) tileType = sub.map_tile_type;
+    if (sub.map_tile_url) tileUrl = sub.map_tile_url;
+    if (sub.map_tile_subdomains) tileSd = sub.map_tile_subdomains;
   }
+
+  if (!center) {
+    const subCode = sub?.code || '';
+    if (subCode === 'china') {
+      center = [35, 105];
+    } else {
+      center = [30, 120];
+    }
+  }
+  if (zoom == null) zoom = (sub?.code === 'china') ? 4 : 2;
+  if (minZoom == null) minZoom = 2;
+  if (maxZoom == null) maxZoom = 8;
 
   state.map = L.map('map', {
     center: center,
     zoom: zoom,
-    minZoom: 2,
-    maxZoom: 8,
+    minZoom: minZoom,
+    maxZoom: maxZoom,
     zoomControl: true,
     worldCopyJump: true
   });
 
-  L.tileLayer('/shared/tiles/osm/{z}/{x}/{y}.png', {
-    minZoom: 2,
-    maxZoom: 2
-  }).addTo(state.map);
-
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-    subdomains: ['1', '2', '3', '4'],
-    attribution: '&copy; 高德地图',
-    minZoom: 3,
-    maxZoom: 8
-  }).addTo(state.map);
+  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, minZoom, maxZoom);
 
   loadChinaProvinces();
   loadWorldAdmin1Labels();
@@ -1651,7 +1721,19 @@ async function submitEvent() {
   const lng = document.getElementById('disp-lng').textContent;
   if (lat === '-' || lng === '-') { toast('请在地图上点击选择位置', 'error'); return; }
 
-  if (state.pendingImages.length === 0) { toast('请至少上传一张图片', 'error'); return; }
+  const urlInput = document.getElementById('f-image-url');
+  const urlNameInput = document.getElementById('f-image-name');
+  if (urlInput && urlInput.value.trim()) {
+    const url = urlInput.value.trim();
+    const name = urlNameInput ? urlNameInput.value.trim() : '';
+    if (/^https?:\/\//i.test(url)) {
+      addPendingUrlImage(url, name || url);
+      urlInput.value = '';
+      if (urlNameInput) urlNameInput.value = '';
+    }
+  }
+
+  if (state.pendingImages.length === 0) { toast('请至少添加一张图片（上传或URL）', 'error'); return; }
 
   const startYear = document.getElementById('f-start-year').value;
   if (!startYear) { toast('请输入开始时间的年份', 'error'); return; }
@@ -2225,12 +2307,30 @@ function openEditMapView(event) {
 
   if (state.map) { state.map.remove(); state.map = null; }
 
+  const sub = state.currentSubCategory;
+  let tileType = 'hybrid';
+  let tileUrl = '';
+  let tileSd = 'a,b,c';
+  let mapMinZoom = 2;
+  let mapMaxZoom = 8;
+
+  if (sub) {
+    if (sub.map_tile_type) tileType = sub.map_tile_type;
+    if (sub.map_tile_url) tileUrl = sub.map_tile_url;
+    if (sub.map_tile_subdomains) tileSd = sub.map_tile_subdomains;
+    if (sub.map_min_zoom != null) mapMinZoom = parseInt(sub.map_min_zoom);
+    if (sub.map_max_zoom != null) mapMaxZoom = parseInt(sub.map_max_zoom);
+  }
+
   let center, zoom;
   if (event.location_lat && event.location_lng) {
     center = [event.location_lat, event.location_lng];
     zoom = 4;
+  } else if (sub && sub.center_lat != null && sub.center_lng != null) {
+    center = [parseFloat(sub.center_lat), parseFloat(sub.center_lng)];
+    zoom = sub.default_zoom != null ? parseInt(sub.default_zoom) : ((sub?.code === 'china') ? 4 : 2);
   } else {
-    const subCode = state.currentSubCategory?.code || '';
+    const subCode = sub?.code || '';
     if (subCode === 'china') {
       center = [35, 105];
       zoom = 4;
@@ -2243,23 +2343,13 @@ function openEditMapView(event) {
   state.map = L.map('map', {
     center: center,
     zoom: zoom,
-    minZoom: 2,
-    maxZoom: 8,
+    minZoom: mapMinZoom,
+    maxZoom: mapMaxZoom,
     zoomControl: true,
     worldCopyJump: true
   });
 
-  L.tileLayer('/shared/tiles/osm/{z}/{x}/{y}.png', {
-    minZoom: 2,
-    maxZoom: 2
-  }).addTo(state.map);
-
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-    subdomains: ['1', '2', '3', '4'],
-    attribution: '&copy; 高德地图',
-    minZoom: 3,
-    maxZoom: 8
-  }).addTo(state.map);
+  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, mapMinZoom, mapMaxZoom);
 
   loadChinaProvinces();
   loadWorldAdmin1Labels();
@@ -2653,7 +2743,7 @@ async function loadImages(eventId) {
       <div class="empty-state" style="padding:30px;">
         <div class="empty-state-icon">🖼️</div>
         <h3>暂无图片</h3>
-        <p style="margin-top:8px;font-size:13px;">请上传至少一张图片</p>
+        <p style="margin-top:8px;font-size:13px;">请上传或添加URL图片（至少一张）</p>
       </div>
     `;
     return;
@@ -2682,7 +2772,7 @@ async function loadImages(eventId) {
       e.stopPropagation();
       const imgId = parseInt(btn.dataset.id);
       if (state.currentImages && state.currentImages.length <= 1) {
-        toast('至少需要保留一张图片', 'error');
+        toast('至少需要保留一张图片（上传或URL均可）', 'error');
         return;
       }
       confirmDialog('确定删除这张图片吗？', async () => {
