@@ -123,19 +123,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .province-label, .country-label, .admin1-label {
   color: #000;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: normal;
+  font-family: SimSun, '宋体', serif;
   white-space: nowrap;
   pointer-events: none;
 }
 
 .country-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: normal;
   color: #000;
 }
 
 .admin1-label {
-  font-size: 10px;
+  font-size: 9px;
   color: #000;
 }
 
