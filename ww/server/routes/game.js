@@ -147,7 +147,7 @@ router.post('/submit', (req, res) => {
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     distanceKm = Math.round(R * c);
-    preciseLocation = distanceKm <= 30;
+    preciseLocation = distanceKm <= 50;
   }
 
   let timeDiffYears = null;
@@ -169,15 +169,17 @@ router.post('/submit', (req, res) => {
         timeDiffYears = Math.abs(guessYearVal - endYear);
       }
     }
-    preciseTime = Math.abs(timeDiffYears) <= 5;
+    const Y = Math.abs(startYear - 2026);
+    const preciseThreshold = Y * 0.01;
+    preciseTime = preciseThreshold > 0 ? Math.abs(timeDiffYears) <= preciseThreshold : timeDiffYears === 0;
   }
 
   const today = new Date().toISOString().split('T')[0];
 
   const existing = db.prepare('SELECT * FROM game_stats WHERE user_id = ? AND stat_date = ?').get(user_id, today);
 
-  const distanceForStats = distanceKm || 0;
-  const timeForStats = Math.abs(timeDiffYears || 0);
+  const distanceForStats = preciseLocation ? 0 : (distanceKm || 0);
+  const timeForStats = preciseTime ? 0 : Math.abs(timeDiffYears || 0);
   const elapsedForStats = elapsed_seconds || 0;
   const preciseLocCount = preciseLocation ? 1 : 0;
   const preciseTimeCount = preciseTime ? 1 : 0;
