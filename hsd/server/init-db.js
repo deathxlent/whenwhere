@@ -123,9 +123,25 @@ if (!eventsCols.includes('tips')) {
   } catch(e) { console.warn('Add column events.tips failed:', e.message); }
 }
 
-const insertMap = db.prepare(
-  'INSERT OR IGNORE INTO maps (name, code, description, tile_type, tile_url, tile_subdomains, min_zoom, max_zoom, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-);
+const mapsColInfo = db.pragma('table_info(maps)');
+const mapsCols = mapsColInfo.map(c => c.name);
+const mapNewCols = [
+  { name: 'crs_type', type: 'TEXT DEFAULT "epsg3857"' },
+  { name: 'bounds_south', type: 'REAL' },
+  { name: 'bounds_west', type: 'REAL' },
+  { name: 'bounds_north', type: 'REAL' },
+  { name: 'bounds_east', type: 'REAL' },
+  { name: 'tile_ext', type: 'TEXT DEFAULT "png"' },
+  { name: 'tile_size', type: 'INTEGER DEFAULT 256' }
+];
+mapNewCols.forEach(col => {
+  if (!mapsCols.includes(col.name)) {
+    try {
+      db.exec(`ALTER TABLE maps ADD COLUMN ${col.name} ${col.type}`);
+      console.log(`Added column maps.${col.name}`);
+    } catch(e) { console.warn(`Add column ${col.name} failed:`, e.message); }
+  }
+});
 
 const maps = [
   {
@@ -137,7 +153,10 @@ const maps = [
     tile_subdomains: null,
     min_zoom: 2,
     max_zoom: 8,
-    sort_order: 1
+    sort_order: 1,
+    crs_type: 'epsg3857',
+    tile_ext: 'png',
+    tile_size: 256
   },
   {
     name: '中国地图',
@@ -148,12 +167,62 @@ const maps = [
     tile_subdomains: null,
     min_zoom: 2,
     max_zoom: 8,
-    sort_order: 2
+    sort_order: 2,
+    crs_type: 'epsg3857',
+    tile_ext: 'png',
+    tile_size: 256
+  },
+  {
+    name: '堡垒之夜地图',
+    code: 'fortnite',
+    description: 'Fortnite 游戏地图（本地瓦片）',
+    tile_type: 'custom',
+    tile_url: '/tiles/fortnite/{z}/{x}/{y}.webp',
+    tile_subdomains: null,
+    min_zoom: 1,
+    max_zoom: 4,
+    sort_order: 3,
+    crs_type: 'simple',
+    bounds_south: -256,
+    bounds_west: 0,
+    bounds_north: 0,
+    bounds_east: 256,
+    tile_ext: 'webp',
+    tile_size: 256
   }
 ];
 
 maps.forEach(m => {
-  insertMap.run(m.name, m.code, m.description, m.tile_type, m.tile_url, m.tile_subdomains, m.min_zoom, m.max_zoom, m.sort_order);
+  const existing = db.prepare('SELECT id FROM maps WHERE code = ?').get(m.code);
+  if (existing) {
+    db.prepare(`
+      UPDATE maps SET
+        name = ?, description = ?, tile_type = ?, tile_url = ?, tile_subdomains = ?,
+        min_zoom = ?, max_zoom = ?, sort_order = ?, crs_type = ?,
+        bounds_south = ?, bounds_west = ?, bounds_north = ?, bounds_east = ?,
+        tile_ext = ?, tile_size = ?
+      WHERE code = ?
+    `).run(
+      m.name, m.description, m.tile_type, m.tile_url, m.tile_subdomains,
+      m.min_zoom, m.max_zoom, m.sort_order, m.crs_type,
+      m.bounds_south || null, m.bounds_west || null, m.bounds_north || null, m.bounds_east || null,
+      m.tile_ext, m.tile_size,
+      m.code
+    );
+  } else {
+    db.prepare(`
+      INSERT INTO maps (name, code, description, tile_type, tile_url, tile_subdomains,
+        min_zoom, max_zoom, sort_order, crs_type,
+        bounds_south, bounds_west, bounds_north, bounds_east,
+        tile_ext, tile_size)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      m.name, m.code, m.description, m.tile_type, m.tile_url, m.tile_subdomains,
+      m.min_zoom, m.max_zoom, m.sort_order, m.crs_type,
+      m.bounds_south || null, m.bounds_west || null, m.bounds_north || null, m.bounds_east || null,
+      m.tile_ext, m.tile_size
+    );
+  }
 });
 
 const insertCategory = db.prepare(
