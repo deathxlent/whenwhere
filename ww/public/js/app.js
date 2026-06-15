@@ -729,7 +729,7 @@ function renderGamePage() {
   addTileLayersToMap(appState.map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds);
 
   appState.admin1Labels = [];
-  if (crsType !== 'simple' && tileType !== 'custom') {
+  if (crsType !== 'simple') {
     loadGameMapLabels();
   }
 
@@ -774,11 +774,21 @@ function addTileLayersToMap(map, tileType = 'hybrid', customUrl = '', customSd =
   }
 
   if (tileType === 'custom' && customUrl) {
-    L.tileLayer(customUrl, {
+    const tileOptions = {
       subdomains: sdArr.length > 0 ? sdArr : undefined,
       minZoom: minZoom,
-      maxZoom: maxZoom
-    }).addTo(map);
+      maxZoom: maxZoom,
+      noWrap: true
+    };
+    if (bounds) {
+      tileOptions.bounds = bounds;
+    }
+    L.tileLayer(customUrl, tileOptions).addTo(map);
+    if (bounds && crsType === 'simple') {
+      try {
+        map.fitBounds(bounds, { animate: false });
+      } catch(e) {}
+    }
     return;
   }
 

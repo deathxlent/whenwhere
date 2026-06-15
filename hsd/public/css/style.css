@@ -322,12 +322,12 @@ body {
 }
 
 .data-table th:nth-child(1) { width: 14%; }
-.data-table th:nth-child(2) { width: 14%; }
-.data-table th:nth-child(3) { width: 14%; }
-.data-table th:nth-child(4) { width: 22%; }
-.data-table th:nth-child(5) { width: 16%; }
+.data-table th:nth-child(2) { width: 12%; }
+.data-table th:nth-child(3) { width: 12%; }
+.data-table th:nth-child(4) { width: 20%; }
+.data-table th:nth-child(5) { width: 14%; }
 .data-table th:nth-child(6) { width: 8%; }
-.data-table th:nth-child(7) { width: 12%; }
+.data-table th:nth-child(7) { width: 20%; }
 
 .data-table td {
   padding: 14px 16px;
@@ -346,9 +346,16 @@ body {
 
 .data-table .actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   white-space: nowrap;
   justify-content: flex-start;
+  overflow: visible;
+  flex-wrap: nowrap;
+}
+
+.data-table td:last-child,
+.data-table th:last-child {
+  overflow: visible;
 }
 
 .empty-state {
@@ -1284,6 +1291,16 @@ textarea.form-control {
 .subcategory-actions {
   display: flex;
   gap: 6px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.subcategory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 12px;
 }
 
 .subcategory-info {
