@@ -1042,8 +1042,14 @@ const COUNTRIES_WITH_ADMIN1 = new Set([
   '尼加拉瓜', '厄立特里亚', '朝鲜', '韩国'
 ]);
 
-function addTileLayersToMap(map, tileType, customUrl, customSd, minZoom, maxZoom) {
+function addTileLayersToMap(map, tileType, customUrl, customSd, minZoom, maxZoom, crsType, bounds) {
   const sdArr = customSd ? customSd.split(',').map(s => s.trim()).filter(Boolean) : ['1','2','3','4'];
+
+  if (crsType === 'simple' && bounds) {
+    try {
+      map.setMaxBounds(bounds);
+    } catch(e) {}
+  }
 
   if (tileType === 'custom' && customUrl) {
     L.tileLayer(customUrl, {
@@ -1113,6 +1119,8 @@ function initMap() {
   let tileType = 'hybrid';
   let tileUrl = '';
   let tileSd = 'a,b,c';
+  let crsType = 'epsg3857';
+  let bounds = null;
 
   if (sub) {
     if (sub.center_lat != null && sub.center_lng != null) {
@@ -1124,6 +1132,10 @@ function initMap() {
     if (sub.map_tile_type) tileType = sub.map_tile_type;
     if (sub.map_tile_url) tileUrl = sub.map_tile_url;
     if (sub.map_tile_subdomains) tileSd = sub.map_tile_subdomains;
+    if (sub.map_crs_type) crsType = sub.map_crs_type;
+    if (sub.map_bounds_south != null && sub.map_bounds_west != null && sub.map_bounds_north != null && sub.map_bounds_east != null) {
+      bounds = [[parseFloat(sub.map_bounds_south), parseFloat(sub.map_bounds_west)], [parseFloat(sub.map_bounds_north), parseFloat(sub.map_bounds_east)]];
+    }
   }
 
   if (!center) {
@@ -1138,19 +1150,26 @@ function initMap() {
   if (minZoom == null) minZoom = 2;
   if (maxZoom == null) maxZoom = 8;
 
-  state.map = L.map('map', {
+  const mapOptions = {
     center: center,
     zoom: zoom,
     minZoom: minZoom,
     maxZoom: maxZoom,
     zoomControl: true,
-    worldCopyJump: true
-  });
+    worldCopyJump: crsType !== 'simple'
+  };
+  if (crsType === 'simple') {
+    mapOptions.crs = L.CRS.Simple;
+  }
 
-  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, minZoom, maxZoom);
+  state.map = L.map('map', mapOptions);
 
-  loadChinaProvinces();
-  loadWorldAdmin1Labels();
+  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds);
+
+  if (crsType !== 'simple' && tileType !== 'custom') {
+    loadChinaProvinces();
+    loadWorldAdmin1Labels();
+  }
 
   state.map.on('click', onMapClick);
 
@@ -2019,8 +2038,8 @@ function showEventForm(event = null) {
           <textarea class="form-control" id="f-desc" placeholder="事件详细说明...">${escapeHtml(event?.description || '')}</textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">提示</label>
-          <textarea class="form-control" id="f-tips" placeholder="提示信息（猜图时显示，非必填）">${escapeHtml(event?.tips || '')}</textarea>
+          <label class="form-label">小贴士</label>
+          <textarea class="form-control" id="f-tips" placeholder="小贴士（猜图时显示，非必填）">${escapeHtml(event?.tips || '')}</textarea>
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -2283,8 +2302,8 @@ function openEditMapView(event) {
               <textarea class="form-control" id="e-desc" placeholder="事件详细说明..." rows="3">${escapeHtml(event.description || '')}</textarea>
             </div>
             <div class="form-group">
-              <label class="form-label">提示</label>
-              <textarea class="form-control" id="e-tips" placeholder="提示信息（猜图时显示，非必填）" rows="2">${escapeHtml(event.tips || '')}</textarea>
+              <label class="form-label">小贴士</label>
+              <textarea class="form-control" id="e-tips" placeholder="小贴士（猜图时显示，非必填）" rows="2">${escapeHtml(event.tips || '')}</textarea>
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -2322,6 +2341,8 @@ function openEditMapView(event) {
   let tileSd = 'a,b,c';
   let mapMinZoom = 2;
   let mapMaxZoom = 8;
+  let crsType = 'epsg3857';
+  let bounds = null;
 
   if (sub) {
     if (sub.map_tile_type) tileType = sub.map_tile_type;
@@ -2329,6 +2350,10 @@ function openEditMapView(event) {
     if (sub.map_tile_subdomains) tileSd = sub.map_tile_subdomains;
     if (sub.map_min_zoom != null) mapMinZoom = parseInt(sub.map_min_zoom);
     if (sub.map_max_zoom != null) mapMaxZoom = parseInt(sub.map_max_zoom);
+    if (sub.map_crs_type) crsType = sub.map_crs_type;
+    if (sub.map_bounds_south != null && sub.map_bounds_west != null && sub.map_bounds_north != null && sub.map_bounds_east != null) {
+      bounds = [[parseFloat(sub.map_bounds_south), parseFloat(sub.map_bounds_west)], [parseFloat(sub.map_bounds_north), parseFloat(sub.map_bounds_east)]];
+    }
   }
 
   let center, zoom;
@@ -2349,19 +2374,26 @@ function openEditMapView(event) {
     }
   }
 
-  state.map = L.map('map', {
+  const mapOptions = {
     center: center,
     zoom: zoom,
     minZoom: mapMinZoom,
     maxZoom: mapMaxZoom,
     zoomControl: true,
-    worldCopyJump: true
-  });
+    worldCopyJump: crsType !== 'simple'
+  };
+  if (crsType === 'simple') {
+    mapOptions.crs = L.CRS.Simple;
+  }
 
-  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, mapMinZoom, mapMaxZoom);
+  state.map = L.map('map', mapOptions);
 
-  loadChinaProvinces();
-  loadWorldAdmin1Labels();
+  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, mapMinZoom, mapMaxZoom, crsType, bounds);
+
+  if (crsType !== 'simple' && tileType !== 'custom') {
+    loadChinaProvinces();
+    loadWorldAdmin1Labels();
+  }
 
   let editMarker = null;
   if (event.location_lat && event.location_lng) {

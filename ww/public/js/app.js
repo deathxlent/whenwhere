@@ -668,6 +668,8 @@ function renderGamePage() {
   let tileType = 'hybrid';
   let tileUrl = '';
   let tileSd = '';
+  let crsType = 'epsg3857';
+  let bounds = null;
 
   const selectedSubs = appState.currentSubConfigs || [];
   const firstSelectedCode = appState.selectedSubCodes[0];
@@ -685,6 +687,10 @@ function renderGamePage() {
     tileType = subConfig.map_tile_type || 'hybrid';
     tileUrl = subConfig.map_tile_url || '';
     tileSd = subConfig.map_tile_subdomains || 'a,b,c';
+    if (subConfig.map_crs_type) crsType = subConfig.map_crs_type;
+    if (subConfig.map_bounds_south != null && subConfig.map_bounds_west != null && subConfig.map_bounds_north != null && subConfig.map_bounds_east != null) {
+      bounds = [[parseFloat(subConfig.map_bounds_south), parseFloat(subConfig.map_bounds_west)], [parseFloat(subConfig.map_bounds_north), parseFloat(subConfig.map_bounds_east)]];
+    }
   }
 
   app.innerHTML = `
@@ -706,19 +712,26 @@ function renderGamePage() {
     </div>
   `;
 
-  appState.map = L.map('map', {
+  const mapOptions = {
     center: mapCenter,
     zoom: mapZoom,
     minZoom: minZoom,
     maxZoom: maxZoom,
     zoomControl: true,
-    worldCopyJump: true
-  });
+    worldCopyJump: crsType !== 'simple'
+  };
+  if (crsType === 'simple') {
+    mapOptions.crs = L.CRS.Simple;
+  }
 
-  addTileLayersToMap(appState.map, tileType, tileUrl, tileSd, minZoom, maxZoom);
+  appState.map = L.map('map', mapOptions);
+
+  addTileLayersToMap(appState.map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds);
 
   appState.admin1Labels = [];
-  loadGameMapLabels();
+  if (crsType !== 'simple' && tileType !== 'custom') {
+    loadGameMapLabels();
+  }
 
   appState.map.on('click', onGameMapClick);
 
@@ -751,8 +764,14 @@ function renderGamePage() {
   });
 }
 
-function addTileLayersToMap(map, tileType = 'hybrid', customUrl = '', customSd = 'a,b,c', minZoom = 2, maxZoom = 8) {
+function addTileLayersToMap(map, tileType = 'hybrid', customUrl = '', customSd = 'a,b,c', minZoom = 2, maxZoom = 8, crsType = 'epsg3857', bounds = null) {
   const sdArr = customSd ? customSd.split(',').map(s => s.trim()).filter(Boolean) : ['1','2','3','4'];
+
+  if (crsType === 'simple' && bounds) {
+    try {
+      map.setMaxBounds(bounds);
+    } catch(e) {}
+  }
 
   if (tileType === 'custom' && customUrl) {
     L.tileLayer(customUrl, {
@@ -1013,7 +1032,7 @@ function renderTips() {
   if (tips && tips.trim()) {
     tipsArea.style.display = 'block';
     tipsArea.innerHTML = `
-      <div class="tips-label">💡 提示</div>
+      <div class="tips-label">💡 小贴士</div>
       <div class="tips-content">${tips}</div>
     `;
   } else {
@@ -1222,7 +1241,7 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
           <div class="result-info">
             <div><span class="label">事件：</span><span class="value">${result.correct_title}</span></div>
             ${result.correct_description ? `<div><span class="label">说明：</span><span class="value">${result.correct_description}</span></div>` : ''}
-            ${result.correct_tips ? `<div><span class="label">提示：</span><span class="value">${result.correct_tips}</span></div>` : ''}
+            ${result.correct_tips ? `<div><span class="label">小贴士：</span><span class="value">${result.correct_tips}</span></div>` : ''}
             <div><span class="label">时间：</span><span class="value">${result.correct_start_display}${result.correct_end_display && result.correct_end_display !== result.correct_start_display ? ' ~ ' + result.correct_end_display : ''}</span></div>
             <div><span class="label">地点：</span><span class="value">${result.correct_location_name || '未知'}</span></div>
           </div>

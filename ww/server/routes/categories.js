@@ -32,6 +32,10 @@ router.get('/:id/sub-categories', (req, res) => {
       m.tile_type as map_tile_type, m.tile_url as map_tile_url,
       m.tile_subdomains as map_tile_subdomains,
       m.min_zoom as map_min_zoom, m.max_zoom as map_max_zoom,
+      m.crs_type as map_crs_type,
+      m.bounds_south as map_bounds_south, m.bounds_west as map_bounds_west,
+      m.bounds_north as map_bounds_north, m.bounds_east as map_bounds_east,
+      m.tile_ext as map_tile_ext, m.tile_size as map_tile_size,
       (SELECT COUNT(*) FROM events e WHERE e.sub_category_id = sc.id AND e.is_active = 1) as event_count
     FROM sub_categories sc
     LEFT JOIN maps m ON sc.map_id = m.id
