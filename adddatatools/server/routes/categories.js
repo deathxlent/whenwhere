@@ -149,7 +149,9 @@ router.get('/sub-categories/:id', (req, res) => {
       m.crs_type as map_crs_type,
       m.bounds_south as map_bounds_south, m.bounds_west as map_bounds_west,
       m.bounds_north as map_bounds_north, m.bounds_east as map_bounds_east,
-      m.tile_ext as map_tile_ext, m.tile_size as map_tile_size
+      m.tile_ext as map_tile_ext, m.tile_size as map_tile_size,
+      m.center_lat as map_center_lat, m.center_lng as map_center_lng,
+      m.default_zoom as map_default_zoom
     FROM sub_categories sc
     JOIN categories c ON sc.category_id = c.id
     LEFT JOIN maps m ON sc.map_id = m.id

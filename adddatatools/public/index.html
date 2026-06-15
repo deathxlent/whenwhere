@@ -403,38 +403,6 @@
             overflow: hidden;
         }
         
-        .map-placeholder {
-            height: calc(100vh - 200px);
-            min-height: 400px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            border: 2px dashed #cbd5e1;
-        }
-        
-        .map-placeholder .placeholder-icon {
-            font-size: 64px;
-            opacity: 0.6;
-        }
-        
-        .map-placeholder .placeholder-text {
-            font-size: 16px;
-            color: #64748b;
-            text-align: center;
-            max-width: 400px;
-            line-height: 1.6;
-        }
-        
-        .map-placeholder .placeholder-hint {
-            font-size: 13px;
-            color: #94a3b8;
-            margin-top: 4px;
-        }
-        
         .event-form-panel {
             position: absolute;
             top: 16px;
@@ -599,6 +567,213 @@
         }
         
         .hidden { display: none; }
+        
+        .events-layout {
+            display: flex;
+            gap: 16px;
+            height: calc(100vh - 200px);
+            min-height: 500px;
+        }
+        
+        .events-map-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .map-toolbar {
+            padding: 10px 16px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        
+        .map-info {
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .map-coords {
+            color: #6b7280;
+            font-family: monospace;
+        }
+        
+        .map-hint {
+            padding: 10px 16px;
+            background: #eff6ff;
+            border-top: 1px solid #bfdbfe;
+            font-size: 13px;
+            color: #1e40af;
+        }
+        
+        .events-side-panel {
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .events-side-panel.highlight-flash {
+            animation: panelFlash 1.5s ease-out;
+        }
+        
+        @keyframes panelFlash {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+            30% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.2); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        .side-section {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .side-section-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .side-section-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .side-section-body {
+            padding: 16px;
+        }
+        
+        .coordinate-display {
+            padding: 10px 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #374151;
+        }
+        
+        .era-toggle {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .era-btn {
+            flex: 1;
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .era-btn.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+        
+        .date-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .date-field {
+            flex: 1;
+        }
+        
+        .date-field input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .date-field input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .precision-row {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .precision-btn {
+            flex: 1;
+            padding: 5px 10px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .precision-btn.active {
+            background: #10b981;
+            color: #fff;
+            border-color: #10b981;
+        }
+        
+        .link-btn {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 0;
+        }
+        
+        .link-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .event-list-scroll {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .event-list-scroll .event-item {
+            padding: 10px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .event-list-scroll .event-item:hover {
+            background: #f9fafb;
+        }
+        
+        .event-list-scroll .event-item .title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .event-list-scroll .event-item .meta {
+            font-size: 11px;
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body>
@@ -697,13 +872,13 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>选择分类</label>
-                                    <select id="event-category-select" onchange="loadSubCategories()">
-                                        <option value="">请选择分类</option>
+                                    <select id="event-category-select" onchange="loadEventSubCategories()">
+                                        <option value="">请先在分类管理中创建分类</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label>选择子分类</label>
-                                    <div id="sub-category-tabs" class="sub-category-tabs">
+                                    <div id="event-sub-category-tabs" class="sub-category-tabs">
                                         <span style="color: #9ca3af; font-size: 13px;">请先选择分类</span>
                                     </div>
                                 </div>
@@ -711,103 +886,139 @@
                         </div>
                     </div>
                     
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="map-wrapper">
-                                <div id="map-placeholder" class="map-placeholder">
-                                    <div class="placeholder-icon">🗺️</div>
-                                    <div class="placeholder-text">请先选择分类和子分类，绑定地图后即可在此处出题</div>
-                                    <div class="placeholder-hint">提示：在「分类管理」中为子分类绑定地图</div>
+                    <div id="events-workspace" style="display: none;">
+                        <div class="events-layout">
+                            <div class="events-map-area">
+                                <div class="map-toolbar">
+                                    <div class="map-info" id="map-info-text">地图加载中...</div>
+                                    <div class="map-coords" id="map-coords">纬度: - | 经度: -</div>
                                 </div>
                                 <div id="event-map" class="map-container"></div>
-                                <div class="coord-display" id="coord-display">点击地图添加事件</div>
-                                
-                                <div class="event-list-panel" id="event-list-panel">
-                                    <div class="event-list-header">
-                                        <h3>📋 事件列表 <span id="event-count">0</span></h3>
-                                    </div>
-                                    <div class="event-list" id="event-list">
-                                        <div class="empty-state">
-                                            <div class="icon">📍</div>
-                                            <p style="font-size: 12px;">点击地图添加事件</p>
-                                        </div>
-                                    </div>
+                                <div class="map-hint" id="map-hint">
+                                    <span style="color: #3b82f6; font-weight: 600;">💡</span> 
+                                    点击地图任意位置添加事件标记，然后在右侧填写事件详情
                                 </div>
-                                
-                                <div class="event-form-panel" id="event-form-panel" style="display: none;">
-                                    <div class="event-form-header">
-                                        <h3 id="event-form-title">添加事件</h3>
-                                        <button class="modal-close" onclick="closeEventForm()">×</button>
+                            </div>
+                            
+                            <div class="events-side-panel">
+                                <div class="side-section">
+                                    <div class="side-section-header">
+                                        <h3 id="event-form-title">➕ 添加事件</h3>
+                                        <button class="btn btn-secondary btn-sm" onclick="resetEventForm()">重置</button>
                                     </div>
-                                    <div class="event-form-body">
+                                    <div class="side-section-body">
+                                        <div class="coordinate-display" id="coord-display-box">
+                                            <span>📍 位置：</span>
+                                            <span id="disp-lat" style="color: #6b7280;">-</span>, 
+                                            <span id="disp-lng" style="color: #6b7280;">-</span>
+                                            <span id="coord-hint" style="color: #ef4444; font-size: 12px; margin-left: 8px;">请先在地图上点击选择位置</span>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-top: 12px;">
+                                            <label>事件标题 <span style="color: #ef4444;">*</span></label>
+                                            <input type="text" id="event-title" placeholder="如：秦始皇统一六国">
+                                        </div>
+                                        
                                         <div class="form-group">
-                                            <label>事件标题 *</label>
-                                            <input type="text" id="event-title" placeholder="输入事件标题">
+                                            <label>地点名称</label>
+                                            <input type="text" id="event-location-name" placeholder="如：陕西咸阳">
                                         </div>
                                         
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label>开始时间</label>
-                                                <input type="text" id="event-start-ts" placeholder="如：2024 或 20240101">
-                                                <p class="hint">格式：年份(2024) 或 年月日(20240101)，公元前加负号</p>
+                                        <div class="form-group">
+                                            <label>开始时间</label>
+                                            <div class="era-toggle" id="start-era">
+                                                <button type="button" class="era-btn active" data-era="ce">公元</button>
+                                                <button type="button" class="era-btn" data-era="bce">公元前</button>
                                             </div>
-                                            <div class="form-group">
-                                                <label>精度</label>
-                                                <select id="event-start-precision">
-                                                    <option value="0">年</option>
-                                                    <option value="1">月</option>
-                                                    <option value="2">日</option>
-                                                </select>
+                                            <div class="date-input-row">
+                                                <div class="date-field">
+                                                    <input type="number" id="start-year" placeholder="年" min="1">
+                                                </div>
+                                                <div class="date-field">
+                                                    <input type="number" id="start-month" placeholder="月" min="1" max="12">
+                                                </div>
+                                                <div class="date-field">
+                                                    <input type="number" id="start-day" placeholder="日" min="1" max="31">
+                                                </div>
+                                            </div>
+                                            <div class="precision-row" id="start-precision">
+                                                <button type="button" class="precision-btn" data-precision="0">仅年</button>
+                                                <button type="button" class="precision-btn" data-precision="1">年月</button>
+                                                <button type="button" class="precision-btn active" data-precision="2">年月日</button>
                                             </div>
                                         </div>
                                         
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label>结束时间</label>
-                                                <input type="text" id="event-end-ts" placeholder="选填">
+                                        <div class="form-group">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <label>结束时间 <span style="color: #9ca3af; font-weight: normal; font-size: 12px;">（选填）</span></label>
+                                                <button type="button" class="link-btn" onclick="syncEndTime()">⟳ 同步开始</button>
                                             </div>
-                                            <div class="form-group">
-                                                <label>精度</label>
-                                                <select id="event-end-precision">
-                                                    <option value="0">年</option>
-                                                    <option value="1">月</option>
-                                                    <option value="2">日</option>
-                                                </select>
+                                            <div class="era-toggle" id="end-era">
+                                                <button type="button" class="era-btn active" data-era="ce">公元</button>
+                                                <button type="button" class="era-btn" data-era="bce">公元前</button>
+                                            </div>
+                                            <div class="date-input-row">
+                                                <div class="date-field">
+                                                    <input type="number" id="end-year" placeholder="年" min="1">
+                                                </div>
+                                                <div class="date-field">
+                                                    <input type="number" id="end-month" placeholder="月" min="1" max="12">
+                                                </div>
+                                                <div class="date-field">
+                                                    <input type="number" id="end-day" placeholder="日" min="1" max="31">
+                                                </div>
+                                            </div>
+                                            <div class="precision-row" id="end-precision">
+                                                <button type="button" class="precision-btn" data-precision="0">仅年</button>
+                                                <button type="button" class="precision-btn" data-precision="1">年月</button>
+                                                <button type="button" class="precision-btn active" data-precision="2">年月日</button>
                                             </div>
                                         </div>
                                         
                                         <div class="form-group">
                                             <label>描述</label>
-                                            <textarea id="event-description" placeholder="事件详细描述"></textarea>
+                                            <textarea id="event-description" rows="3" placeholder="事件详细描述..."></textarea>
                                         </div>
                                         
                                         <div class="form-group">
                                             <label>提示/答案</label>
-                                            <textarea id="event-tips" placeholder="提示信息或答案"></textarea>
+                                            <textarea id="event-tips" rows="2" placeholder="答题提示或答案（可选）"></textarea>
                                         </div>
                                         
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label>纬度</label>
-                                                <input type="number" step="any" id="event-lat" readonly>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>经度</label>
-                                                <input type="number" step="any" id="event-lng" readonly>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label>地点名称</label>
-                                            <input type="text" id="event-location-name" placeholder="选填，如：北京">
-                                        </div>
-                                        
-                                        <div style="margin-top: 16px; display: flex; gap: 8px;">
-                                            <button class="btn btn-primary" style="flex: 1;" onclick="saveEvent()">保存</button>
-                                            <button class="btn btn-secondary" onclick="closeEventForm()">取消</button>
+                                        <div style="margin-top: 8px; display: flex; gap: 8px;">
+                                            <button class="btn btn-primary" style="flex: 1;" onclick="saveEventForm()">💾 保存事件</button>
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <div class="side-section">
+                                    <div class="side-section-header">
+                                        <h3>📋 事件列表 <span id="event-count" style="color: #6b7280; font-weight: normal; font-size: 13px;">0</span></h3>
+                                    </div>
+                                    <div class="side-section-body" style="padding: 0;">
+                                        <div class="event-list-scroll" id="event-list">
+                                            <div class="empty-state" style="padding: 30px 20px;">
+                                                <div class="icon" style="font-size: 36px;">📍</div>
+                                                <p style="font-size: 13px; margin-top: 8px;">点击地图添加事件</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="events-empty" class="card">
+                        <div class="card-body">
+                            <div class="empty-state" style="padding: 60px 20px;">
+                                <div class="icon" style="font-size: 56px;">🗺️</div>
+                                <h3 style="margin: 16px 0 8px; color: #374151;">请选择子分类开始出题</h3>
+                                <p style="color: #6b7280; font-size: 14px; line-height: 1.8;">
+                                    1. 先在上方选择一个<b>分类</b><br>
+                                    2. 然后选择一个<b>子分类</b>（子分类需要绑定地图才能出题）<br>
+                                    3. 如果没有子分类，请先去<b>分类管理</b>中创建
+                                </p>
+                                <button class="btn btn-primary" style="margin-top: 16px;" onclick="switchPage('categories')">去创建分类 →</button>
                             </div>
                         </div>
                     </div>

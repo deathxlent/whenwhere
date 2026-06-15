@@ -5,7 +5,11 @@ let selectedSubCategoryId = null;
 let selectedCategoryId = null;
 let editingEventId = null;
 let tempMarker = null;
-let currentMapData = null;
+let currentSubCategoryData = null;
+let startPrecision = 2;
+let endPrecision = 2;
+let startEra = 'ce';
+let endEra = 'ce';
 
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
@@ -44,13 +48,7 @@ function switchPage(page) {
     document.getElementById('page-title').textContent = titles[page] || '';
     
     if (page === 'events') {
-        setTimeout(() => {
-            if (selectedSubCategoryId) {
-                loadSubCategoryMap(selectedSubCategoryId);
-            } else {
-                showMapPlaceholder('请先选择分类和子分类，绑定地图后即可在此处出题');
-            }
-        }, 100);
+        setTimeout(() => initEventPageBindings(), 100);
     }
     if (page === 'dashboard') {
         loadDashboard();
@@ -147,25 +145,77 @@ async function loadCategorySelect() {
     
     if (!res.success) return;
     
-    let options = '<option value="">请选择分类</option>';
+    let options = '<option value="">请先在分类管理中创建分类</option>';
+    if (res.data.length > 0) {
+        options = '<option value="">请选择分类</option>';
+    }
     res.data.forEach(c => {
         options += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
     });
     
     select.innerHTML = options;
-    filterSelect.innerHTML = '<option value="">选择分类查看子分类</option>' + options.replace('请选择分类', '');
-    parentSelect.innerHTML = options;
+    if (filterSelect) {
+        filterSelect.innerHTML = '<option value="">选择分类查看子分类</option>' + options.replace('请先在分类管理中创建分类', '').replace('请选择分类', '');
+    }
+    if (parentSelect) {
+        parentSelect.innerHTML = options;
+    }
 }
 
-async function loadSubCategories() {
+function initEventPageBindings() {
+    document.querySelectorAll('#start-era .era-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#start-era .era-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            startEra = btn.dataset.era;
+        });
+    });
+    
+    document.querySelectorAll('#end-era .era-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#end-era .era-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            endEra = btn.dataset.era;
+        });
+    });
+    
+    document.querySelectorAll('#start-precision .precision-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#start-precision .precision-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            startPrecision = parseInt(btn.dataset.precision);
+            updateDateFieldsVisibility('start');
+        });
+    });
+    
+    document.querySelectorAll('#end-precision .precision-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#end-precision .precision-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            endPrecision = parseInt(btn.dataset.precision);
+            updateDateFieldsVisibility('end');
+        });
+    });
+}
+
+function updateDateFieldsVisibility(prefix) {
+    const precision = prefix === 'start' ? startPrecision : endPrecision;
+    const monthField = document.getElementById(prefix + '-month')?.parentElement;
+    const dayField = document.getElementById(prefix + '-day')?.parentElement;
+    if (monthField) monthField.style.display = precision >= 1 ? '' : 'none';
+    if (dayField) dayField.style.display = precision >= 2 ? '' : 'none';
+}
+
+async function loadEventSubCategories() {
     const categoryId = document.getElementById('event-category-select').value;
-    const tabsEl = document.getElementById('sub-category-tabs');
+    const tabsEl = document.getElementById('event-sub-category-tabs');
     
     if (!categoryId) {
         tabsEl.innerHTML = '<span style="color: #9ca3af; font-size: 13px;">请先选择分类</span>';
         selectedSubCategoryId = null;
-        clearMarkers();
-        showMapPlaceholder('请先选择分类和子分类，绑定地图后即可在此处出题');
+        selectedCategoryId = null;
+        currentSubCategoryData = null;
+        clearEventsWorkspace();
         return;
     }
     
@@ -174,160 +224,245 @@ async function loadSubCategories() {
     const res = await api(`/categories/${categoryId}/sub-categories`);
     
     if (!res.success || res.data.length === 0) {
-        tabsEl.innerHTML = '<span style="color: #9ca3af; font-size: 13px;">该分类下暂无子分类</span>';
+        tabsEl.innerHTML = '<span style="color: #9ca3af; font-size: 13px;">该分类下暂无子分类，请先去分类管理中创建</span>';
         selectedSubCategoryId = null;
-        clearMarkers();
-        showMapPlaceholder('该分类下暂无子分类，请先在「分类管理」中添加子分类并绑定地图');
+        currentSubCategoryData = null;
+        clearEventsWorkspace();
         return;
     }
     
     let html = '';
     res.data.forEach((sc, index) => {
-        const active = index === 0 ? 'active' : '';
-        html += `<span class="sub-category-tab ${active}" data-id="${sc.id}" onclick="selectSubCategory(${sc.id})">${escapeHtml(sc.name)}</span>`;
+        const hasMap = sc.map_id != null;
+        const tagClass = hasMap ? 'tag-green' : 'tag-orange';
+        const tagText = hasMap ? '✓ 已绑地图' : '⚠ 未绑地图';
+        html += `<span class="sub-category-tab" data-id="${sc.id}" onclick="selectEventSubCategory(${sc.id})" style="position:relative;">
+            ${escapeHtml(sc.name)}
+            <span class="tag ${tagClass}" style="margin-left:6px;font-size:10px;padding:1px 6px;">${tagText}</span>
+        </span>`;
     });
     tabsEl.innerHTML = html;
     
-    if (res.data.length > 0) {
-        selectSubCategory(res.data[0].id);
+    const firstWithMap = res.data.find(sc => sc.map_id != null);
+    if (firstWithMap) {
+        selectEventSubCategory(firstWithMap.id);
+    } else if (res.data.length > 0) {
+        tabsEl.innerHTML += '<p style="color:#ef4444;font-size:12px;margin-top:8px;width:100%;">⚠️ 该分类下所有子分类都未绑定地图，请先在分类管理中绑定地图</p>';
+        clearEventsWorkspace();
     }
 }
 
-function selectSubCategory(subCatId) {
-    selectedSubCategoryId = subCatId;
-    
-    document.querySelectorAll('.sub-category-tab').forEach(tab => {
-        tab.classList.toggle('active', parseInt(tab.dataset.id) === subCatId);
-    });
-    
-    loadEventsForSubCategory(subCatId);
-    loadSubCategoryMap(subCatId);
-}
-
-async function loadSubCategoryMap(subCatId) {
-    const res = await api(`/categories/sub-categories/${subCatId}`);
-    
-    if (!res.success || !res.data.map_id) {
-        showMapPlaceholder('该子分类未绑定地图，请在「分类管理」中为子分类绑定地图后再出题');
-        return;
-    }
-    
-    const sc = res.data;
-    const mapId = sc.map_id;
-    
-    const mapRes = await api(`/maps/${mapId}`);
-    if (!mapRes.success) return;
-    
-    currentMapData = mapRes.data;
-    initEventMap(mapRes.data, sc);
-}
-
-function showMapPlaceholder(msg) {
+function clearEventsWorkspace() {
+    document.getElementById('events-workspace').style.display = 'none';
+    document.getElementById('events-empty').style.display = 'block';
     if (map) {
         map.remove();
         map = null;
     }
     clearMarkers();
-    const mapEl = document.getElementById('event-map');
-    const placeholderEl = document.getElementById('map-placeholder');
-    const listPanel = document.getElementById('event-list-panel');
-    const formPanel = document.getElementById('event-form-panel');
-    if (mapEl) mapEl.style.display = 'none';
-    if (listPanel) listPanel.style.display = 'none';
-    if (formPanel) formPanel.style.display = 'none';
-    if (placeholderEl) {
-        placeholderEl.style.display = 'flex';
-        const textEl = placeholderEl.querySelector('.placeholder-text');
-        if (textEl) textEl.textContent = msg || '请选择分类和子分类';
-    }
 }
 
-function hideMapPlaceholder() {
-    const mapEl = document.getElementById('event-map');
-    const placeholderEl = document.getElementById('map-placeholder');
-    const listPanel = document.getElementById('event-list-panel');
-    if (mapEl) mapEl.style.display = '';
-    if (placeholderEl) placeholderEl.style.display = 'none';
-    if (listPanel) listPanel.style.display = '';
-}
-
-function initEventMap(mapData, subCategory) {
-    if (!mapData) return;
+function selectEventSubCategory(subCatId) {
+    selectedSubCategoryId = subCatId;
     
+    document.querySelectorAll('#event-sub-category-tabs .sub-category-tab').forEach(tab => {
+        tab.classList.toggle('active', parseInt(tab.dataset.id) === subCatId);
+    });
+    
+    loadSubCategoryData(subCatId);
+}
+
+async function loadSubCategoryData(subCatId) {
+    const res = await api(`/categories/sub-categories/${subCatId}`);
+    if (!res.success) {
+        alert('加载子分类信息失败');
+        return;
+    }
+    
+    const sc = res.data;
+    currentSubCategoryData = sc;
+    
+    if (!sc.map_id) {
+        clearEventsWorkspace();
+        alert('该子分类未绑定地图，请先在分类管理中绑定地图');
+        return;
+    }
+    
+    document.getElementById('events-empty').style.display = 'none';
+    document.getElementById('events-workspace').style.display = 'block';
+    
+    document.getElementById('map-info-text').textContent = `🗺️ ${sc.category_name} / ${sc.name} - ${sc.map_name || '未知地图'}`;
+    
+    setTimeout(() => initMapForEvents(sc), 50);
+}
+
+function addTileLayersToMap(mapInstance, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds, tileSize) {
+    if (tileType === 'custom' && tileUrl) {
+        const customUrl = tileUrl;
+        const tileOptions = {
+            noWrap: crsType === 'simple',
+            tileSize: tileSize || 256,
+            minZoom: minZoom,
+            maxZoom: maxZoom,
+            minNativeZoom: minZoom,
+            maxNativeZoom: maxZoom
+        };
+        if (tileSd) {
+            tileOptions.subdomains = tileSd.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        if (bounds) {
+            tileOptions.bounds = bounds;
+        }
+        L.tileLayer(customUrl, tileOptions).addTo(mapInstance);
+        if (bounds && crsType === 'simple') {
+            try {
+                mapInstance.fitBounds(bounds, { animate: false });
+            } catch(e) {}
+        }
+        return;
+    }
+
+    if (tileType === 'osm') {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            subdomains: ['a','b','c'],
+            minZoom: minZoom,
+            maxZoom: maxZoom,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(mapInstance);
+        return;
+    }
+
+    if (tileType === 'amap_street') {
+        L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+            subdomains: ['1','2','3','4'],
+            minZoom: minZoom,
+            maxZoom: maxZoom,
+            attribution: '&copy; 高德地图'
+        }).addTo(mapInstance);
+        return;
+    }
+
+    if (tileType === 'amap_satellite') {
+        L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
+            subdomains: ['1','2','3','4'],
+            minZoom: minZoom,
+            maxZoom: maxZoom,
+            attribution: '&copy; 高德卫星'
+        }).addTo(mapInstance);
+        L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', {
+            subdomains: ['1','2','3','4'],
+            minZoom: Math.max(minZoom, 3),
+            maxZoom: maxZoom
+        }).addTo(mapInstance);
+        return;
+    }
+
+    if (tileType === 'hybrid') {
+        L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+            subdomains: ['1','2','3','4'],
+            minZoom: minZoom,
+            maxZoom: maxZoom,
+            attribution: '&copy; 高德地图'
+        }).addTo(mapInstance);
+        return;
+    }
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        subdomains: ['a','b','c'],
+        minZoom: minZoom,
+        maxZoom: maxZoom
+    }).addTo(mapInstance);
+}
+
+function initMapForEvents(subCategory) {
     if (map) {
         map.remove();
         map = null;
     }
     
-    hideMapPlaceholder();
-    
     const mapEl = document.getElementById('event-map');
     if (!mapEl || mapEl.offsetHeight === 0) {
-        setTimeout(() => initEventMap(mapData, subCategory), 100);
+        setTimeout(() => initMapForEvents(subCategory), 100);
         return;
     }
     
-    const crs = mapData.crs_type === 'simple' ? L.CRS.Simple : L.CRS.EPSG3857;
+    let center, zoom, minZoom, maxZoom;
+    let tileType = 'hybrid';
+    let tileUrl = '';
+    let tileSd = 'a,b,c';
+    let crsType = 'epsg3857';
+    let bounds = null;
+    let tileSize = 256;
+
+    if (subCategory) {
+        if (subCategory.map_tile_size) tileSize = parseInt(subCategory.map_tile_size);
+        if (subCategory.center_lat != null && subCategory.center_lng != null) {
+            center = [parseFloat(subCategory.center_lat), parseFloat(subCategory.center_lng)];
+        }
+        if (subCategory.default_zoom != null) zoom = parseInt(subCategory.default_zoom);
+        if (subCategory.map_min_zoom != null) minZoom = parseInt(subCategory.map_min_zoom);
+        if (subCategory.map_max_zoom != null) maxZoom = parseInt(subCategory.map_max_zoom);
+        if (subCategory.map_tile_type) tileType = subCategory.map_tile_type;
+        if (subCategory.map_tile_url) tileUrl = subCategory.map_tile_url;
+        if (subCategory.map_tile_subdomains) tileSd = subCategory.map_tile_subdomains;
+        if (subCategory.map_crs_type) crsType = subCategory.map_crs_type;
+        if (subCategory.map_bounds_south != null && subCategory.map_bounds_west != null && 
+            subCategory.map_bounds_north != null && subCategory.map_bounds_east != null &&
+            subCategory.map_bounds_south !== '') {
+            bounds = [
+                [parseFloat(subCategory.map_bounds_south), parseFloat(subCategory.map_bounds_west)],
+                [parseFloat(subCategory.map_bounds_north), parseFloat(subCategory.map_bounds_east)]
+            ];
+        }
+    }
+
+    if (crsType === 'simple' && bounds) {
+        const centerLat = (bounds[0][0] + bounds[1][0]) / 2;
+        const centerLng = (bounds[0][1] + bounds[1][1]) / 2;
+        center = [centerLat, centerLng];
+    } else if (!center) {
+        center = [subCategory?.center_lat ?? subCategory?.map_center_lat ?? 30, 
+                  subCategory?.center_lng ?? subCategory?.map_center_lng ?? 120];
+    }
+    if (zoom == null) zoom = subCategory?.default_zoom ?? subCategory?.map_default_zoom ?? 2;
+    if (minZoom == null) minZoom = subCategory?.map_min_zoom ?? 0;
+    if (maxZoom == null) maxZoom = subCategory?.map_max_zoom ?? 18;
+
+    const crs = crsType === 'simple' ? L.CRS.Simple : L.CRS.EPSG3857;
     
     const mapOptions = {
         crs: crs,
-        minZoom: mapData.min_zoom || 0,
-        maxZoom: mapData.max_zoom || 18,
-        zoomSnap: 0.25,
+        center: center,
+        zoom: zoom,
+        minZoom: minZoom,
+        maxZoom: maxZoom,
+        zoomControl: true,
+        worldCopyJump: crsType !== 'simple',
+        preferCanvas: crsType === 'simple',
         attributionControl: false
     };
+    if (crsType === 'simple') {
+        mapOptions.zoomSnap = 0;
+    }
     
     map = L.map('event-map', mapOptions);
     
-    let tileUrl = mapData.tile_url;
-    if (mapData.tile_type === 'osm') {
-        tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    addTileLayersToMap(map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds, tileSize);
+
+    if (crsType === 'simple' && bounds) {
+        try {
+            map.setMaxBounds(bounds);
+        } catch(e) {}
     }
     
-    const tileOptions = {
-        noWrap: mapData.crs_type === 'simple',
-        tileSize: mapData.tile_size || 256
-    };
+    map.on('click', onEventsMapClick);
+    map.on('mousemove', onEventsMapMove);
     
-    if (mapData.tile_subdomains) {
-        tileOptions.subdomains = mapData.tile_subdomains.split(',');
-    }
-    
-    if (mapData.bounds_south !== null && mapData.bounds_south !== undefined) {
-        tileOptions.bounds = [
-            [mapData.bounds_south, mapData.bounds_west],
-            [mapData.bounds_north, mapData.bounds_east]
-        ];
-    }
-    
-    L.tileLayer(tileUrl, tileOptions).addTo(map);
-    
-    let centerLat = subCategory?.center_lat ?? mapData.center_lat ?? 30;
-    let centerLng = subCategory?.center_lng ?? mapData.center_lng ?? 120;
-    let defaultZoom = subCategory?.default_zoom ?? mapData.default_zoom ?? 2;
-    
-    if (mapData.bounds_south !== null && mapData.bounds_south !== undefined) {
-        const bounds = [
-            [mapData.bounds_south, mapData.bounds_west],
-            [mapData.bounds_north, mapData.bounds_east]
-        ];
-        map.fitBounds(bounds, { animate: false });
-    } else {
-        map.setView([centerLat, centerLng], defaultZoom);
-    }
-    
-    map.on('click', onMapClick);
-    map.on('mousemove', onMapMove);
-    
-    loadEventsForSubCategory(selectedSubCategoryId);
+    resetEventForm();
+    loadEventsForCurrentSubCategory();
 }
 
-function onMapClick(e) {
-    if (!selectedSubCategoryId) {
-        alert('请先选择子分类');
-        return;
-    }
-    
+function onEventsMapClick(e) {
     if (tempMarker) {
         map.removeLayer(tempMarker);
     }
@@ -335,45 +470,125 @@ function onMapClick(e) {
     tempMarker = L.marker(e.latlng, { draggable: true }).addTo(map);
     tempMarker.on('dragend', function() {
         const pos = tempMarker.getLatLng();
-        document.getElementById('event-lat').value = pos.lat.toFixed(6);
-        document.getElementById('event-lng').value = pos.lng.toFixed(6);
+        updateCoordDisplay(pos.lat, pos.lng);
     });
     
-    document.getElementById('event-lat').value = e.latlng.lat.toFixed(6);
-    document.getElementById('event-lng').value = e.lng.toFixed(6);
+    updateCoordDisplay(e.latlng.lat, e.latlng.lng);
     
+    const sidePanel = document.querySelector('.events-side-panel');
+    if (sidePanel) {
+        sidePanel.classList.add('highlight-flash');
+        setTimeout(() => sidePanel.classList.remove('highlight-flash'), 1500);
+    }
+    
+    const titleInput = document.getElementById('event-title');
+    if (titleInput) {
+        titleInput.focus();
+    }
+}
+
+function updateCoordDisplay(lat, lng) {
+    document.getElementById('disp-lat').textContent = Number(lat).toFixed(6);
+    document.getElementById('disp-lng').textContent = Number(lng).toFixed(6);
+    document.getElementById('coord-hint').style.display = 'none';
+    document.getElementById('disp-lat').style.color = '#059669';
+    document.getElementById('disp-lng').style.color = '#059669';
+}
+
+function onEventsMapMove(e) {
+    document.getElementById('map-coords').textContent = 
+        `纬度: ${e.latlng.lat.toFixed(4)} | 经度: ${e.latlng.lng.toFixed(4)}`;
+}
+
+function resetEventForm() {
     editingEventId = null;
-    document.getElementById('event-form-title').textContent = '添加事件';
+    document.getElementById('event-form-title').textContent = '➕ 添加事件';
+    
     document.getElementById('event-title').value = '';
-    document.getElementById('event-start-ts').value = '';
-    document.getElementById('event-start-precision').value = '0';
-    document.getElementById('event-end-ts').value = '';
-    document.getElementById('event-end-precision').value = '0';
+    document.getElementById('event-location-name').value = '';
     document.getElementById('event-description').value = '';
     document.getElementById('event-tips').value = '';
-    document.getElementById('event-location-name').value = '';
     
-    document.getElementById('event-form-panel').style.display = 'flex';
-    document.getElementById('event-title').focus();
-}
-
-function onMapMove(e) {
-    document.getElementById('coord-display').textContent = 
-        `纬度: ${e.latlng.lat.toFixed(4)} | 经度: ${e.latlng.lng.toFixed(4)} | 点击地图添加事件`;
-}
-
-function closeEventForm() {
-    document.getElementById('event-form-panel').style.display = 'none';
-    if (tempMarker) {
+    document.getElementById('start-year').value = '';
+    document.getElementById('start-month').value = '';
+    document.getElementById('start-day').value = '';
+    document.getElementById('end-year').value = '';
+    document.getElementById('end-month').value = '';
+    document.getElementById('end-day').value = '';
+    
+    startEra = 'ce';
+    endEra = 'ce';
+    startPrecision = 2;
+    endPrecision = 2;
+    
+    document.querySelectorAll('#start-era .era-btn').forEach(b => b.classList.toggle('active', b.dataset.era === 'ce'));
+    document.querySelectorAll('#end-era .era-btn').forEach(b => b.classList.toggle('active', b.dataset.era === 'ce'));
+    document.querySelectorAll('#start-precision .precision-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.precision) === 2));
+    document.querySelectorAll('#end-precision .precision-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.precision) === 2));
+    
+    updateDateFieldsVisibility('start');
+    updateDateFieldsVisibility('end');
+    
+    document.getElementById('disp-lat').textContent = '-';
+    document.getElementById('disp-lng').textContent = '-';
+    document.getElementById('coord-hint').style.display = '';
+    document.getElementById('disp-lat').style.color = '#6b7280';
+    document.getElementById('disp-lng').style.color = '#6b7280';
+    
+    if (tempMarker && map) {
         map.removeLayer(tempMarker);
         tempMarker = null;
     }
 }
 
-async function saveEvent() {
+function syncEndTime() {
+    document.getElementById('end-year').value = document.getElementById('start-year').value;
+    document.getElementById('end-month').value = document.getElementById('start-month').value;
+    document.getElementById('end-day').value = document.getElementById('start-day').value;
+    
+    document.querySelectorAll('#end-era .era-btn').forEach(b => b.classList.toggle('active', b.dataset.era === startEra));
+    endEra = startEra;
+    
+    document.querySelectorAll('#end-precision .precision-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.precision) === startPrecision));
+    endPrecision = startPrecision;
+    
+    updateDateFieldsVisibility('end');
+}
+
+function dateToTs(year, month, day, era, precision) {
+    let y = parseInt(year) || 0;
+    if (era === 'bce' && y > 0) y = -y;
+    const m = precision >= 1 ? (parseInt(month) || 1) : 1;
+    const d = precision >= 2 ? (parseInt(day) || 1) : 1;
+    if (y === 0 && !year) return null;
+    if (y >= 0) {
+        return y * 10000 + m * 100 + d;
+    } else {
+        return y * 10000 - m * 100 - d;
+    }
+}
+
+function tsToDateParts(ts) {
+    if (ts === null || ts === undefined || ts === '') return { year: '', month: '', day: '', era: 'ce', precision: 2 };
+    const sign = ts < 0 ? -1 : 1;
+    const absTs = Math.abs(ts);
+    const day = absTs % 100;
+    const rest = Math.floor(absTs / 100);
+    const month = rest % 100;
+    const year = Math.floor(rest / 100) * sign;
+    return {
+        year: Math.abs(year).toString(),
+        month: month ? month.toString() : '',
+        day: day ? day.toString() : '',
+        era: year < 0 ? 'bce' : 'ce',
+        precision: day ? 2 : (month ? 1 : 0)
+    };
+}
+
+function saveEventForm() {
     const title = document.getElementById('event-title').value.trim();
-    const lat = parseFloat(document.getElementById('event-lat').value);
-    const lng = parseFloat(document.getElementById('event-lng').value);
+    const latStr = document.getElementById('disp-lat').textContent;
+    const lngStr = document.getElementById('disp-lng').textContent;
     
     if (!selectedSubCategoryId) {
         alert('请先选择子分类');
@@ -383,22 +598,45 @@ async function saveEvent() {
         alert('请输入事件标题');
         return;
     }
-    if (isNaN(lat) || isNaN(lng)) {
-        alert('请在地图上点击选择位置');
+    if (latStr === '-' || lngStr === '-') {
+        alert('请先在地图上点击选择位置');
         return;
     }
     
-    const startTsStr = document.getElementById('event-start-ts').value.trim();
-    const endTsStr = document.getElementById('event-end-ts').value.trim();
+    const lat = parseFloat(latStr);
+    const lng = parseFloat(lngStr);
+    if (isNaN(lat) || isNaN(lng)) {
+        alert('坐标无效，请重新在地图上点击选择');
+        return;
+    }
+    
+    const startTs = dateToTs(
+        document.getElementById('start-year').value,
+        document.getElementById('start-month').value,
+        document.getElementById('start-day').value,
+        startEra,
+        startPrecision
+    );
+    
+    const endYear = document.getElementById('end-year').value;
+    let endTs = null;
+    if (endYear) {
+        endTs = dateToTs(endYear,
+            document.getElementById('end-month').value,
+            document.getElementById('end-day').value,
+            endEra,
+            endPrecision
+        );
+    }
     
     const data = {
         category_id: selectedCategoryId,
         sub_category_id: selectedSubCategoryId,
         title: title,
-        start_ts: startTsStr ? parseInt(startTsStr) : null,
-        start_precision: parseInt(document.getElementById('event-start-precision').value),
-        end_ts: endTsStr ? parseInt(endTsStr) : null,
-        end_precision: parseInt(document.getElementById('event-end-precision').value),
+        start_ts: startTs,
+        start_precision: startPrecision,
+        end_ts: endTs,
+        end_precision: endPrecision,
         description: document.getElementById('event-description').value.trim() || null,
         tips: document.getElementById('event-tips').value.trim() || null,
         location_lat: lat,
@@ -406,6 +644,10 @@ async function saveEvent() {
         location_name: document.getElementById('event-location-name').value.trim() || null
     };
     
+    saveEvent(data);
+}
+
+async function saveEvent(data) {
     let res;
     if (editingEventId) {
         res = await api(`/events/${editingEventId}`, {
@@ -420,24 +662,24 @@ async function saveEvent() {
     }
     
     if (res.success) {
-        closeEventForm();
-        loadEventsForSubCategory(selectedSubCategoryId);
+        resetEventForm();
+        loadEventsForCurrentSubCategory();
         loadStats();
     } else {
         alert('保存失败: ' + res.message);
     }
 }
 
-async function loadEventsForSubCategory(subCatId) {
-    if (!selectedCategoryId || !subCatId) return;
+async function loadEventsForCurrentSubCategory() {
+    if (!selectedCategoryId || !selectedSubCategoryId) return;
     
-    const res = await api(`/events?category_id=${selectedCategoryId}&sub_category_id=${subCatId}&page_size=100`);
+    const res = await api(`/events?category_id=${selectedCategoryId}&sub_category_id=${selectedSubCategoryId}&page_size=100`);
     const listEl = document.getElementById('event-list');
     const countEl = document.getElementById('event-count');
     
     if (!res.success || res.data.length === 0) {
         countEl.textContent = '0';
-        listEl.innerHTML = '<div class="empty-state"><div class="icon">📍</div><p style="font-size: 12px;">点击地图添加事件</p></div>';
+        listEl.innerHTML = '<div class="empty-state" style="padding: 30px 20px;"><div class="icon" style="font-size: 36px;">📍</div><p style="font-size: 13px; margin-top: 8px;">点击地图添加事件</p></div>';
         clearMarkers();
         return;
     }
@@ -457,7 +699,7 @@ async function loadEventsForSubCategory(subCatId) {
 }
 
 function clearMarkers() {
-    markers.forEach(m => { if (map) map.removeLayer(m); });
+    markers.forEach(m => map && map.removeLayer(m));
     markers = [];
 }
 
@@ -490,6 +732,7 @@ async function editEvent(eventId) {
     
     const e = res.data;
     editingEventId = e.id;
+    document.getElementById('event-form-title').textContent = '✏️ 编辑事件';
     
     if (map) {
         if (tempMarker) {
@@ -498,25 +741,37 @@ async function editEvent(eventId) {
         tempMarker = L.marker([e.location_lat, e.location_lng], { draggable: true }).addTo(map);
         tempMarker.on('dragend', function() {
             const pos = tempMarker.getLatLng();
-            document.getElementById('event-lat').value = pos.lat.toFixed(6);
-            document.getElementById('event-lng').value = pos.lng.toFixed(6);
+            updateCoordDisplay(pos.lat, pos.lng);
         });
         map.panTo([e.location_lat, e.location_lng]);
     }
     
-    document.getElementById('event-form-title').textContent = '编辑事件';
     document.getElementById('event-title').value = e.title || '';
-    document.getElementById('event-start-ts').value = e.start_ts || '';
-    document.getElementById('event-start-precision').value = e.start_precision || 0;
-    document.getElementById('event-end-ts').value = e.end_ts || '';
-    document.getElementById('event-end-precision').value = e.end_precision || 0;
+    document.getElementById('event-location-name').value = e.location_name || '';
     document.getElementById('event-description').value = e.description || '';
     document.getElementById('event-tips').value = e.tips || '';
-    document.getElementById('event-lat').value = e.location_lat || '';
-    document.getElementById('event-lng').value = e.location_lng || '';
-    document.getElementById('event-location-name').value = e.location_name || '';
     
-    document.getElementById('event-form-panel').style.display = 'flex';
+    updateCoordDisplay(e.location_lat, e.location_lng);
+    
+    const startParts = tsToDateParts(e.start_ts);
+    document.getElementById('start-year').value = startParts.year;
+    document.getElementById('start-month').value = startParts.month;
+    document.getElementById('start-day').value = startParts.day;
+    startEra = startParts.era;
+    startPrecision = e.start_precision != null ? e.start_precision : startParts.precision;
+    document.querySelectorAll('#start-era .era-btn').forEach(b => b.classList.toggle('active', b.dataset.era === startEra));
+    document.querySelectorAll('#start-precision .precision-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.precision) === startPrecision));
+    updateDateFieldsVisibility('start');
+    
+    const endParts = tsToDateParts(e.end_ts);
+    document.getElementById('end-year').value = endParts.year;
+    document.getElementById('end-month').value = endParts.month;
+    document.getElementById('end-day').value = endParts.day;
+    endEra = endParts.era;
+    endPrecision = e.end_precision != null ? e.end_precision : endParts.precision;
+    document.querySelectorAll('#end-era .era-btn').forEach(b => b.classList.toggle('active', b.dataset.era === endEra));
+    document.querySelectorAll('#end-precision .precision-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.precision) === endPrecision));
+    updateDateFieldsVisibility('end');
 }
 
 async function deleteEvent(eventId) {
@@ -524,7 +779,7 @@ async function deleteEvent(eventId) {
     
     const res = await api(`/events/${eventId}`, { method: 'DELETE' });
     if (res.success) {
-        loadEventsForSubCategory(selectedSubCategoryId);
+        loadEventsForCurrentSubCategory();
         loadStats();
     } else {
         alert('删除失败: ' + res.message);
@@ -667,7 +922,7 @@ async function loadSubCategoryList() {
         html += `<tr>
             <td><code>${escapeHtml(sc.code)}</code></td>
             <td>${escapeHtml(sc.name)}</td>
-            <td>${sc.map_name ? escapeHtml(sc.map_name) : '<span style="color: #999;">未绑定</span>'}</td>
+            <td>${sc.map_name ? escapeHtml(sc.map_name) : '<span style="color: #ef4444;">未绑定（无法出题）</span>'}</td>
             <td>${sc.event_count || 0}</td>
             <td>${sc.sort_order || 0}</td>
             <td>
@@ -733,7 +988,7 @@ async function loadMapSelect() {
     
     if (!res.success) return;
     
-    let options = '<option value="">不绑定</option>';
+    let options = '<option value="">不绑定（无法出题）</option>';
     res.data.forEach(m => {
         options += `<option value="${m.id}">${escapeHtml(m.name)}</option>`;
     });
@@ -759,6 +1014,9 @@ async function saveSubCategory() {
     if (!categoryId || !data.code || !data.name) {
         alert('请填写分类、编码和名称');
         return;
+    }
+    if (!data.map_id) {
+        if (!confirm('子分类未绑定地图，将无法进行出题。确定保存吗？')) return;
     }
     
     let res;
