@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/shared', express.static(WW_STATIC_PATH));
 app.use('/images', express.static(path.join(WW_STATIC_PATH, 'images')));
+app.use('/tiles', express.static(path.join(WW_STATIC_PATH, 'tiles')));
 app.use(express.static(PUBLIC_PATH));
 
 app.use('/api/categories', require('./routes/categories'));

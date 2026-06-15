@@ -670,12 +670,14 @@ function renderGamePage() {
   let tileSd = '';
   let crsType = 'epsg3857';
   let bounds = null;
+  let tileSize = 256;
 
   const selectedSubs = appState.currentSubConfigs || [];
   const firstSelectedCode = appState.selectedSubCodes[0];
   const subConfig = selectedSubs.find(s => s.code === firstSelectedCode);
 
   if (subConfig) {
+    if (subConfig.map_tile_size) tileSize = parseInt(subConfig.map_tile_size);
     if (subConfig.center_lat != null && subConfig.center_lng != null) {
       mapCenter = [parseFloat(subConfig.center_lat), parseFloat(subConfig.center_lng)];
     }
@@ -691,6 +693,13 @@ function renderGamePage() {
     if (subConfig.map_bounds_south != null && subConfig.map_bounds_west != null && subConfig.map_bounds_north != null && subConfig.map_bounds_east != null) {
       bounds = [[parseFloat(subConfig.map_bounds_south), parseFloat(subConfig.map_bounds_west)], [parseFloat(subConfig.map_bounds_north), parseFloat(subConfig.map_bounds_east)]];
     }
+  }
+
+  if (crsType === 'simple' && bounds) {
+    const centerLat = (bounds[0][0] + bounds[1][0]) / 2;
+    const centerLng = (bounds[0][1] + bounds[1][1]) / 2;
+    mapCenter = [centerLat, centerLng];
+    mapZoom = minZoom;
   }
 
   app.innerHTML = `
@@ -718,15 +727,17 @@ function renderGamePage() {
     minZoom: minZoom,
     maxZoom: maxZoom,
     zoomControl: true,
-    worldCopyJump: crsType !== 'simple'
+    worldCopyJump: crsType !== 'simple',
+    preferCanvas: crsType === 'simple'
   };
   if (crsType === 'simple') {
     mapOptions.crs = L.CRS.Simple;
+    mapOptions.zoomSnap = 0;
   }
 
   appState.map = L.map('map', mapOptions);
 
-  addTileLayersToMap(appState.map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds);
+  addTileLayersToMap(appState.map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds, tileSize);
 
   appState.admin1Labels = [];
   if (crsType !== 'simple') {
@@ -764,7 +775,7 @@ function renderGamePage() {
   });
 }
 
-function addTileLayersToMap(map, tileType = 'hybrid', customUrl = '', customSd = 'a,b,c', minZoom = 2, maxZoom = 8, crsType = 'epsg3857', bounds = null) {
+function addTileLayersToMap(map, tileType = 'hybrid', customUrl = '', customSd = 'a,b,c', minZoom = 2, maxZoom = 8, crsType = 'epsg3857', bounds = null, tileSize = 256) {
   const sdArr = customSd ? customSd.split(',').map(s => s.trim()).filter(Boolean) : ['1','2','3','4'];
 
   if (crsType === 'simple' && bounds) {
@@ -778,7 +789,10 @@ function addTileLayersToMap(map, tileType = 'hybrid', customUrl = '', customSd =
       subdomains: sdArr.length > 0 ? sdArr : undefined,
       minZoom: minZoom,
       maxZoom: maxZoom,
-      noWrap: true
+      minNativeZoom: minZoom,
+      maxNativeZoom: maxZoom,
+      noWrap: true,
+      tileSize: tileSize || 256
     };
     if (bounds) {
       tileOptions.bounds = bounds;

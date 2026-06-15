@@ -1042,7 +1042,7 @@ const COUNTRIES_WITH_ADMIN1 = new Set([
   '尼加拉瓜', '厄立特里亚', '朝鲜', '韩国'
 ]);
 
-function addTileLayersToMap(map, tileType, customUrl, customSd, minZoom, maxZoom, crsType, bounds) {
+function addTileLayersToMap(map, tileType, customUrl, customSd, minZoom, maxZoom, crsType, bounds, tileSize) {
   const sdArr = customSd ? customSd.split(',').map(s => s.trim()).filter(Boolean) : ['1','2','3','4'];
 
   if (crsType === 'simple' && bounds) {
@@ -1056,7 +1056,10 @@ function addTileLayersToMap(map, tileType, customUrl, customSd, minZoom, maxZoom
       subdomains: sdArr.length > 0 ? sdArr : undefined,
       minZoom: minZoom,
       maxZoom: maxZoom,
-      noWrap: true
+      minNativeZoom: minZoom,
+      maxNativeZoom: maxZoom,
+      noWrap: true,
+      tileSize: tileSize || 256
     };
     if (bounds) {
       tileOptions.bounds = bounds;
@@ -1131,8 +1134,10 @@ function initMap() {
   let tileSd = 'a,b,c';
   let crsType = 'epsg3857';
   let bounds = null;
+  let tileSize = 256;
 
   if (sub) {
+    if (sub.map_tile_size) tileSize = parseInt(sub.map_tile_size);
     if (sub.center_lat != null && sub.center_lng != null) {
       center = [parseFloat(sub.center_lat), parseFloat(sub.center_lng)];
     }
@@ -1148,7 +1153,11 @@ function initMap() {
     }
   }
 
-  if (!center) {
+  if (crsType === 'simple' && bounds) {
+    const centerLat = (bounds[0][0] + bounds[1][0]) / 2;
+    const centerLng = (bounds[0][1] + bounds[1][1]) / 2;
+    center = [centerLat, centerLng];
+  } else if (!center) {
     const subCode = sub?.code || '';
     if (subCode === 'china') {
       center = [35, 105];
@@ -1166,15 +1175,17 @@ function initMap() {
     minZoom: minZoom,
     maxZoom: maxZoom,
     zoomControl: true,
-    worldCopyJump: crsType !== 'simple'
+    worldCopyJump: crsType !== 'simple',
+    preferCanvas: crsType === 'simple'
   };
   if (crsType === 'simple') {
     mapOptions.crs = L.CRS.Simple;
+    mapOptions.zoomSnap = 0;
   }
 
   state.map = L.map('map', mapOptions);
 
-  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds);
+  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds, tileSize);
 
   if (crsType !== 'simple') {
     loadChinaProvinces();
@@ -2353,6 +2364,7 @@ function openEditMapView(event) {
   let mapMaxZoom = 8;
   let crsType = 'epsg3857';
   let bounds = null;
+  let tileSize = 256;
 
   if (sub) {
     if (sub.map_tile_type) tileType = sub.map_tile_type;
@@ -2361,13 +2373,19 @@ function openEditMapView(event) {
     if (sub.map_min_zoom != null) mapMinZoom = parseInt(sub.map_min_zoom);
     if (sub.map_max_zoom != null) mapMaxZoom = parseInt(sub.map_max_zoom);
     if (sub.map_crs_type) crsType = sub.map_crs_type;
+    if (sub.map_tile_size) tileSize = parseInt(sub.map_tile_size);
     if (sub.map_bounds_south != null && sub.map_bounds_west != null && sub.map_bounds_north != null && sub.map_bounds_east != null) {
       bounds = [[parseFloat(sub.map_bounds_south), parseFloat(sub.map_bounds_west)], [parseFloat(sub.map_bounds_north), parseFloat(sub.map_bounds_east)]];
     }
   }
 
   let center, zoom;
-  if (event.location_lat && event.location_lng) {
+  if (crsType === 'simple' && bounds) {
+    const centerLat = (bounds[0][0] + bounds[1][0]) / 2;
+    const centerLng = (bounds[0][1] + bounds[1][1]) / 2;
+    center = [centerLat, centerLng];
+    zoom = mapMinZoom;
+  } else if (event.location_lat && event.location_lng) {
     center = [event.location_lat, event.location_lng];
     zoom = 4;
   } else if (sub && sub.center_lat != null && sub.center_lng != null) {
@@ -2390,15 +2408,17 @@ function openEditMapView(event) {
     minZoom: mapMinZoom,
     maxZoom: mapMaxZoom,
     zoomControl: true,
-    worldCopyJump: crsType !== 'simple'
+    worldCopyJump: crsType !== 'simple',
+    preferCanvas: crsType === 'simple'
   };
   if (crsType === 'simple') {
     mapOptions.crs = L.CRS.Simple;
+    mapOptions.zoomSnap = 0;
   }
 
   state.map = L.map('map', mapOptions);
 
-  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, mapMinZoom, mapMaxZoom, crsType, bounds);
+  addTileLayersToMap(state.map, tileType, tileUrl, tileSd, mapMinZoom, mapMaxZoom, crsType, bounds, tileSize);
 
   if (crsType !== 'simple') {
     loadChinaProvinces();
