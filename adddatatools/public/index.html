@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>众筹出题器 - 添加地图与事件</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif; background: #f5f7fa; color: #333; }
+        
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 220px;
+            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #7ec8e3;
+        }
+        
+        .sidebar-header p {
+            font-size: 12px;
+            color: #8899aa;
+            margin-top: 4px;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 0;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        
+        .nav-item.active {
+            background: rgba(126, 200, 227, 0.15);
+            border-left-color: #7ec8e3;
+            color: #7ec8e3;
+        }
+        
+        .nav-item .icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 12px;
+            color: #667788;
+        }
+        
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .toolbar {
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
+        }
+        
+        .toolbar h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .toolbar-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: #fff;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+        
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        tr:hover {
+            background: #f9fafb;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        
+        .tag-green {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .tag-orange {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+        
+        .tag-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: #fff;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-header h3 {
+            font-size: 18px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+        
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card .label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .stat-card.blue .value { color: #3b82f6; }
+        .stat-card.green .value { color: #10b981; }
+        .stat-card.orange .value { color: #f59e0b; }
+        .stat-card.purple .value { color: #8b5cf6; }
+        
+        .map-container {
+            height: calc(100vh - 200px);
+            min-height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .event-form-panel {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 360px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: calc(100vh - 220px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .event-form-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .event-form-header h3 {
+            font-size: 16px;
+        }
+        
+        .event-form-body {
+            padding: 16px 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .event-list-panel {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 300px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: calc(100vh - 220px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .event-list-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .event-list-header h3 {
+            font-size: 14px;
+        }
+        
+        .event-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            padding: 10px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .event-item:hover {
+            background: #f9fafb;
+        }
+        
+        .event-item .title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .event-item .meta {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+        
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .map-wrapper {
+            position: relative;
+        }
+        
+        .coord-display {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        .sub-category-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .sub-category-tab {
+            padding: 6px 14px;
+            background: #e5e7eb;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .sub-category-tab.active {
+            background: #3b82f6;
+            color: #fff;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+        }
+        
+        .leaflet-popup-content b {
+            color: #1f2937;
+        }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>📝 众筹出题器</h1>
+                <p>快速添加地图与事件</p>
+            </div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" data-page="dashboard">
+                    <span class="icon">📊</span>
+                    <span>数据概览</span>
+                </div>
+                <div class="nav-item" data-page="events">
+                    <span class="icon">📍</span>
+                    <span>出题/添加事件</span>
+                </div>
+                <div class="nav-item" data-page="categories">
+                    <span class="icon">📁</span>
+                    <span>分类管理</span>
+                </div>
+                <div class="nav-item" data-page="maps">
+                    <span class="icon">🗺️</span>
+                    <span>地图管理</span>
+                </div>
+                <div class="nav-item" data-page="export">
+                    <span class="icon">📤</span>
+                    <span>数据导出/导入</span>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                v1.0 | 独立数据库
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="toolbar">
+                <h2 id="page-title">数据概览</h2>
+                <div class="toolbar-actions" id="toolbar-actions"></div>
+            </div>
+            <div class="content">
+                <div class="page active" id="page-dashboard">
+                    <div class="stat-cards">
+                        <div class="stat-card blue">
+                            <div class="label">地图数量</div>
+                            <div class="value" id="stat-maps">0</div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="label">分类数量</div>
+                            <div class="value" id="stat-categories">0</div>
+                        </div>
+                        <div class="stat-card orange">
+                            <div class="label">子分类数量</div>
+                            <div class="value" id="stat-subcats">0</div>
+                        </div>
+                        <div class="stat-card purple">
+                            <div class="label">事件总数</div>
+                            <div class="value" id="stat-events">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>快速开始</h3>
+                        </div>
+                        <div class="card-body">
+                            <p style="margin-bottom: 12px; color: #6b7280;">按照以下步骤开始出题：</p>
+                            <ol style="padding-left: 20px; line-height: 2; color: #4b5563;">
+                                <li>在 <b>地图管理</b> 中添加你需要的地图（默认已有世界地图）</li>
+                                <li>在 <b>分类管理</b> 中创建分类和子分类，并绑定地图</li>
+                                <li>在 <b>出题/添加事件</b> 中选择子分类，在地图上点击添加事件</li>
+                                <li>在 <b>数据导出/导入</b> 中导出数据，导入到 ww 或 hsd 应用</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>最近添加的事件</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="recent-events-list">
+                                <div class="empty-state">
+                                    <div class="icon">📝</div>
+                                    <p>暂无事件，快去添加吧！</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page" id="page-events">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>选择分类</label>
+                                    <select id="event-category-select" onchange="loadSubCategories()">
+                                        <option value="">请选择分类</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>选择子分类</label>
+                                    <div id="sub-category-tabs" class="sub-category-tabs">
+                                        <span style="color: #9ca3af; font-size: 13px;">请先选择分类</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="map-wrapper">
+                                <div id="event-map" class="map-container"></div>
+                                <div class="coord-display" id="coord-display">点击地图添加事件</div>
+                                
+                                <div class="event-list-panel" id="event-list-panel">
+                                    <div class="event-list-header">
+                                        <h3>📋 事件列表 <span id="event-count">0</span></h3>
+                                    </div>
+                                    <div class="event-list" id="event-list">
+                                        <div class="empty-state">
+                                            <div class="icon">📍</div>
+                                            <p style="font-size: 12px;">点击地图添加事件</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="event-form-panel" id="event-form-panel" style="display: none;">
+                                    <div class="event-form-header">
+                                        <h3 id="event-form-title">添加事件</h3>
+                                        <button class="modal-close" onclick="closeEventForm()">×</button>
+                                    </div>
+                                    <div class="event-form-body">
+                                        <div class="form-group">
+                                            <label>事件标题 *</label>
+                                            <input type="text" id="event-title" placeholder="输入事件标题">
+                                        </div>
+                                        
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>开始时间</label>
+                                                <input type="text" id="event-start-ts" placeholder="如：2024 或 20240101">
+                                                <p class="hint">格式：年份(2024) 或 年月日(20240101)，公元前加负号</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>精度</label>
+                                                <select id="event-start-precision">
+                                                    <option value="0">年</option>
+                                                    <option value="1">月</option>
+                                                    <option value="2">日</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>结束时间</label>
+                                                <input type="text" id="event-end-ts" placeholder="选填">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>精度</label>
+                                                <select id="event-end-precision">
+                                                    <option value="0">年</option>
+                                                    <option value="1">月</option>
+                                                    <option value="2">日</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>描述</label>
+                                            <textarea id="event-description" placeholder="事件详细描述"></textarea>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>提示/答案</label>
+                                            <textarea id="event-tips" placeholder="提示信息或答案"></textarea>
+                                        </div>
+                                        
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>纬度</label>
+                                                <input type="number" step="any" id="event-lat" readonly>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>经度</label>
+                                                <input type="number" step="any" id="event-lng" readonly>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>地点名称</label>
+                                            <input type="text" id="event-location-name" placeholder="选填，如：北京">
+                                        </div>
+                                        
+                                        <div style="margin-top: 16px; display: flex; gap: 8px;">
+                                            <button class="btn btn-primary" style="flex: 1;" onclick="saveEvent()">保存</button>
+                                            <button class="btn btn-secondary" onclick="closeEventForm()">取消</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page" id="page-categories">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>分类列表</h3>
+                            <button class="btn btn-primary btn-sm" onclick="openCategoryModal()">+ 添加分类</button>
+                        </div>
+                        <div class="card-body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>编码</th>
+                                        <th>名称</th>
+                                        <th>子分类数</th>
+                                        <th>事件数</th>
+                                        <th>排序</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="category-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>子分类管理</h3>
+                            <div>
+                                <select id="sub-category-filter" onchange="loadSubCategoryList()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db;">
+                                    <option value="">选择分类查看子分类</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="sub-category-container">
+                                <div class="empty-state">
+                                    <div class="icon">📁</div>
+                                    <p>请先选择一个分类</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page" id="page-maps">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>地图列表</h3>
+                            <button class="btn btn-primary btn-sm" onclick="openMapModal()">+ 添加地图</button>
+                        </div>
+                        <div class="card-body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>编码</th>
+                                        <th>名称</th>
+                                        <th>类型</th>
+                                        <th>坐标系</th>
+                                        <th>缩放级别</th>
+                                        <th>绑定数</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="map-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>添加地图说明</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="color: #4b5563; line-height: 1.8;">
+                                <p><b>方式一：在线瓦片地图</b></p>
+                                <p style="padding-left: 20px;">选择 OSM 或在线瓦片URL类型，直接使用网络地图。</p>
+                                <br>
+                                <p><b>方式二：本地瓦片地图</b></p>
+                                <p style="padding-left: 20px;">1. 将瓦片图片放入 <code>adddatatools/tiles/地图编码/</code> 目录</p>
+                                <p style="padding-left: 20px;">2. 瓦片命名格式：<code>{z}/{x}/{y}.png</code></p>
+                                <p style="padding-left: 20px;">3. 选择 "自定义瓦片" 类型，瓦片URL填 <code>/tiles/地图编码/{z}/{x}/{y}.png</code></p>
+                                <p style="padding-left: 20px;">4. 根据瓦片坐标系选择 CRS 类型（游戏地图通常用 simple）</p>
+                                <br>
+                                <p><b>方式三：导入现有地图</b></p>
+                                <p style="padding-left: 20px;">如果有类似 test/zeldamap 格式的地图，直接复制 tiles 目录到 tiles 文件夹下，然后添加对应地图配置即可。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page" id="page-export">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>导出数据</h3>
+                        </div>
+                        <div class="card-body">
+                            <p style="margin-bottom: 16px; color: #6b7280;">
+                                导出的数据可以直接导入到 ww 和 hsd 应用中。推荐使用 JSON 格式，兼容性更好。
+                            </p>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>导出格式</label>
+                                    <select id="export-format">
+                                        <option value="json">JSON 格式（推荐）</option>
+                                        <option value="sql">SQL 格式</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="display: flex; align-items: flex-end;">
+                                    <button class="btn btn-success" style="width: 100%;" onclick="exportData()">📥 导出数据</button>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <b>JSON 格式导入说明：</b>
+                                <ul style="margin-top: 8px; padding-left: 20px; font-size: 13px;">
+                                    <li>所有数据都用 code 编码关联，导入时自动匹配</li>
+                                    <li>地图和分类如果编码已存在则跳过（不会覆盖）</li>
+                                    <li>子分类和事件会根据分类 code 和子分类 code 自动关联</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>导入数据</h3>
+                        </div>
+                        <div class="card-body">
+                            <p style="margin-bottom: 16px; color: #6b7280;">
+                                可以导入 JSON 格式的数据文件，用于合并数据或备份恢复。
+                            </p>
+                            
+                            <div class="form-group">
+                                <label>选择 JSON 文件</label>
+                                <input type="file" id="import-file" accept=".json">
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary" onclick="importData()">📤 导入数据</button>
+                                <button class="btn btn-secondary" onclick="downloadTemplate()">📄 下载导入模板</button>
+                            </div>
+                            
+                            <div id="import-result" style="margin-top: 16px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>数据统计</h3>
+                        </div>
+                        <div class="card-body" id="export-stats">
+                            <p>加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="category-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="category-modal-title">添加分类</h3>
+                <button class="modal-close" onclick="closeModal('category-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="category-id">
+                <div class="form-group">
+                    <label>分类编码 *</label>
+                    <input type="text" id="category-code" placeholder="英文唯一标识，如：junior">
+                    <p class="hint">用英文或拼音，唯一标识，创建后不能修改</p>
+                </div>
+                <div class="form-group">
+                    <label>分类名称 *</label>
+                    <input type="text" id="category-name" placeholder="显示名称，如：初中">
+                </div>
+                <div class="form-group">
+                    <label>排序</label>
+                    <input type="number" id="category-sort" value="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('category-modal')">取消</button>
+                <button class="btn btn-primary" onclick="saveCategory()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="sub-category-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="sub-category-modal-title">添加子分类</h3>
+                <button class="modal-close" onclick="closeModal('sub-category-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="sub-category-id">
+                <div class="form-group">
+                    <label>所属分类</label>
+                    <select id="sub-category-parent">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>子分类编码 *</label>
+                    <input type="text" id="sub-category-code" placeholder="英文唯一标识">
+                    <p class="hint">同一分类下编码唯一</p>
+                </div>
+                <div class="form-group">
+                    <label>子分类名称 *</label>
+                    <input type="text" id="sub-category-name" placeholder="显示名称">
+                </div>
+                <div class="form-group">
+                    <label>绑定地图</label>
+                    <select id="sub-category-map">
+                        <option value="">不绑定</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>中心纬度</label>
+                        <input type="number" step="any" id="sub-center-lat">
+                    </div>
+                    <div class="form-group">
+                        <label>中心经度</label>
+                        <input type="number" step="any" id="sub-center-lng">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>默认缩放</label>
+                        <input type="number" id="sub-default-zoom" value="2">
+                    </div>
+                    <div class="form-group">
+                        <label>最小缩放</label>
+                        <input type="number" id="sub-min-zoom" value="2">
+                    </div>
+                    <div class="form-group">
+                        <label>最大缩放</label>
+                        <input type="number" id="sub-max-zoom" value="8">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>排序</label>
+                    <input type="number" id="sub-category-sort" value="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('sub-category-modal')">取消</button>
+                <button class="btn btn-primary" onclick="saveSubCategory()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="map-modal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 id="map-modal-title">添加地图</h3>
+                <button class="modal-close" onclick="closeModal('map-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="map-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>地图编码 *</label>
+                        <input type="text" id="map-code" placeholder="英文唯一标识">
+                        <p class="hint">创建后不能修改，瓦片目录要和这个一致</p>
+                    </div>
+                    <div class="form-group">
+                        <label>地图名称 *</label>
+                        <input type="text" id="map-name" placeholder="显示名称">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <input type="text" id="map-description" placeholder="选填">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>瓦片类型</label>
+                        <select id="map-tile-type" onchange="onTileTypeChange()">
+                            <option value="osm">OSM 标准地图</option>
+                            <option value="custom">自定义瓦片URL</option>
+                            <option value="hybrid">混合图层</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>坐标系 (CRS)</label>
+                        <select id="map-crs-type">
+                            <option value="epsg3857">EPSG3857 (标准墨卡托)</option>
+                            <option value="simple">Simple (游戏/像素地图)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="tile-url-group">
+                    <label>瓦片URL</label>
+                    <input type="text" id="map-tile-url" placeholder="如：https://{s}.tile.osm.org/{z}/{x}/{y}.png">
+                    <p class="hint">使用 {z}/{x}/{y} 占位符，{s} 表示子域名</p>
+                </div>
+                <div class="form-group">
+                    <label>瓦片子域名</label>
+                    <input type="text" id="map-tile-subdomains" placeholder="如：a,b,c">
+                    <p class="hint">逗号分隔，可选</p>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>最小缩放</label>
+                        <input type="number" id="map-min-zoom" value="2">
+                    </div>
+                    <div class="form-group">
+                        <label>最大缩放</label>
+                        <input type="number" id="map-max-zoom" value="18">
+                    </div>
+                    <div class="form-group">
+                        <label>默认缩放</label>
+                        <input type="number" id="map-default-zoom" value="2">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>中心纬度</label>
+                        <input type="number" step="any" id="map-center-lat" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label>中心经度</label>
+                        <input type="number" step="any" id="map-center-lng" value="120">
+                    </div>
+                </div>
+                <div style="padding: 10px; background: #f3f4f6; border-radius: 6px; margin-bottom: 16px;">
+                    <p style="font-size: 13px; font-weight: 500; margin-bottom: 8px;">地图边界 (Simple CRS 时使用)</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>南</label>
+                            <input type="number" step="any" id="map-bounds-south">
+                        </div>
+                        <div class="form-group">
+                            <label>西</label>
+                            <input type="number" step="any" id="map-bounds-west">
+                        </div>
+                        <div class="form-group">
+                            <label>北</label>
+                            <input type="number" step="any" id="map-bounds-north">
+                        </div>
+                        <div class="form-group">
+                            <label>东</label>
+                            <input type="number" step="any" id="map-bounds-east">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>瓦片格式</label>
+                        <select id="map-tile-ext">
+                            <option value="png">PNG</option>
+                            <option value="webp">WebP</option>
+                            <option value="jpg">JPG</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>瓦片大小</label>
+                        <input type="number" id="map-tile-size" value="256">
+                    </div>
+                    <div class="form-group">
+                        <label>排序</label>
+                        <input type="number" id="map-sort-order" value="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('map-modal')">取消</button>
+                <button class="btn btn-primary" onclick="saveMap()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
