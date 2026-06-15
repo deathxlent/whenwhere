@@ -316,7 +316,7 @@ function addTileLayersToMap(mapInstance, tileType, tileUrl, tileSd, minZoom, max
         L.tileLayer(customUrl, tileOptions).addTo(mapInstance);
         if (bounds && crsType === 'simple') {
             try {
-                mapInstance.fitBounds(bounds, { animate: false });
+                mapInstance.fitBounds(bounds, { animate: false, maxZoom: maxZoom });
             } catch(e) {}
         }
         return;
@@ -396,10 +396,16 @@ function initMapForEvents(subCategory) {
 
     if (subCategory) {
         if (subCategory.map_tile_size) tileSize = parseInt(subCategory.map_tile_size);
-        if (subCategory.center_lat != null && subCategory.center_lng != null) {
+        if (subCategory.map_center_lat != null && subCategory.map_center_lng != null) {
+            center = [parseFloat(subCategory.map_center_lat), parseFloat(subCategory.map_center_lng)];
+        } else if (subCategory.center_lat != null && subCategory.center_lng != null) {
             center = [parseFloat(subCategory.center_lat), parseFloat(subCategory.center_lng)];
         }
-        if (subCategory.default_zoom != null) zoom = parseInt(subCategory.default_zoom);
+        if (subCategory.map_default_zoom != null) {
+            zoom = parseInt(subCategory.map_default_zoom);
+        } else if (subCategory.default_zoom != null) {
+            zoom = parseInt(subCategory.default_zoom);
+        }
         if (subCategory.map_min_zoom != null) minZoom = parseInt(subCategory.map_min_zoom);
         if (subCategory.map_max_zoom != null) maxZoom = parseInt(subCategory.map_max_zoom);
         if (subCategory.map_tile_type) tileType = subCategory.map_tile_type;
@@ -442,7 +448,7 @@ function initMapForEvents(subCategory) {
         attributionControl: false
     };
     if (crsType === 'simple') {
-        mapOptions.zoomSnap = 0;
+        mapOptions.zoomSnap = 0.25;
     }
     
     map = L.map('event-map', mapOptions);
@@ -1070,6 +1076,8 @@ async function loadMapList() {
     res.data.forEach(m => {
         const typeText = {
             'osm': 'OSM标准',
+            'amap_street': '高德街道',
+            'amap_satellite': '高德卫星',
             'custom': '自定义瓦片',
             'hybrid': '混合图层'
         }[m.tile_type] || m.tile_type;
@@ -1151,11 +1159,14 @@ function openMapModal(id = null) {
 function onTileTypeChange() {
     const type = document.getElementById('map-tile-type').value;
     const urlGroup = document.getElementById('tile-url-group');
+    const sdGroup = document.getElementById('tile-sd-group');
     
-    if (type === 'osm') {
+    if (type === 'osm' || type === 'amap_street' || type === 'amap_satellite') {
         urlGroup.style.display = 'none';
+        if (sdGroup) sdGroup.style.display = 'none';
     } else {
         urlGroup.style.display = 'block';
+        if (sdGroup) sdGroup.style.display = 'block';
     }
 }
 
@@ -1187,6 +1198,17 @@ async function saveMap() {
         tile_size: parseInt(document.getElementById('map-tile-size').value) || 256,
         sort_order: parseInt(document.getElementById('map-sort-order').value) || 0
     };
+
+    if (data.tile_type === 'amap_street') {
+        data.tile_url = 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}';
+        data.tile_subdomains = '1,2,3,4';
+    } else if (data.tile_type === 'amap_satellite') {
+        data.tile_url = 'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}';
+        data.tile_subdomains = '1,2,3,4';
+    } else if (data.tile_type === 'osm') {
+        data.tile_url = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        data.tile_subdomains = 'a,b,c';
+    }
     
     if (!data.code || !data.name) {
         alert('请填写编码和名称');
