@@ -84,7 +84,7 @@ router.post('/', (req, res) => {
   const {
     category_id, sub_category_id, title,
     start_ts, start_precision, end_ts, end_precision,
-    description, location_lat, location_lng, location_name, sort_order
+    description, tips, location_lat, location_lng, location_name, sort_order
   } = req.body;
 
   if (!category_id || !sub_category_id || !title) {
@@ -94,13 +94,14 @@ router.post('/', (req, res) => {
   const result = db.prepare(`
     INSERT INTO events (category_id, sub_category_id, title,
       start_ts, start_precision, end_ts, end_precision,
-      description, location_lat, location_lng, location_name, sort_order)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      description, tips, location_lat, location_lng, location_name, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     category_id, sub_category_id, title,
     start_ts || null, start_precision !== undefined ? start_precision : 0,
     end_ts || null, end_precision !== undefined ? end_precision : 0,
-    description || null, location_lat || null, location_lng || null,
+    description || null, tips || null,
+    location_lat || null, location_lng || null,
     location_name || null, sort_order || 0
   );
 
@@ -115,7 +116,7 @@ router.put('/:id', (req, res) => {
   const {
     title,
     start_ts, start_precision, end_ts, end_precision,
-    description, location_lat, location_lng, location_name, sort_order
+    description, tips, location_lat, location_lng, location_name, sort_order
   } = req.body;
 
   if (!title) {
@@ -130,7 +131,7 @@ router.put('/:id', (req, res) => {
   db.prepare(`
     UPDATE events SET
       title = ?, start_ts = ?, start_precision = ?, end_ts = ?, end_precision = ?,
-      description = ?, location_lat = ?, location_lng = ?, location_name = ?,
+      description = ?, tips = ?, location_lat = ?, location_lng = ?, location_name = ?,
       sort_order = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `).run(
@@ -139,7 +140,8 @@ router.put('/:id', (req, res) => {
     start_precision !== undefined ? start_precision : 0,
     end_ts !== undefined ? end_ts : null,
     end_precision !== undefined ? end_precision : 0,
-    description || null, location_lat || null, location_lng || null,
+    description || null, tips || null,
+    location_lat || null, location_lng || null,
     location_name || null, sort_order || 0, id
   );
 

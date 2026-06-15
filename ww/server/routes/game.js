@@ -102,6 +102,7 @@ router.get('/random-event', (req, res) => {
       id: event.id,
       title: event.title,
       description: event.description,
+      tips: event.tips,
       location_lat: event.location_lat,
       location_lng: event.location_lng,
       location_name: event.location_name,
@@ -217,6 +218,7 @@ router.post('/submit', (req, res) => {
       correct_location_name: event.location_name,
       correct_title: event.title,
       correct_description: event.description,
+      correct_tips: event.tips,
       correct_start_display: tsToDisplay(event.start_ts, event.start_precision),
       correct_end_display: tsToDisplay(event.end_ts, event.end_precision)
     }

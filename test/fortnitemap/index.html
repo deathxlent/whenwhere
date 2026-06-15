@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortnite 离线地图</title>
+    <link rel="stylesheet" href="lib/leaflet.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            background: #1a1a2e;
+        }
+        
+        .sidebar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(20, 20, 30, 0.95);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            width: 250px;
+            max-height: calc(100% - 20px);
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #fce51e;
+        }
+        
+        .sidebar h3 {
+            font-size: 14px;
+            margin: 12px 0 8px 0;
+            color: #00d2e0;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .sidebar h3:hover {
+            color: #5ce1ff;
+        }
+        
+        .sidebar h3::before {
+            content: '▼ ';
+            font-size: 10px;
+        }
+        
+        .sidebar h3.collapsed::before {
+            content: '▶ ';
+        }
+        
+        .location-list {
+            list-style: none;
+            padding-left: 10px;
+        }
+        
+        .location-list.collapsed {
+            display: none;
+        }
+        
+        .location-list li {
+            padding: 6px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        
+        .location-list li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .location-list li .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 2px solid #000;
+        }
+        
+        .named-location .dot {
+            background: #fce51e;
+        }
+        
+        .landmark .dot {
+            background: #5756dc;
+        }
+        
+        .poi-marker {
+            background: none;
+            border: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: #fff;
+            text-shadow: 
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000,
+                0 0 4px #000;
+            white-space: nowrap;
+        }
+        
+        .poi-marker.named {
+            font-size: 13px;
+            color: #fce51e;
+        }
+        
+        .poi-marker.landmark {
+            font-size: 11px;
+            color: #b8b7ff;
+        }
+        
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(20, 20, 30, 0.95);
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .toggle-btn:hover {
+            background: rgba(40, 40, 60, 0.95);
+        }
+        
+        .info-box {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(20, 20, 30, 0.9);
+            color: #999;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="sidebar" id="sidebar" style="display: none;">
+        <h2>📍 Fortnite 地图</h2>
+        
+        <h3 id="toggle-named">命名地点 (13)</h3>
+        <ul class="location-list named-location" id="named-list"></ul>
+        
+        <h3 id="toggle-landmark">地标 (14)</h3>
+        <ul class="location-list landmark" id="landmark-list"></ul>
+    </div>
+    
+    <div class="info-box">
+        缩放级别: <span id="zoom-level">2</span> | 离线模式
+    </div>
+
+    <script src="lib/leaflet.js"></script>
+    <script>
+        const map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: 1,
+            maxZoom: 4,
+            zoomSnap: 0,
+            zoomControl: true,
+            attributionControl: false,
+            preferCanvas: true
+        });
+
+        const bounds = [[-256, 0], [0, 256]];
+
+        L.tileLayer('tiles/{z}/{x}/{y}.webp', {
+            noWrap: true,
+            bounds: bounds,
+            minNativeZoom: 1,
+            maxNativeZoom: 4,
+            minZoom: 1,
+            maxZoom: 4,
+            tileSize: 256
+        }).addTo(map);
+
+        map.fitBounds(bounds, { animate: false });
+
+        let locationsData = null;
+        let namedMarkers = [];
+        let landmarkMarkers = [];
+        let namedVisible = true;
+        let landmarkVisible = true;
+
+        function createTextMarker(coords, text, type) {
+            const icon = L.divIcon({
+                className: 'poi-marker ' + type,
+                html: text,
+                iconSize: [1, 1],
+                iconAnchor: [0, 0]
+            });
+            
+            return L.marker(coords, { icon: icon, interactive: true });
+        }
+
+        function loadLocations() {
+            fetch('data/locations.json')
+                .then(response => response.json())
+                .then(data => {
+                    locationsData = data;
+                    
+                    const namedList = document.getElementById('named-list');
+                    data.named_locations.forEach(loc => {
+                        const li = document.createElement('li');
+                        li.innerHTML = '<span class="dot"></span>' + loc.name;
+                        li.onclick = () => flyToLocation(loc.coords);
+                        namedList.appendChild(li);
+                        
+                        const marker = createTextMarker(loc.coords, loc.name, 'named');
+                        marker.bindTooltip(loc.name, { permanent: false, direction: 'top' });
+                        namedMarkers.push(marker);
+                    });
+                    
+                    const landmarkList = document.getElementById('landmark-list');
+                    data.landmarks.forEach(loc => {
+                        if (!loc.name) return;
+                        const li = document.createElement('li');
+                        li.innerHTML = '<span class="dot"></span>' + loc.name;
+                        li.onclick = () => flyToLocation(loc.coords);
+                        landmarkList.appendChild(li);
+                        
+                        const marker = createTextMarker(loc.coords, loc.name, 'landmark');
+                        marker.bindTooltip(loc.name, { permanent: false, direction: 'top' });
+                        landmarkMarkers.push(marker);
+                    });
+                    
+                    showNamedLocations();
+                    showLandmarks();
+                })
+                .catch(err => {
+                    console.error('加载 location 数据失败:', err);
+                });
+        }
+
+        function showNamedLocations() {
+            namedMarkers.forEach(m => m.addTo(map));
+            namedVisible = true;
+        }
+
+        function hideNamedLocations() {
+            namedMarkers.forEach(m => map.removeLayer(m));
+            namedVisible = false;
+        }
+
+        function showLandmarks() {
+            landmarkMarkers.forEach(m => m.addTo(map));
+            landmarkVisible = true;
+        }
+
+        function hideLandmarks() {
+            landmarkMarkers.forEach(m => map.removeLayer(m));
+            landmarkVisible = false;
+        }
+
+        function flyToLocation(coords) {
+            map.setView(coords, 4, { animate: true, duration: 0.8 });
+        }
+
+        document.getElementById('toggle-named').addEventListener('click', function() {
+            this.classList.toggle('collapsed');
+            document.getElementById('named-list').classList.toggle('collapsed');
+        });
+
+        document.getElementById('toggle-landmark').addEventListener('click', function() {
+            this.classList.toggle('collapsed');
+            document.getElementById('landmark-list').classList.toggle('collapsed');
+        });
+
+        map.on('zoomend', function() {
+            document.getElementById('zoom-level').textContent = Math.round(map.getZoom());
+        });
+
+        loadLocations();
+    </script>
+</body>
+</html>

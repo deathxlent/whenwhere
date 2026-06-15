@@ -692,10 +692,12 @@ function renderGamePage() {
       <div class="game-map">
         <div id="map"></div>
       </div>
+      <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="收起侧栏">›</button>
       <div class="game-sidebar" id="game-sidebar">
         <div class="timer-bar"><div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div></div>
         <div class="timer-text" id="timer-text">30</div>
         <div class="image-area" id="image-area"></div>
+        <div class="tips-area" id="tips-area" style="display:none;"></div>
         <div class="game-actions">
           <button class="btn btn-warning" id="give-up-btn">放弃</button>
           <button class="btn btn-default" id="restart-game-btn">再来一局</button>
@@ -721,6 +723,7 @@ function renderGamePage() {
   appState.map.on('click', onGameMapClick);
 
   renderCurrentImages();
+  renderTips();
   startTimer();
 
   document.getElementById('give-up-btn').addEventListener('click', () => {
@@ -730,6 +733,21 @@ function renderGamePage() {
 
   document.getElementById('restart-game-btn').addEventListener('click', () => {
     startGame();
+  });
+
+  const toggleBtn = document.getElementById('sidebar-toggle-btn');
+  const sidebar = document.getElementById('game-sidebar');
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('hidden');
+    if (sidebar.classList.contains('hidden')) {
+      toggleBtn.textContent = '‹';
+      toggleBtn.title = '展开侧栏';
+      toggleBtn.classList.add('collapsed');
+    } else {
+      toggleBtn.textContent = '›';
+      toggleBtn.title = '收起侧栏';
+      toggleBtn.classList.remove('collapsed');
+    }
   });
 }
 
@@ -975,9 +993,58 @@ function renderCurrentImages() {
     return;
   }
 
-  area.innerHTML = images.map(img =>
-    `<img src="${img.url}" alt="猜图">`
+  area.innerHTML = images.map((img, idx) =>
+    `<img src="${img.url}" alt="猜图" class="game-image" data-index="${idx}" style="cursor:zoom-in;">`
   ).join('');
+
+  area.querySelectorAll('.game-image').forEach(img => {
+    img.addEventListener('click', () => {
+      const src = img.src;
+      openImageViewer(src);
+    });
+  });
+}
+
+function renderTips() {
+  const tipsArea = document.getElementById('tips-area');
+  if (!tipsArea || !appState.currentEvent) return;
+
+  const tips = appState.currentEvent.tips;
+  if (tips && tips.trim()) {
+    tipsArea.style.display = 'block';
+    tipsArea.innerHTML = `
+      <div class="tips-label">💡 提示</div>
+      <div class="tips-content">${tips}</div>
+    `;
+  } else {
+    tipsArea.style.display = 'none';
+  }
+}
+
+function openImageViewer(src) {
+  const existing = document.getElementById('image-viewer');
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  const viewer = document.createElement('div');
+  viewer.id = 'image-viewer';
+  viewer.className = 'image-viewer';
+  viewer.innerHTML = `
+    <div class="image-viewer-overlay"></div>
+    <img src="${src}" class="image-viewer-img" alt="放大查看">
+    <div class="image-viewer-hint">点击图片关闭</div>
+  `;
+  document.body.appendChild(viewer);
+
+  const closeViewer = () => {
+    viewer.classList.add('fade-out');
+    setTimeout(() => viewer.remove(), 200);
+  };
+
+  viewer.querySelector('.image-viewer-overlay').addEventListener('click', closeViewer);
+  viewer.querySelector('.image-viewer-img').addEventListener('click', closeViewer);
 }
 
 function startTimer() {
@@ -1155,6 +1222,7 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
           <div class="result-info">
             <div><span class="label">事件：</span><span class="value">${result.correct_title}</span></div>
             ${result.correct_description ? `<div><span class="label">说明：</span><span class="value">${result.correct_description}</span></div>` : ''}
+            ${result.correct_tips ? `<div><span class="label">提示：</span><span class="value">${result.correct_tips}</span></div>` : ''}
             <div><span class="label">时间：</span><span class="value">${result.correct_start_display}${result.correct_end_display && result.correct_end_display !== result.correct_start_display ? ' ~ ' + result.correct_end_display : ''}</span></div>
             <div><span class="label">地点：</span><span class="value">${result.correct_location_name || '未知'}</span></div>
           </div>

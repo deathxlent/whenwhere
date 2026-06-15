@@ -2018,6 +2018,10 @@ function showEventForm(event = null) {
           <label class="form-label">说明</label>
           <textarea class="form-control" id="f-desc" placeholder="事件详细说明...">${escapeHtml(event?.description || '')}</textarea>
         </div>
+        <div class="form-group">
+          <label class="form-label">提示</label>
+          <textarea class="form-control" id="f-tips" placeholder="提示信息（猜图时显示，非必填）">${escapeHtml(event?.tips || '')}</textarea>
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">纬度</label>
@@ -2101,6 +2105,7 @@ function showEventForm(event = null) {
       end_ts: endTs,
       end_precision: endPrecision,
       description: document.getElementById('f-desc').value.trim() || null,
+      tips: document.getElementById('f-tips').value.trim() || null,
       location_lat: document.getElementById('f-lat').value || null,
       location_lng: document.getElementById('f-lng').value || null,
       location_name: document.getElementById('f-locname').value.trim() || null,
@@ -2276,6 +2281,10 @@ function openEditMapView(event) {
             <div class="form-group">
               <label class="form-label">说明</label>
               <textarea class="form-control" id="e-desc" placeholder="事件详细说明..." rows="3">${escapeHtml(event.description || '')}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">提示</label>
+              <textarea class="form-control" id="e-tips" placeholder="提示信息（猜图时显示，非必填）" rows="2">${escapeHtml(event.tips || '')}</textarea>
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -2487,6 +2496,7 @@ function openEditMapView(event) {
       end_ts: endTs,
       end_precision: endPrecision,
       description: document.getElementById('e-desc').value.trim() || null,
+      tips: document.getElementById('e-tips').value.trim() || null,
       location_lat: document.getElementById('e-lat').value || null,
       location_lng: document.getElementById('e-lng').value || null,
       location_name: document.getElementById('e-locname').value.trim() || null,

@@ -114,6 +114,15 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_sub_categories_map ON sub_categories(map_id);
 `);
 
+const eventsColInfo = db.pragma('table_info(events)');
+const eventsCols = eventsColInfo.map(c => c.name);
+if (!eventsCols.includes('tips')) {
+  try {
+    db.exec('ALTER TABLE events ADD COLUMN tips TEXT');
+    console.log('Added column events.tips');
+  } catch(e) { console.warn('Add column events.tips failed:', e.message); }
+}
+
 const insertMap = db.prepare(
   'INSERT OR IGNORE INTO maps (name, code, description, tile_type, tile_url, tile_subdomains, min_zoom, max_zoom, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
 );
