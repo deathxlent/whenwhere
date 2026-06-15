@@ -44,7 +44,13 @@ function switchPage(page) {
     document.getElementById('page-title').textContent = titles[page] || '';
     
     if (page === 'events') {
-        setTimeout(() => initEventMap(), 100);
+        setTimeout(() => {
+            if (selectedSubCategoryId) {
+                loadSubCategoryMap(selectedSubCategoryId);
+            } else {
+                showMapPlaceholder('请先选择分类和子分类，绑定地图后即可在此处出题');
+            }
+        }, 100);
     }
     if (page === 'dashboard') {
         loadDashboard();
@@ -159,6 +165,7 @@ async function loadSubCategories() {
         tabsEl.innerHTML = '<span style="color: #9ca3af; font-size: 13px;">请先选择分类</span>';
         selectedSubCategoryId = null;
         clearMarkers();
+        showMapPlaceholder('请先选择分类和子分类，绑定地图后即可在此处出题');
         return;
     }
     
@@ -170,6 +177,7 @@ async function loadSubCategories() {
         tabsEl.innerHTML = '<span style="color: #9ca3af; font-size: 13px;">该分类下暂无子分类</span>';
         selectedSubCategoryId = null;
         clearMarkers();
+        showMapPlaceholder('该分类下暂无子分类，请先在「分类管理」中添加子分类并绑定地图');
         return;
     }
     
@@ -200,10 +208,7 @@ async function loadSubCategoryMap(subCatId) {
     const res = await api(`/categories/sub-categories/${subCatId}`);
     
     if (!res.success || !res.data.map_id) {
-        if (map) {
-            map.remove();
-            map = null;
-        }
+        showMapPlaceholder('该子分类未绑定地图，请在「分类管理」中为子分类绑定地图后再出题');
         return;
     }
     
@@ -217,11 +222,44 @@ async function loadSubCategoryMap(subCatId) {
     initEventMap(mapRes.data, sc);
 }
 
-function initEventMap(mapData, subCategory) {
+function showMapPlaceholder(msg) {
     if (map) {
         map.remove();
         map = null;
     }
+    clearMarkers();
+    const mapEl = document.getElementById('event-map');
+    const placeholderEl = document.getElementById('map-placeholder');
+    const listPanel = document.getElementById('event-list-panel');
+    const formPanel = document.getElementById('event-form-panel');
+    if (mapEl) mapEl.style.display = 'none';
+    if (listPanel) listPanel.style.display = 'none';
+    if (formPanel) formPanel.style.display = 'none';
+    if (placeholderEl) {
+        placeholderEl.style.display = 'flex';
+        const textEl = placeholderEl.querySelector('.placeholder-text');
+        if (textEl) textEl.textContent = msg || '请选择分类和子分类';
+    }
+}
+
+function hideMapPlaceholder() {
+    const mapEl = document.getElementById('event-map');
+    const placeholderEl = document.getElementById('map-placeholder');
+    const listPanel = document.getElementById('event-list-panel');
+    if (mapEl) mapEl.style.display = '';
+    if (placeholderEl) placeholderEl.style.display = 'none';
+    if (listPanel) listPanel.style.display = '';
+}
+
+function initEventMap(mapData, subCategory) {
+    if (!mapData) return;
+    
+    if (map) {
+        map.remove();
+        map = null;
+    }
+    
+    hideMapPlaceholder();
     
     const mapEl = document.getElementById('event-map');
     if (!mapEl || mapEl.offsetHeight === 0) {
@@ -419,7 +457,7 @@ async function loadEventsForSubCategory(subCatId) {
 }
 
 function clearMarkers() {
-    markers.forEach(m => map && map.removeLayer(m));
+    markers.forEach(m => { if (map) map.removeLayer(m); });
     markers = [];
 }
 
