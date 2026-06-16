@@ -313,3 +313,15 @@ build/
 */build/
 node_modules
 package-lock.json
+
+# extractevent - 本地配置文件绝对不能提交
+extractevent/config.local.json
+extractevent/config.json
+extractevent/*.local.json
+extractevent/.env
+extractevent/.env.local
+extractevent/userData/
+extractevent/userdata/
+extractevent/dist/
+extractevent/out/
+extractevent/.cache/
