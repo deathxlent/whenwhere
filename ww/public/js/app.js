@@ -58,7 +58,8 @@ let appState = {
   spacePressed: false,
   imagesHidden: false,
   leaderboardPeriod: 'all',
-  statsPeriod: 'all'
+  statsPeriod: 'all',
+  mapConfig: null
 };
 
 const COUNTRIES_WITH_ADMIN1 = new Set([
@@ -737,6 +738,8 @@ function renderGamePage() {
 
   appState.map = L.map('map', mapOptions);
 
+  appState.mapConfig = { tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds, tileSize };
+
   addTileLayersToMap(appState.map, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds, tileSize);
 
   appState.admin1Labels = [];
@@ -1325,6 +1328,16 @@ function initResultMap(result) {
   const guessLat = appState.guessLat;
   const guessLng = appState.guessLng;
 
+  const cfg = appState.mapConfig || {};
+  const tileType = cfg.tileType || 'hybrid';
+  const tileUrl = cfg.tileUrl || '';
+  const tileSd = cfg.tileSd || 'a,b,c';
+  const minZoom = cfg.minZoom || 2;
+  const maxZoom = cfg.maxZoom || 18;
+  const crsType = cfg.crsType || 'epsg3857';
+  const bounds = cfg.bounds || null;
+  const tileSize = cfg.tileSize || 256;
+
   let mapCenter = [30, 120];
   let mapZoom = 2;
   if (correctLat != null && correctLng != null) {
@@ -1332,29 +1345,33 @@ function initResultMap(result) {
       mapCenter = [(correctLat + guessLat) / 2, (correctLng + guessLng) / 2];
     } else {
       mapCenter = [correctLat, correctLng];
-      mapZoom = 5;
+      mapZoom = minZoom + 3;
     }
   }
 
-  const resultMap = L.map('result-map', {
+  const mapOptions = {
     center: mapCenter,
     zoom: mapZoom,
-    minZoom: 2,
-    maxZoom: 18,
-    zoomControl: true
-  });
+    minZoom: minZoom,
+    maxZoom: maxZoom,
+    zoomControl: true,
+    worldCopyJump: crsType !== 'simple',
+    preferCanvas: crsType === 'simple'
+  };
+  if (crsType === 'simple') {
+    mapOptions.crs = L.CRS.Simple;
+    mapOptions.zoomSnap = 0;
+  }
 
-  L.tileLayer('/tiles/osm/{z}/{x}/{y}.png', {
-    minZoom: 2,
-    maxZoom: 2
-  }).addTo(resultMap);
+  const resultMap = L.map('result-map', mapOptions);
 
-  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-    subdomains: ['1', '2', '3', '4'],
-    minZoom: 3,
-    maxZoom: 18,
-    attribution: '&copy; 高德地图'
-  }).addTo(resultMap);
+  addTileLayersToMap(resultMap, tileType, tileUrl, tileSd, minZoom, maxZoom, crsType, bounds, tileSize);
+
+  if (crsType === 'simple' && bounds) {
+    try {
+      resultMap.setMaxBounds(bounds);
+    } catch(e) {}
+  }
 
   if (correctLat != null && correctLng != null) {
     const correctMarker = L.marker([correctLat, correctLng], {
@@ -1370,19 +1387,17 @@ function initResultMap(result) {
       direction: 'top',
       className: 'correct-tooltip'
     });
-  }
 
-  if (guessLat != null && guessLng != null) {
-    const guessMarker = L.marker([guessLat, guessLng], {
-      icon: L.divIcon({
-        className: 'guess-answer-marker',
-        html: '<div class="answer-pin guess-pin"><div class="pin-inner">?</div></div>',
-        iconSize: [36, 48],
-        iconAnchor: [18, 48]
-      })
-    }).addTo(resultMap);
+    if (guessLat != null && guessLng != null) {
+      const guessMarker = L.marker([guessLat, guessLng], {
+        icon: L.divIcon({
+          className: 'guess-answer-marker',
+          html: '<div class="answer-pin guess-pin"><div class="pin-inner">?</div></div>',
+          iconSize: [36, 48],
+          iconAnchor: [18, 48]
+        })
+      }).addTo(resultMap);
 
-    if (correctLat != null && correctLng != null) {
       const dashedLine = L.polyline(
         [[guessLat, guessLng], [correctLat, correctLng]],
         {
@@ -1405,11 +1420,15 @@ function initResultMap(result) {
         interactive: false
       }).addTo(resultMap);
 
-      const group = L.featureGroup([correctMarker, guessMarker, dashedLine]);
-      resultMap.fitBounds(group.getBounds().pad(0.3), { maxZoom: 12 });
+      if (crsType !== 'simple') {
+        const group = L.featureGroup([correctMarker, guessMarker, dashedLine]);
+        resultMap.fitBounds(group.getBounds().pad(0.3), { maxZoom: maxZoom });
+      }
+    } else {
+      if (crsType === 'simple' && bounds) {
+        try { resultMap.fitBounds(bounds, { animate: false }); } catch(e) {}
+      }
     }
-  } else if (correctLat != null && correctLng != null) {
-    resultMap.setView([correctLat, correctLng], 6);
   }
 
   appState.map = resultMap;
