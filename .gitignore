@@ -313,3 +313,6 @@ build/
 */build/
 node_modules
 package-lock.json
+
+# ExtractEvent 配置文件
+extractevent/config.json
