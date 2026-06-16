@@ -774,6 +774,63 @@
             font-size: 11px;
             color: #9ca3af;
         }
+        
+        .export-event-group {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .export-event-group:last-child {
+            border-bottom: none;
+        }
+        .export-group-header {
+            padding: 10px 16px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .export-group-header .sub {
+            font-weight: normal;
+            color: #6b7280;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        .export-event-item {
+            padding: 10px 16px 10px 44px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+        }
+        .export-event-item:last-child {
+            border-bottom: none;
+        }
+        .export-event-item:hover {
+            background: #f9fafb;
+        }
+        .export-event-item.checked {
+            background: #eff6ff;
+        }
+        .export-event-item .checkbox {
+            position: absolute;
+            left: 16px;
+            top: 12px;
+            width: 16px;
+            height: 16px;
+        }
+        .export-event-item .title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 2px;
+            color: #111827;
+        }
+        .export-event-item .meta {
+            font-size: 11px;
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body>
@@ -1118,33 +1175,42 @@
                 <div class="page" id="page-export">
                     <div class="card">
                         <div class="card-header">
-                            <h3>导出数据</h3>
+                            <h3>📦 打包导出</h3>
                         </div>
                         <div class="card-body">
                             <p style="margin-bottom: 16px; color: #6b7280;">
-                                导出的数据可以直接导入到 ww 和 hsd 应用中。推荐使用 JSON 格式，兼容性更好。
+                                选择要导出的事件，系统会自动打包为ZIP文件，包含：JSON数据、SQL数据、关联的自定义地图瓦片、事件图片。
                             </p>
-                            
-                            <div class="form-row">
+
+                            <div class="form-row" style="margin-bottom: 16px;">
                                 <div class="form-group">
-                                    <label>导出格式</label>
-                                    <select id="export-format">
-                                        <option value="json">JSON 格式（推荐）</option>
-                                        <option value="sql">SQL 格式</option>
+                                    <label>筛选分类</label>
+                                    <select id="export-filter-category" onchange="renderExportEventList()">
+                                        <option value="">全部</option>
                                     </select>
                                 </div>
-                                <div class="form-group" style="display: flex; align-items: flex-end;">
-                                    <button class="btn btn-success" style="width: 100%;" onclick="exportData()">📥 导出数据</button>
+                                <div class="form-group">
+                                    <label>筛选子分类</label>
+                                    <select id="export-filter-subcategory" onchange="renderExportEventList()">
+                                        <option value="">全部</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="display: flex; align-items: flex-end; gap: 8px;">
+                                    <button class="btn btn-secondary" onclick="toggleSelectAllExportEvents()">全选/取消</button>
                                 </div>
                             </div>
-                            
-                            <div class="alert alert-info">
-                                <b>JSON 格式导入说明：</b>
-                                <ul style="margin-top: 8px; padding-left: 20px; font-size: 13px;">
-                                    <li>所有数据都用 code 编码关联，导入时自动匹配</li>
-                                    <li>地图和分类如果编码已存在则跳过（不会覆盖）</li>
-                                    <li>子分类和事件会根据分类 code 和子分类 code 自动关联</li>
-                                </ul>
+
+                            <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                                <div id="export-event-selector" style="max-height: 400px; overflow-y: auto;">
+                                    <div style="padding: 40px; text-align: center; color: #9ca3af;">加载中...</div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px;">
+                                <div style="color: #6b7280; font-size: 14px;">
+                                    已选择：<b id="export-selected-count">0</b> 个事件
+                                </div>
+                                <button class="btn btn-success" onclick="exportSelectedEvents()">📦 打包导出ZIP</button>
                             </div>
                         </div>
                     </div>

@@ -60,6 +60,7 @@ function switchPage(page) {
         loadMapList();
     }
     if (page === 'export') {
+        loadExportEventList();
         loadExportStats();
     }
 }
@@ -1249,14 +1250,205 @@ async function deleteMap(id) {
     }
 }
 
-function exportData() {
-    const format = document.getElementById('export-format').value;
-    
-    if (format === 'json') {
-        window.location.href = '/api/export/json';
-    } else if (format === 'sql') {
-        window.location.href = '/api/export/sql';
+let allExportEvents = [];
+let selectedExportEventIds = new Set();
+let exportCategories = [];
+let exportSubCategories = [];
+
+async function loadExportEventList() {
+    const res = await api('/export/events/list');
+    if (!res.success) {
+        document.getElementById('export-event-selector').innerHTML = '<div style="padding: 40px; text-align: center; color: #ef4444;">加载失败</div>';
+        return;
     }
+    
+    allExportEvents = res.data.events || [];
+    exportCategories = res.data.categories || [];
+    exportSubCategories = res.data.sub_categories || [];
+    
+    const catSel = document.getElementById('export-filter-category');
+    const subCatSel = document.getElementById('export-filter-subcategory');
+    
+    catSel.innerHTML = '<option value="">全部</option>';
+    exportCategories.forEach(c => {
+        catSel.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+    });
+    
+    updateExportSubCategoryFilter();
+    catSel.onchange = () => {
+        updateExportSubCategoryFilter();
+        renderExportEventList();
+    };
+    
+    renderExportEventList();
+}
+
+function updateExportSubCategoryFilter() {
+    const catId = document.getElementById('export-filter-category').value;
+    const subCatSel = document.getElementById('export-filter-subcategory');
+    
+    let filtered = exportSubCategories;
+    if (catId) {
+        filtered = exportSubCategories.filter(sc => sc.category_id == catId);
+    }
+    
+    subCatSel.innerHTML = '<option value="">全部</option>';
+    filtered.forEach(sc => {
+        subCatSel.innerHTML += `<option value="${sc.id}">${escapeHtml(sc.name)}</option>`;
+    });
+}
+
+function formatTs(ts) {
+    if (!ts) return '';
+    const s = String(ts).padStart(8, '0');
+    if (s.length === 8) {
+        return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
+    }
+    return s;
+}
+
+function renderExportEventList() {
+    const catId = document.getElementById('export-filter-category').value;
+    const subCatId = document.getElementById('export-filter-subcategory').value;
+    
+    let events = allExportEvents;
+    if (catId) {
+        events = events.filter(e => e.category_id == catId);
+    }
+    if (subCatId) {
+        events = events.filter(e => e.sub_category_id == subCatId);
+    }
+    
+    const container = document.getElementById('export-event-selector');
+    
+    if (events.length === 0) {
+        container.innerHTML = '<div style="padding: 40px; text-align: center; color: #9ca3af;">暂无事件</div>';
+        updateExportSelectedCount();
+        return;
+    }
+    
+    const grouped = {};
+    events.forEach(e => {
+        const key = `${e.category_id}-${e.sub_category_id}`;
+        if (!grouped[key]) {
+            grouped[key] = {
+                category_name: e.category_name,
+                sub_category_name: e.sub_category_name,
+                map_name: e.map_name,
+                events: []
+            };
+        }
+        grouped[key].events.push(e);
+    });
+    
+    let html = '';
+    for (const key of Object.keys(grouped)) {
+        const g = grouped[key];
+        html += `<div class="export-event-group">`;
+        html += `<div class="export-group-header">${escapeHtml(g.category_name)} <span class="sub">/ ${escapeHtml(g.sub_category_name)}${g.map_name ? ' · 🗺️ ' + escapeHtml(g.map_name) : ''}</span></div>`;
+        for (const e of g.events) {
+            const checked = selectedExportEventIds.has(e.id) ? 'checked' : '';
+            const cls = selectedExportEventIds.has(e.id) ? 'export-event-item checked' : 'export-event-item';
+            html += `<div class="${cls}" data-id="${e.id}" onclick="toggleExportEvent(${e.id})">
+                <input type="checkbox" class="checkbox" ${checked} onclick="event.stopPropagation(); toggleExportEvent(${e.id})">
+                <div class="title">${escapeHtml(e.title)}</div>
+                <div class="meta">${formatTs(e.start_ts)}${e.location_name ? ' · 📍 ' + escapeHtml(e.location_name) : ''}${e.end_ts ? ' ~ ' + formatTs(e.end_ts) : ''}</div>
+            </div>`;
+        }
+        html += `</div>`;
+    }
+    
+    container.innerHTML = html;
+    updateExportSelectedCount();
+}
+
+function toggleExportEvent(id) {
+    if (selectedExportEventIds.has(id)) {
+        selectedExportEventIds.delete(id);
+    } else {
+        selectedExportEventIds.add(id);
+    }
+    const el = document.querySelector(`.export-event-item[data-id="${id}"]`);
+    if (el) {
+        el.classList.toggle('checked', selectedExportEventIds.has(id));
+        const cb = el.querySelector('.checkbox');
+        if (cb) cb.checked = selectedExportEventIds.has(id);
+    }
+    updateExportSelectedCount();
+}
+
+function toggleSelectAllExportEvents() {
+    const catId = document.getElementById('export-filter-category').value;
+    const subCatId = document.getElementById('export-filter-subcategory').value;
+    
+    let events = allExportEvents;
+    if (catId) events = events.filter(e => e.category_id == catId);
+    if (subCatId) events = events.filter(e => e.sub_category_id == subCatId);
+    
+    const allSelected = events.every(e => selectedExportEventIds.has(e.id));
+    
+    if (allSelected) {
+        events.forEach(e => selectedExportEventIds.delete(e.id));
+    } else {
+        events.forEach(e => selectedExportEventIds.add(e.id));
+    }
+    
+    renderExportEventList();
+}
+
+function updateExportSelectedCount() {
+    document.getElementById('export-selected-count').textContent = selectedExportEventIds.size;
+}
+
+async function exportSelectedEvents() {
+    if (selectedExportEventIds.size === 0) {
+        alert('请先选择要导出的事件');
+        return;
+    }
+    
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '打包中...';
+    
+    try {
+        const res = await fetch('/api/export/zip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_ids: Array.from(selectedExportEventIds) })
+        });
+        
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.message || '导出失败');
+        }
+        
+        const blob = await res.blob();
+        const disposition = res.headers.get('Content-Disposition') || '';
+        let filename = `adddata_export_${Date.now()}.zip`;
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match) filename = match[1];
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert(`导出成功！已选择 ${selectedExportEventIds.size} 个事件`);
+    } catch (err) {
+        alert('导出失败: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
+function exportData() {
+    exportSelectedEvents();
 }
 
 function downloadTemplate() {
