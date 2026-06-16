@@ -635,6 +635,10 @@ function saveEventForm() {
             endPrecision
         );
     }
+    if (endTs === null && startTs !== null) {
+        endTs = startTs;
+        endPrecision = startPrecision;
+    }
     
     const data = {
         category_id: selectedCategoryId,

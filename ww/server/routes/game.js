@@ -159,17 +159,17 @@ router.post('/submit', (req, res) => {
     const endYear = event.end_ts ? tsToYear(event.end_ts) : startYear;
     const guessYearVal = guess_year;
 
-    if (guessYearVal >= startYear && guessYearVal <= endYear) {
-      timeIn = true;
-      timeDiffYears = 0;
+    timeIn = guessYearVal >= startYear && guessYearVal <= endYear;
+
+    const diffFromStart = startYear - guessYearVal;
+    const diffFromEnd = endYear - guessYearVal;
+
+    if (Math.abs(diffFromStart) <= Math.abs(diffFromEnd)) {
+      timeDiffYears = diffFromStart;
     } else {
-      timeIn = false;
-      if (guessYearVal < startYear) {
-        timeDiffYears = Math.abs(startYear - guessYearVal);
-      } else {
-        timeDiffYears = Math.abs(guessYearVal - endYear);
-      }
+      timeDiffYears = diffFromEnd;
     }
+
     const Y = Math.abs(startYear - 2026);
     const preciseThreshold = Y * 0.01;
     preciseTime = preciseThreshold > 0 ? Math.abs(timeDiffYears) <= preciseThreshold : timeDiffYears === 0;

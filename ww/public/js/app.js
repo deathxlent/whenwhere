@@ -1230,75 +1230,189 @@ async function submitGuess() {
 
 function renderResultPage(result, elapsedSeconds, isTimedOut) {
   appState.currentView = 'result';
-  cleanupGame();
 
   const shownImages = appState.shownImageIndices.map(i => appState.currentImages[i]).filter(Boolean);
-  const distanceColor = result.distance_km === null ? 'wrong' : (result.distance_km <= 500 ? 'correct' : 'wrong');
   const isPreciseLocation = result.precise_location === true;
   const isPreciseTime = result.precise_time === true;
 
-  const timeColor = result.time_diff_years === null ? 'wrong' : (result.time_in_range ? 'correct' : 'wrong');
+  const timeDiffSigned = result.time_diff_years;
+  const timeColorClass = timeDiffSigned === null ? 'wrong' : (timeDiffSigned === 0 ? 'correct' : (timeDiffSigned > 0 ? 'time-positive' : 'time-negative'));
+  const distanceColor = result.distance_km === null ? 'wrong' : (result.distance_km <= 500 ? 'correct' : 'wrong');
   const distanceText = result.distance_km === null ? '未作答' : `${result.distance_km} 公里`;
-  const timeDiffText = result.time_diff_years === null ? '未作答' : (result.time_in_range ? '在时间范围内' : `差距 ${Math.abs(result.time_diff_years)} 年`);
+  const timeDiffAbs = timeDiffSigned === null ? null : Math.abs(timeDiffSigned);
+  const timeDiffText = timeDiffSigned === null ? '未作答' : (timeDiffSigned === 0 ? '完全正确！' : `${timeDiffSigned > 0 ? '+' : ''}${timeDiffSigned} 年`);
 
   const titleText = isTimedOut ? '时间到！结果揭晓' : '结果揭晓';
 
   const app = document.getElementById('app');
   app.innerHTML = `
-    <div class="result-page">
-      <div class="result-container">
-        <div class="result-title">${titleText}</div>
-        ${(isPreciseLocation || isPreciseTime ? `
-          <div class="precise-banner">
-            ${isPreciseLocation ? '<span class="precise-badge precise-location">🎯 精准位置猜中！</span>' : ''}
-            ${isPreciseTime ? '<span class="precise-badge precise-time">⏱️ 精准时间猜中！</span>' : ''}
-          </div>
-        ` : '')}
-        <div class="result-card">
-          <h3>已显示的图片</h3>
-          <div class="result-images">
-            ${shownImages.length > 0 ? shownImages.map(img => `<img src="${img.url}" alt="图片">`).join('') : '<div style="color:rgba(255,255,255,0.5);text-align:center;padding:20px;">暂无图片</div>'}
-          </div>
-        </div>
-        <div class="result-card">
-          <h3>正确答案</h3>
-          <div class="result-info">
-            <div><span class="label">事件：</span><span class="value">${result.correct_title}</span></div>
-            ${result.correct_description ? `<div><span class="label">说明：</span><span class="value">${result.correct_description}</span></div>` : ''}
-            ${result.correct_tips ? `<div><span class="label">小贴士：</span><span class="value">${result.correct_tips}</span></div>` : ''}
-            <div><span class="label">时间：</span><span class="value">${result.correct_start_display}${result.correct_end_display && result.correct_end_display !== result.correct_start_display ? ' ~ ' + result.correct_end_display : ''}</span></div>
-            <div><span class="label">地点：</span><span class="value">${result.correct_location_name || '未知'}</span></div>
-          </div>
-        </div>
-        <div class="result-card">
-          <h3>得分</h3>
-          <div class="result-score">
-            <div class="score-item">
-              <div class="score-value ${distanceColor}">${distanceText}</div>
-              <div class="score-label">距离</div>
-              ${isPreciseLocation ? '<div class="precise-tag">精准</div>' : ''}
+    <div class="result-page-with-map">
+      <div class="result-map-layer" id="result-map-layer">
+        <div id="result-map"></div>
+      </div>
+      <div class="result-overlay" id="result-overlay">
+        <div class="result-overlay-content">
+          <div class="result-title">${titleText}</div>
+          ${(isPreciseLocation || isPreciseTime ? `
+            <div class="precise-banner">
+              ${isPreciseLocation ? '<span class="precise-badge precise-location">🎯 精准位置猜中！</span>' : ''}
+              ${isPreciseTime ? '<span class="precise-badge precise-time">⏱️ 精准时间猜中！</span>' : ''}
             </div>
-            <div class="score-item">
-              <div class="score-value ${timeColor}">${timeDiffText}</div>
-              <div class="score-label">时间</div>
-              ${isPreciseTime ? '<div class="precise-tag">精准</div>' : ''}
-            </div>
-            <div class="score-item">
-              <div class="score-value">${elapsedSeconds.toFixed(1)}</div>
-              <div class="score-label">耗时（秒）</div>
+          ` : '')}
+          <div class="result-card">
+            <h3>正确答案</h3>
+            <div class="result-info">
+              <div><span class="label">事件：</span><span class="value">${result.correct_title}</span></div>
+              ${result.correct_description ? `<div><span class="label">说明：</span><span class="value">${result.correct_description}</span></div>` : ''}
+              ${result.correct_tips ? `<div><span class="label">小贴士：</span><span class="value">${result.correct_tips}</span></div>` : ''}
+              <div><span class="label">时间：</span><span class="value">${result.correct_start_display}${result.correct_end_display && result.correct_end_display !== result.correct_start_display ? ' ~ ' + result.correct_end_display : ''}</span></div>
+              <div><span class="label">地点：</span><span class="value">${result.correct_location_name || '未知'}</span></div>
             </div>
           </div>
-        </div>
-        <div class="result-actions">
-          <button class="btn btn-success" id="play-again-btn">再来一局</button>
-          <button class="btn btn-secondary" id="back-main-btn">返回主界面</button>
+          <div class="result-card">
+            <h3>得分</h3>
+            <div class="result-score">
+              <div class="score-item">
+                <div class="score-value ${distanceColor}">${distanceText}</div>
+                <div class="score-label">距离</div>
+                ${isPreciseLocation ? '<div class="precise-tag">精准</div>' : ''}
+              </div>
+              <div class="score-item">
+                <div class="score-value ${timeColorClass}">${timeDiffText}</div>
+                <div class="score-label">时间偏差</div>
+                ${isPreciseTime ? '<div class="precise-tag">精准</div>' : ''}
+              </div>
+              <div class="score-item">
+                <div class="score-value">${elapsedSeconds.toFixed(1)}</div>
+                <div class="score-label">耗时（秒）</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-success" id="play-again-btn">再来一局</button>
+            <button class="btn btn-secondary" id="back-main-btn">返回主界面</button>
+          </div>
         </div>
       </div>
     </div>
   `;
 
-  document.getElementById('play-again-btn').addEventListener('click', startGame);
-  document.getElementById('back-main-btn').addEventListener('click', renderMainPage);
+  setTimeout(() => {
+    initResultMap(result);
+  }, 50);
+
+  document.getElementById('play-again-btn').addEventListener('click', () => {
+    cleanupGame();
+    startGame();
+  });
+  document.getElementById('back-main-btn').addEventListener('click', () => {
+    cleanupGame();
+    renderMainPage();
+  });
+}
+
+function initResultMap(result) {
+  if (appState.map) {
+    appState.map.remove();
+    appState.map = null;
+  }
+
+  const mapEl = document.getElementById('result-map');
+  if (!mapEl) return;
+
+  const correctLat = result.correct_lat;
+  const correctLng = result.correct_lng;
+  const guessLat = appState.guessLat;
+  const guessLng = appState.guessLng;
+
+  let mapCenter = [30, 120];
+  let mapZoom = 2;
+  if (correctLat != null && correctLng != null) {
+    if (guessLat != null && guessLng != null) {
+      mapCenter = [(correctLat + guessLat) / 2, (correctLng + guessLng) / 2];
+    } else {
+      mapCenter = [correctLat, correctLng];
+      mapZoom = 5;
+    }
+  }
+
+  const resultMap = L.map('result-map', {
+    center: mapCenter,
+    zoom: mapZoom,
+    minZoom: 2,
+    maxZoom: 18,
+    zoomControl: true
+  });
+
+  L.tileLayer('/tiles/osm/{z}/{x}/{y}.png', {
+    minZoom: 2,
+    maxZoom: 2
+  }).addTo(resultMap);
+
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    minZoom: 3,
+    maxZoom: 18,
+    attribution: '&copy; 高德地图'
+  }).addTo(resultMap);
+
+  if (correctLat != null && correctLng != null) {
+    const correctMarker = L.marker([correctLat, correctLng], {
+      icon: L.divIcon({
+        className: 'correct-answer-marker',
+        html: '<div class="answer-pin correct-pin"><div class="pin-inner">✓</div></div>',
+        iconSize: [36, 48],
+        iconAnchor: [18, 48]
+      })
+    }).addTo(resultMap);
+    correctMarker.bindTooltip(result.correct_location_name || '正确位置', {
+      permanent: false,
+      direction: 'top',
+      className: 'correct-tooltip'
+    });
+  }
+
+  if (guessLat != null && guessLng != null) {
+    const guessMarker = L.marker([guessLat, guessLng], {
+      icon: L.divIcon({
+        className: 'guess-answer-marker',
+        html: '<div class="answer-pin guess-pin"><div class="pin-inner">?</div></div>',
+        iconSize: [36, 48],
+        iconAnchor: [18, 48]
+      })
+    }).addTo(resultMap);
+
+    if (correctLat != null && correctLng != null) {
+      const dashedLine = L.polyline(
+        [[guessLat, guessLng], [correctLat, correctLng]],
+        {
+          color: '#fbbf24',
+          weight: 3,
+          dashArray: '10, 8',
+          opacity: 0.9
+        }
+      ).addTo(resultMap);
+
+      const midLat = (guessLat + correctLat) / 2;
+      const midLng = (guessLng + correctLng) / 2;
+      const distanceLabel = L.marker([midLat, midLng], {
+        icon: L.divIcon({
+          className: 'distance-label-marker',
+          html: `<div class="distance-label">${result.distance_km} km</div>`,
+          iconSize: [100, 30],
+          iconAnchor: [50, 15]
+        }),
+        interactive: false
+      }).addTo(resultMap);
+
+      const group = L.featureGroup([correctMarker, guessMarker, dashedLine]);
+      resultMap.fitBounds(group.getBounds().pad(0.3), { maxZoom: 12 });
+    }
+  } else if (correctLat != null && correctLng != null) {
+    resultMap.setView([correctLat, correctLng], 6);
+  }
+
+  appState.map = resultMap;
 }
 
 async function renderStatsPage() {
