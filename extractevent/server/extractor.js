@@ -9,17 +9,29 @@ function extractTextFromHtml(html) {
 }
 
 function buildSystemPrompt() {
-  return `你是一个历史事件提取专家。请从给定的历史文档文本中提取所有历史事件。
+  return `你是一个专业的历史事件提取专家。你的任务是从给定的历史文档文本中提取所有可识别的历史事件。
 
-要求：
-1. 仔细阅读文本，识别所有具有明确时间和地点的历史事件
-2. 每个事件必须包含：标题、开始时间、结束时间（可选）、描述、地点信息
-3. 时间格式使用整数，如公元前221年表示为 -221，公元2024年表示为 2024
-4. 如果只有年份，时间精度为 2（年级别）；如果有年月，精度为 1；如果有年月日，精度为 0
-5. 如果不知道具体经纬度，location_lat 和 location_lng 可以为 null
-6. 输出必须是严格的 JSON 格式，包含 events 数组
+【重要规则】
+1. 必须返回严格有效的 JSON 格式，不要有任何额外的解释、说明或 markdown 标记
+2. 不要用 \`\`\`json 或 \`\`\` 包裹你的响应，直接输出纯 JSON
+3. 如果没有找到任何事件，也要返回包含空 events 数组的有效 JSON
+4. 确保所有引号都是双引号，字符串内容中的引号要转义
+5. 确保 JSON 结构完整，括号配对正确
 
-输出 JSON 格式示例：
+【事件字段要求】
+- title: 事件标题（简短准确）
+- start_ts: 开始时间（整数，公元前用负数，如 -221 表示公元前221年）
+- start_precision: 开始时间精度（0=精确到日, 1=精确到月, 2=精确到年）
+- end_ts: 结束时间（可选，null 表示没有结束时间）
+- end_precision: 结束时间精度（同上）
+- description: 事件详细描述
+- tips: 补充说明或备注（可选）
+- location_name: 地点名称
+- location_lat: 纬度（不知道则为 null）
+- location_lng: 经度（不知道则为 null）
+- sort_order: 排序序号（从1开始）
+
+【输出格式】
 {
   "events": [
     {
@@ -29,14 +41,19 @@ function buildSystemPrompt() {
       "end_ts": null,
       "end_precision": 0,
       "description": "事件详细描述",
-      "tips": "补充说明或备注",
+      "tips": "补充说明",
       "location_name": "地点名称",
       "location_lat": null,
       "location_lng": null,
       "sort_order": 1
     }
   ]
-}`;
+}
+
+【严格要求】
+- 只输出 JSON，不要有任何其他内容
+- 不要在 JSON 前后添加任何文字、注释或 markdown
+- 确保 JSON 可以直接被 JSON.parse() 解析`;
 }
 
 function buildUserPrompt(text, options = {}) {
@@ -61,37 +78,97 @@ function buildUserPrompt(text, options = {}) {
 function cleanJsonResponse(response) {
   let cleaned = response.trim();
   
+  console.log('\n' + '='.repeat(80));
+  console.log('LLM 原始响应:');
+  console.log('='.repeat(80));
+  console.log(cleaned);
+  console.log('='.repeat(80) + '\n');
+  
+  cleaned = cleaned.replace(/^\`\`\`json\s*/i, '');
+  cleaned = cleaned.replace(/\`\`\`\s*$/g, '');
+  
   const jsonStart = cleaned.indexOf('{');
   const jsonEnd = cleaned.lastIndexOf('}');
-  if (jsonStart !== -1 && jsonEnd !== -1) {
+  if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
     cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
   }
   
-  cleaned = cleaned.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
   cleaned = cleaned.trim();
+  
+  cleaned = cleaned.replace(/\n/g, ' ');
+  cleaned = cleaned.replace(/\s+/g, ' ');
+  
+  console.log('清理后响应:');
+  console.log(cleaned);
+  console.log('\n');
   
   return cleaned;
 }
 
-async function extractEventsFromText(text, options = {}) {
+async function extractEventsFromText(text, options = {}, attempt = 1) {
+  const maxAttempts = 3;
   const systemPrompt = buildSystemPrompt();
   const userPrompt = buildUserPrompt(text, options);
   
-  const response = await callLLM(userPrompt, systemPrompt);
-  const cleanedResponse = cleanJsonResponse(response);
+  console.log(`\n[${new Date().toISOString()}] 开始提取事件 (尝试 ${attempt}/${maxAttempts})`);
   
-  let result;
   try {
-    result = JSON.parse(cleanedResponse);
+    const response = await callLLM(userPrompt, systemPrompt);
+    const cleanedResponse = cleanJsonResponse(response);
+    
+    let result;
+    try {
+      result = JSON.parse(cleanedResponse);
+    } catch (e) {
+      console.error(`JSON 解析失败 (尝试 ${attempt}/${maxAttempts}):`, e.message);
+      
+      if (attempt < maxAttempts) {
+        console.log(`准备重试...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        return extractEventsFromText(text, {
+          ...options,
+          additional_instructions: (options.additional_instructions ? options.additional_instructions + '\n' : '') + 
+            '【重要】上次返回的JSON格式不正确，请确保只输出严格有效的JSON，不要有任何其他内容。'
+        }, attempt + 1);
+      }
+      
+      throw new Error(`LLM 返回的 JSON 解析失败: ${e.message}\n原始响应: ${response}\n清理后: ${cleanedResponse}`);
+    }
+    
+    if (!result.events || !Array.isArray(result.events)) {
+      console.error(`返回结果缺少 events 数组 (尝试 ${attempt}/${maxAttempts})`);
+      
+      if (attempt < maxAttempts) {
+        console.log(`准备重试...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        return extractEventsFromText(text, {
+          ...options,
+          additional_instructions: (options.additional_instructions ? options.additional_instructions + '\n' : '') + 
+            '【重要】上次返回结果缺少 events 数组，请确保返回格式为 {"events": [...]}'
+        }, attempt + 1);
+      }
+      
+      throw new Error('LLM 返回结果中缺少 events 数组');
+    }
+    
+    console.log(`成功提取 ${result.events.length} 个事件`);
+    return result.events;
+    
   } catch (e) {
-    throw new Error(`LLM 返回的 JSON 解析失败: ${e.message}\n原始响应: ${response}`);
+    if (e.message.includes('JSON 解析失败') || e.message.includes('缺少 events 数组')) {
+      throw e;
+    }
+    
+    console.error(`调用 LLM 失败 (尝试 ${attempt}/${maxAttempts}):`, e.message);
+    
+    if (attempt < maxAttempts) {
+      console.log(`准备重试...`);
+      await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+      return extractEventsFromText(text, options, attempt + 1);
+    }
+    
+    throw e;
   }
-  
-  if (!result.events || !Array.isArray(result.events)) {
-    throw new Error('LLM 返回结果中缺少 events 数组');
-  }
-  
-  return result.events;
 }
 
 async function extractFromHtml(html, options = {}) {
