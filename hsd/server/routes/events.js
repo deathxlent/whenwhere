@@ -45,7 +45,7 @@ router.get('/', (req, res) => {
     FROM events e
     LEFT JOIN categories c ON e.category_id = c.id
     LEFT JOIN sub_categories sc ON e.sub_category_id = sc.id
-    WHERE e.category_id = ? AND e.sub_category_id = ? AND e.is_active = 1
+    WHERE e.category_id = ? AND e.sub_category_id = ?
     ORDER BY e.start_ts ASC, e.id
   `).all(category_id, sub_category_id);
 

@@ -5,9 +5,8 @@ const db = require('../db');
 router.get('/', (req, res) => {
   const maps = db.prepare(`
     SELECT m.*,
-      (SELECT COUNT(*) FROM sub_categories sc WHERE sc.map_id = m.id AND sc.is_active = 1) as bind_count
+      (SELECT COUNT(*) FROM sub_categories sc WHERE sc.map_id = m.id) as bind_count
     FROM maps m
-    WHERE m.is_active = 1
     ORDER BY m.sort_order, m.id
   `).all();
 
@@ -16,7 +15,7 @@ router.get('/', (req, res) => {
       SELECT sc.id, sc.code, sc.name, sc.category_id, c.name as category_name, c.code as category_code
       FROM sub_categories sc
       JOIN categories c ON sc.category_id = c.id
-      WHERE sc.map_id = ? AND sc.is_active = 1 AND c.is_active = 1
+      WHERE sc.map_id = ?
       ORDER BY c.sort_order, sc.sort_order
     `).all(map.id);
     map.bind_subs = subs;
@@ -27,14 +26,14 @@ router.get('/', (req, res) => {
 
 router.get('/all', (req, res) => {
   const maps = db.prepare(`
-    SELECT * FROM maps WHERE is_active = 1 ORDER BY sort_order, id
+    SELECT * FROM maps ORDER BY sort_order, id
   `).all();
   res.json({ success: true, data: maps });
 });
 
 router.get('/:id', (req, res) => {
   const { id } = req.params;
-  const map = db.prepare('SELECT * FROM maps WHERE id = ? AND is_active = 1').get(id);
+  const map = db.prepare('SELECT * FROM maps WHERE id = ?').get(id);
   if (!map) {
     return res.json({ success: false, message: '地图不存在' });
   }
@@ -135,7 +134,7 @@ router.delete('/:id', (req, res) => {
     return res.json({ success: false, message: '该地图已绑定到子类，无法删除' });
   }
 
-  db.prepare('UPDATE maps SET is_active = 0 WHERE id = ?').run(id);
+  db.prepare('DELETE FROM maps WHERE id = ?').run(id);
   res.json({ success: true, message: '删除成功' });
 });
 

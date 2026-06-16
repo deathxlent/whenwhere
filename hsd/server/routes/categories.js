@@ -5,18 +5,17 @@ const db = require('../db');
 router.get('/', (req, res) => {
   const categories = db.prepare(`
     SELECT c.*,
-      (SELECT COUNT(*) FROM sub_categories sc WHERE sc.category_id = c.id AND sc.is_active = 1) as total_sub_count,
+      (SELECT COUNT(*) FROM sub_categories sc WHERE sc.category_id = c.id) as total_sub_count,
       (SELECT COUNT(*) FROM sub_categories sc
-        WHERE sc.category_id = c.id AND sc.is_active = 1
+        WHERE sc.category_id = c.id
         AND sc.map_id IS NOT NULL
-        AND (SELECT COUNT(*) FROM events e WHERE e.sub_category_id = sc.id AND e.is_active = 1) > 0
+        AND (SELECT COUNT(*) FROM events e WHERE e.sub_category_id = sc.id) > 0
       ) as available_sub_count,
       (SELECT COUNT(*) FROM events e
         JOIN sub_categories sc ON e.sub_category_id = sc.id
-        WHERE sc.category_id = c.id AND e.is_active = 1
+        WHERE sc.category_id = c.id
       ) as total_event_count
     FROM categories c
-    WHERE c.is_active = 1
     ORDER BY c.sort_order, c.id
   `).all();
   res.json({ success: true, data: categories });
@@ -24,14 +23,14 @@ router.get('/', (req, res) => {
 
 router.get('/all', (req, res) => {
   const categories = db.prepare(`
-    SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order, id
+    SELECT * FROM categories ORDER BY sort_order, id
   `).all();
   res.json({ success: true, data: categories });
 });
 
 router.get('/:id', (req, res) => {
   const { id } = req.params;
-  const category = db.prepare('SELECT * FROM categories WHERE id = ? AND is_active = 1').get(id);
+  const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(id);
   if (!category) {
     return res.json({ success: false, message: '分类不存在' });
   }
@@ -87,11 +86,11 @@ router.delete('/:id', (req, res) => {
     return res.json({ success: false, message: '分类不存在' });
   }
 
-  const subCount = db.prepare('SELECT COUNT(*) as count FROM sub_categories WHERE category_id = ? AND is_active = 1').get(id).count;
+  const subCount = db.prepare('SELECT COUNT(*) as count FROM sub_categories WHERE category_id = ?').get(id).count;
   const eventCount = db.prepare(`
     SELECT COUNT(*) as count FROM events e
     JOIN sub_categories sc ON e.sub_category_id = sc.id
-    WHERE sc.category_id = ? AND e.is_active = 1
+    WHERE sc.category_id = ?
   `).get(id).count;
 
   if (eventCount > 0) {
@@ -101,7 +100,7 @@ router.delete('/:id', (req, res) => {
     return res.json({ success: false, message: '该分类下存在子分类，请先删除子分类' });
   }
 
-  db.prepare('UPDATE categories SET is_active = 0 WHERE id = ?').run(id);
+  db.prepare('DELETE FROM categories WHERE id = ?').run(id);
   res.json({ success: true, message: '删除成功' });
 });
 
@@ -117,10 +116,10 @@ router.get('/:id/sub-categories', (req, res) => {
       m.bounds_south as map_bounds_south, m.bounds_west as map_bounds_west,
       m.bounds_north as map_bounds_north, m.bounds_east as map_bounds_east,
       m.tile_ext as map_tile_ext, m.tile_size as map_tile_size,
-      (SELECT COUNT(*) FROM events e WHERE e.sub_category_id = sc.id AND e.is_active = 1) as event_count
+      (SELECT COUNT(*) FROM events e WHERE e.sub_category_id = sc.id) as event_count
     FROM sub_categories sc
     LEFT JOIN maps m ON sc.map_id = m.id
-    WHERE sc.category_id = ? AND sc.is_active = 1
+    WHERE sc.category_id = ?
     ORDER BY sc.sort_order, sc.id
   `).all(id);
   res.json({ success: true, data: subCategories });
@@ -134,7 +133,6 @@ router.get('/sub-categories/all', (req, res) => {
     FROM sub_categories sc
     JOIN categories c ON sc.category_id = c.id
     LEFT JOIN maps m ON sc.map_id = m.id
-    WHERE sc.is_active = 1 AND c.is_active = 1
     ORDER BY c.sort_order, sc.sort_order, sc.id
   `).all();
   res.json({ success: true, data: subCategories });
@@ -156,7 +154,7 @@ router.get('/sub-categories/:id', (req, res) => {
     FROM sub_categories sc
     JOIN categories c ON sc.category_id = c.id
     LEFT JOIN maps m ON sc.map_id = m.id
-    WHERE sc.id = ? AND sc.is_active = 1
+    WHERE sc.id = ?
   `).get(id);
   if (!sub) {
     return res.json({ success: false, message: '子分类不存在' });
@@ -175,7 +173,7 @@ router.post('/:id/sub-categories', (req, res) => {
     return res.json({ success: false, message: '编码和名称不能为空' });
   }
 
-  const category = db.prepare('SELECT * FROM categories WHERE id = ? AND is_active = 1').get(id);
+  const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(id);
   if (!category) {
     return res.json({ success: false, message: '父分类不存在' });
   }
@@ -257,12 +255,12 @@ router.delete('/sub-categories/:id', (req, res) => {
     return res.json({ success: false, message: '子分类不存在' });
   }
 
-  const eventCount = db.prepare('SELECT COUNT(*) as count FROM events WHERE sub_category_id = ? AND is_active = 1').get(id).count;
+  const eventCount = db.prepare('SELECT COUNT(*) as count FROM events WHERE sub_category_id = ?').get(id).count;
   if (eventCount > 0) {
     return res.json({ success: false, message: '该子分类下存在事件，请先删除事件' });
   }
 
-  db.prepare('UPDATE sub_categories SET is_active = 0 WHERE id = ?').run(id);
+  db.prepare('DELETE FROM sub_categories WHERE id = ?').run(id);
   res.json({ success: true, message: '删除成功' });
 });
 
@@ -320,12 +318,12 @@ router.delete('/:categoryId/sub-categories/:id', (req, res) => {
     return res.json({ success: false, message: '子分类不存在' });
   }
 
-  const eventCount = db.prepare('SELECT COUNT(*) as count FROM events WHERE sub_category_id = ? AND is_active = 1').get(id).count;
+  const eventCount = db.prepare('SELECT COUNT(*) as count FROM events WHERE sub_category_id = ?').get(id).count;
   if (eventCount > 0) {
     return res.json({ success: false, message: '该子分类下存在事件，请先删除事件' });
   }
 
-  db.prepare('UPDATE sub_categories SET is_active = 0 WHERE id = ?').run(id);
+  db.prepare('DELETE FROM sub_categories WHERE id = ?').run(id);
   res.json({ success: true, message: '删除成功' });
 });
 

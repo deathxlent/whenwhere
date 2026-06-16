@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "export_time": "2026-06-16T03:14:32.356Z",
+  "exported_event_count": 3,
+  "maps": [
+    {
+      "name": "zelda",
+      "code": "zeldamap",
+      "description": null,
+      "tile_type": "custom",
+      "tile_url": "/tiles/zeldamap/tiles/{z}/{x}/{y}.png",
+      "tile_subdomains": null,
+      "min_zoom": 2,
+      "max_zoom": 5,
+      "sort_order": 0,
+      "crs_type": "simple",
+      "bounds_south": -206.5,
+      "bounds_west": 34.75,
+      "bounds_north": -50.5,
+      "bounds_east": 221.5,
+      "tile_ext": "png",
+      "tile_size": 256,
+      "center_lat": -128.5,
+      "center_lng": 128.125,
+      "default_zoom": 2
+    }
+  ],
+  "categories": [
+    {
+      "code": "zelda",
+      "name": "zelda",
+      "sort_order": 0
+    }
+  ],
+  "sub_categories": [
+    {
+      "category_code": "zelda",
+      "code": "wild",
+      "name": "野炊",
+      "sort_order": 0,
+      "map_code": "zeldamap",
+      "center_lat": null,
+      "center_lng": null,
+      "default_zoom": 4,
+      "min_zoom": 1,
+      "max_zoom": 4
+    }
+  ],
+  "events": [
+    {
+      "category_code": "zelda",
+      "sub_category_code": "wild",
+      "title": "大灾变发生",
+      "start_ts": 10000,
+      "start_precision": 0,
+      "end_ts": null,
+      "end_precision": 0,
+      "description": "大灾变，盖侬复活毁灭海拉鲁",
+      "tips": "一百年前发生的悲剧",
+      "location_lat": -128.5,
+      "location_lng": 128.125,
+      "location_name": "海拉鲁城堡",
+      "sort_order": 1
+    },
+    {
+      "category_code": "zelda",
+      "sub_category_code": "wild",
+      "title": "林克苏醒",
+      "start_ts": 10100,
+      "start_precision": 0,
+      "end_ts": null,
+      "end_precision": 0,
+      "description": "林克从一百年的沉睡中苏醒",
+      "tips": "故事的开始",
+      "location_lat": -120,
+      "location_lng": 100,
+      "location_name": "复苏神庙",
+      "sort_order": 2
+    },
+    {
+      "category_code": "zelda",
+      "sub_category_code": "wild",
+      "title": "获得滑翔伞",
+      "start_ts": 10101,
+      "start_precision": 0,
+      "end_ts": null,
+      "end_precision": 0,
+      "description": "从老国王手中获得滑翔伞",
+      "tips": "离开初始台地",
+      "location_lat": -100,
+      "location_lng": 150,
+      "location_name": "初始台地",
+      "sort_order": 3
+    }
+  ]
+}

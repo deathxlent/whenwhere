@@ -254,7 +254,7 @@ categories.forEach(cat => {
 
 const seniorId = db.prepare('SELECT id FROM categories WHERE code = ?').get('senior')?.id;
 if (seniorId) {
-  db.prepare('UPDATE sub_categories SET is_active = 0 WHERE category_id = ? AND is_active = 1').run(seniorId);
+  db.prepare('DELETE FROM sub_categories WHERE category_id = ?').run(seniorId);
 }
 
 const worldMapId = db.prepare('SELECT id FROM maps WHERE code = ?').get('world')?.id;

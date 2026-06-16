@@ -234,9 +234,42 @@ router.post('/zip', upload.single('file'), async (req, res) => {
             continue;
           }
 
+          let mapId = null;
+          if (sc.map_code && mapCodeToId[sc.map_code]) {
+            mapId = mapCodeToId[sc.map_code];
+          }
+
           const existingByCode = db.prepare('SELECT * FROM sub_categories WHERE category_id = ? AND code = ?').get(catId, sc.code);
           if (existingByCode) {
-            if (subCategoriesAreEqual(existingByCode, sc)) {
+            const needsUpdate = existingByCode.map_id !== mapId ||
+              existingByCode.center_lat !== (sc.center_lat !== undefined ? sc.center_lat : null) ||
+              existingByCode.center_lng !== (sc.center_lng !== undefined ? sc.center_lng : null) ||
+              existingByCode.default_zoom !== (sc.default_zoom !== undefined ? sc.default_zoom : 2) ||
+              existingByCode.min_zoom !== (sc.min_zoom !== undefined ? sc.min_zoom : 2) ||
+              existingByCode.max_zoom !== (sc.max_zoom !== undefined ? sc.max_zoom : 8);
+
+            if (needsUpdate && mapId !== null) {
+              db.prepare(`
+                UPDATE sub_categories SET
+                  map_id = ?,
+                  center_lat = ?,
+                  center_lng = ?,
+                  default_zoom = ?,
+                  min_zoom = ?,
+                  max_zoom = ?
+                WHERE id = ?
+              `).run(
+                mapId,
+                sc.center_lat !== undefined ? sc.center_lat : null,
+                sc.center_lng !== undefined ? sc.center_lng : null,
+                sc.default_zoom !== undefined ? sc.default_zoom : 2,
+                sc.min_zoom !== undefined ? sc.min_zoom : 2,
+                sc.max_zoom !== undefined ? sc.max_zoom : 8,
+                existingByCode.id
+              );
+              results.sub_categories.success++;
+              results.sub_categories.errors.push(`子分类 ${sc.name} (${sc.code}) 已存在，已更新地图关联`);
+            } else if (subCategoriesAreEqual(existingByCode, sc)) {
               results.sub_categories.skipped++;
               results.sub_categories.errors.push(`子分类 ${sc.name} (${sc.code}) 已存在且配置相同，跳过`);
             } else {
@@ -249,15 +282,33 @@ router.post('/zip', upload.single('file'), async (req, res) => {
 
           const existingByName = db.prepare('SELECT * FROM sub_categories WHERE category_id = ? AND name = ?').get(catId, sc.name);
           if (existingByName && subCategoriesAreEqual(existingByName, sc)) {
-            results.sub_categories.skipped++;
-            results.sub_categories.errors.push(`子分类 ${sc.name} 已存在同名同配置，跳过`);
+            if (existingByName.map_id !== mapId && mapId !== null) {
+              db.prepare(`
+                UPDATE sub_categories SET
+                  map_id = ?,
+                  center_lat = ?,
+                  center_lng = ?,
+                  default_zoom = ?,
+                  min_zoom = ?,
+                  max_zoom = ?
+                WHERE id = ?
+              `).run(
+                mapId,
+                sc.center_lat !== undefined ? sc.center_lat : null,
+                sc.center_lng !== undefined ? sc.center_lng : null,
+                sc.default_zoom !== undefined ? sc.default_zoom : 2,
+                sc.min_zoom !== undefined ? sc.min_zoom : 2,
+                sc.max_zoom !== undefined ? sc.max_zoom : 8,
+                existingByName.id
+              );
+              results.sub_categories.success++;
+              results.sub_categories.errors.push(`子分类 ${sc.name} 已存在同名同配置，已更新地图关联`);
+            } else {
+              results.sub_categories.skipped++;
+              results.sub_categories.errors.push(`子分类 ${sc.name} 已存在同名同配置，跳过`);
+            }
             subCatCodeToId[`${sc.category_code}:${sc.code}`] = existingByName.id;
             continue;
-          }
-
-          let mapId = null;
-          if (sc.map_code && mapCodeToId[sc.map_code]) {
-            mapId = mapCodeToId[sc.map_code];
           }
 
           const result = db.prepare(`
@@ -497,9 +548,42 @@ router.post('/json', (req, res) => {
             continue;
           }
 
+          let mapId = null;
+          if (sc.map_code && mapCodeToId[sc.map_code]) {
+            mapId = mapCodeToId[sc.map_code];
+          }
+
           const existingByCode = db.prepare('SELECT * FROM sub_categories WHERE category_id = ? AND code = ?').get(catId, sc.code);
           if (existingByCode) {
-            if (subCategoriesAreEqual(existingByCode, sc)) {
+            const needsUpdate = existingByCode.map_id !== mapId ||
+              existingByCode.center_lat !== (sc.center_lat !== undefined ? sc.center_lat : null) ||
+              existingByCode.center_lng !== (sc.center_lng !== undefined ? sc.center_lng : null) ||
+              existingByCode.default_zoom !== (sc.default_zoom !== undefined ? sc.default_zoom : 2) ||
+              existingByCode.min_zoom !== (sc.min_zoom !== undefined ? sc.min_zoom : 2) ||
+              existingByCode.max_zoom !== (sc.max_zoom !== undefined ? sc.max_zoom : 8);
+
+            if (needsUpdate && mapId !== null) {
+              db.prepare(`
+                UPDATE sub_categories SET
+                  map_id = ?,
+                  center_lat = ?,
+                  center_lng = ?,
+                  default_zoom = ?,
+                  min_zoom = ?,
+                  max_zoom = ?
+                WHERE id = ?
+              `).run(
+                mapId,
+                sc.center_lat !== undefined ? sc.center_lat : null,
+                sc.center_lng !== undefined ? sc.center_lng : null,
+                sc.default_zoom !== undefined ? sc.default_zoom : 2,
+                sc.min_zoom !== undefined ? sc.min_zoom : 2,
+                sc.max_zoom !== undefined ? sc.max_zoom : 8,
+                existingByCode.id
+              );
+              results.sub_categories.success++;
+              results.sub_categories.errors.push(`子分类 ${sc.name} (${sc.code}) 已存在，已更新地图关联`);
+            } else if (subCategoriesAreEqual(existingByCode, sc)) {
               results.sub_categories.skipped++;
               results.sub_categories.errors.push(`子分类 ${sc.name} (${sc.code}) 已存在且配置相同，跳过`);
             } else {
@@ -512,15 +596,33 @@ router.post('/json', (req, res) => {
 
           const existingByName = db.prepare('SELECT * FROM sub_categories WHERE category_id = ? AND name = ?').get(catId, sc.name);
           if (existingByName && subCategoriesAreEqual(existingByName, sc)) {
-            results.sub_categories.skipped++;
-            results.sub_categories.errors.push(`子分类 ${sc.name} 已存在同名同配置，跳过`);
+            if (existingByName.map_id !== mapId && mapId !== null) {
+              db.prepare(`
+                UPDATE sub_categories SET
+                  map_id = ?,
+                  center_lat = ?,
+                  center_lng = ?,
+                  default_zoom = ?,
+                  min_zoom = ?,
+                  max_zoom = ?
+                WHERE id = ?
+              `).run(
+                mapId,
+                sc.center_lat !== undefined ? sc.center_lat : null,
+                sc.center_lng !== undefined ? sc.center_lng : null,
+                sc.default_zoom !== undefined ? sc.default_zoom : 2,
+                sc.min_zoom !== undefined ? sc.min_zoom : 2,
+                sc.max_zoom !== undefined ? sc.max_zoom : 8,
+                existingByName.id
+              );
+              results.sub_categories.success++;
+              results.sub_categories.errors.push(`子分类 ${sc.name} 已存在同名同配置，已更新地图关联`);
+            } else {
+              results.sub_categories.skipped++;
+              results.sub_categories.errors.push(`子分类 ${sc.name} 已存在同名同配置，跳过`);
+            }
             subCatCodeToId[`${sc.category_code}:${sc.code}`] = existingByName.id;
             continue;
-          }
-
-          let mapId = null;
-          if (sc.map_code && mapCodeToId[sc.map_code]) {
-            mapId = mapCodeToId[sc.map_code];
           }
 
           const result = db.prepare(`
