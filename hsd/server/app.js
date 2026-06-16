@@ -21,6 +21,7 @@ app.use('/api/categories', require('./routes/categories'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/images', require('./routes/images'));
 app.use('/api/maps', require('./routes/maps'));
+app.use('/api/import', require('./routes/import'));
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'HSD服务运行正常', timestamp: new Date().toISOString() });

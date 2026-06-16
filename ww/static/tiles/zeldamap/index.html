@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>塞尔达传说 荒野之息 - 离线地图</title>
+    <link rel="stylesheet" href="lib/leaflet.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #000; }
+        #map { height: 100%; width: 100%; background: #000; }
+
+        .layer-panel {
+            position: absolute; top: 10px; right: 10px; z-index: 1000;
+            background: rgba(30, 30, 40, 0.95); color: #ddd; border-radius: 8px;
+            width: 180px; max-height: calc(100vh - 80px); overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6); font-size: 13px;
+        }
+        .layer-panel h2 { font-size: 14px; padding: 10px 12px; color: #7ec8e3; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .layer-group { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .layer-group-title { padding: 6px 12px; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .layer-item { display: flex; align-items: center; padding: 5px 12px; cursor: pointer; transition: background 0.15s; }
+        .layer-item:hover { background: rgba(255,255,255,0.08); }
+        .layer-item input { margin-right: 8px; accent-color: #7ec8e3; cursor: pointer; }
+        .layer-item .icon-preview { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
+        .layer-item .label { flex: 1; }
+        .layer-item .count { color: #666; font-size: 11px; margin-left: 4px; }
+
+        .info-box {
+            position: absolute; bottom: 10px; left: 10px; z-index: 1000;
+            background: rgba(20, 20, 30, 0.9); color: #999; padding: 8px 12px; border-radius: 6px; font-size: 12px;
+        }
+
+        .leaflet-popup-content-wrapper { background: rgba(30,30,40,0.95); color: #ddd; border-radius: 6px; }
+        .leaflet-popup-tip { background: rgba(30,30,40,0.95); }
+        .leaflet-popup-content { margin: 8px 12px; font-size: 13px; }
+        .leaflet-popup-content b { color: #7ec8e3; }
+
+        .zelda-div-icon { white-space: nowrap; color: #fff; font-size: 11px; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px #000; }
+
+        .layer-panel::-webkit-scrollbar { width: 5px; }
+        .layer-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+        .layer-panel::-webkit-scrollbar-track { background: transparent; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div class="layer-panel" id="layerPanel">
+        <h2>🗺️ 图层控制</h2>
+        <div id="layerList"></div>
+    </div>
+
+    <div class="info-box">
+        缩放级别: <span id="zoom-level">2</span> | 塞尔达离线地图 | POI: <span id="poi-count">0</span>
+    </div>
+
+    <script src="lib/leaflet.js"></script>
+    <script>
+        const map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: 2,
+            maxZoom: 5,
+            zoomSnap: 0.25,
+            zoomControl: true,
+            attributionControl: false,
+            preferCanvas: true
+        });
+
+        const bounds = [[-206.5, 34.75], [-50.5, 221.5]];
+
+        L.tileLayer('tiles/{z}/{x}/{y}.png', {
+            noWrap: true,
+            bounds: bounds,
+            minZoom: 2,
+            maxZoom: 5,
+            tileSize: 256,
+            keepBuffer: 0
+        }).addTo(map);
+
+        map.fitBounds(bounds, { animate: false, maxZoom: 3 });
+
+        const CATEGORY_GROUPS = {
+            "任务": [25, 22, 23, 24],
+            "关键地点": [2, 1, 14, 7],
+            "收集": [17, 18],
+            "商店": [27, 28, 29, 30, 26],
+            "位置": [3, 4, 6, 5, 15, 16],
+            "Boss": [8, 9, 10, 11, 12, 13],
+            "区域": [19, 20, 21]
+        };
+
+        const layerGroups = {};
+        const layerVisibility = {};
+        let totalPois = 0;
+
+        function loadPOIs() {
+            fetch('data/pois_converted.json')
+                .then(r => r.json())
+                .then(data => {
+                    const listEl = document.getElementById('layerList');
+
+                    for (const [groupName, catIds] of Object.entries(CATEGORY_GROUPS)) {
+                        const groupDiv = document.createElement('div');
+                        groupDiv.className = 'layer-group';
+
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'layer-group-title';
+                        titleDiv.textContent = groupName;
+                        groupDiv.appendChild(titleDiv);
+
+                        for (const catId of catIds) {
+                            const cat = data[catId];
+                            if (!cat) continue;
+
+                            const lg = L.layerGroup();
+                            layerGroups[catId] = lg;
+                            layerVisibility[catId] = (catId === '1' || catId === '19');
+
+                            const hasIcon = cat.icon_local && cat.icon_local.endsWith('.png');
+                            let iconObj;
+                            if (hasIcon) {
+                                iconObj = L.icon({
+                                    iconUrl: cat.icon_local,
+                                    iconSize: cat.icon_size,
+                                    iconAnchor: cat.icon_anchor,
+                                    popupAnchor: cat.popup_anchor
+                                });
+                            }
+
+                            for (const poi of cat.coords) {
+                                const markerOpts = hasIcon ? { icon: iconObj } : {};
+                                const marker = L.marker([poi.lat, poi.lng], markerOpts);
+
+                                if (hasIcon) {
+                                    let popupHtml = '<b>' + poi.title + '</b>';
+                                    if (poi.content) popupHtml += '<br>' + poi.content;
+                                    marker.bindPopup(popupHtml);
+                                } else {
+                                    marker.bindTooltip(poi.title, {
+                                        permanent: false,
+                                        direction: 'top',
+                                        className: 'zelda-div-icon'
+                                    });
+                                    marker.bindPopup('<b>' + poi.title + '</b>');
+                                }
+
+                                lg.addLayer(marker);
+                                totalPois++;
+                            }
+
+                            if (layerVisibility[catId]) {
+                                lg.addTo(map);
+                            }
+
+                            const itemDiv = document.createElement('div');
+                            itemDiv.className = 'layer-item';
+
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.checked = layerVisibility[catId];
+                            checkbox.addEventListener('change', function() {
+                                if (this.checked) {
+                                    map.addLayer(lg);
+                                    layerVisibility[catId] = true;
+                                } else {
+                                    map.removeLayer(lg);
+                                    layerVisibility[catId] = false;
+                                }
+                            });
+
+                            const label = document.createElement('span');
+                            label.className = 'label';
+                            label.textContent = cat.name;
+
+                            const count = document.createElement('span');
+                            count.className = 'count';
+                            count.textContent = cat.coords.length;
+
+                            if (hasIcon) {
+                                const img = document.createElement('img');
+                                img.className = 'icon-preview';
+                                img.src = cat.icon_local;
+                                itemDiv.appendChild(img);
+                            }
+
+                            itemDiv.appendChild(checkbox);
+                            itemDiv.appendChild(label);
+                            itemDiv.appendChild(count);
+                            groupDiv.appendChild(itemDiv);
+                        }
+
+                        listEl.appendChild(groupDiv);
+                    }
+
+                    document.getElementById('poi-count').textContent = totalPois;
+                })
+                .catch(err => console.error('加载 POI 数据失败:', err));
+        }
+
+        map.on('zoomend', function() {
+            document.getElementById('zoom-level').textContent = Math.round(map.getZoom());
+        });
+
+        loadPOIs();
+    </script>
+</body>
+</html>
