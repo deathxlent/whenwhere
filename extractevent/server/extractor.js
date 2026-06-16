@@ -2,6 +2,43 @@ const cheerio = require('cheerio');
 const { callLLM } = require('./llm');
 const config = require('./config');
 
+function normalizeTimestamp(ts) {
+  if (ts === null || ts === undefined || ts === '') {
+    return null;
+  }
+
+  const num = typeof ts === 'string' ? parseInt(ts, 10) : ts;
+  if (isNaN(num)) {
+    return null;
+  }
+
+  const sign = num < 0 ? -1 : 1;
+  const absNum = Math.abs(num);
+
+  if (absNum <= 9999) {
+    return sign * (absNum * 10000 + 101);
+  } else if (absNum <= 999999) {
+    return sign * (absNum * 100 + 1);
+  }
+
+  return num;
+}
+
+function normalizePrecision(precision) {
+  if (precision === null || precision === undefined || precision === '') {
+    return 0;
+  }
+
+  const num = typeof precision === 'string' ? parseInt(precision, 10) : precision;
+  if (isNaN(num)) {
+    return 0;
+  }
+
+  if (num < 0) return 0;
+  if (num > 2) return 2;
+  return num;
+}
+
 function extractTextFromHtml(html) {
   const $ = cheerio.load(html);
   $('script, style, nav, footer, header, aside').remove();
@@ -20,10 +57,17 @@ function buildSystemPrompt() {
 
 【事件字段要求】
 - title: 事件标题（简短准确）
-- start_ts: 开始时间（整数，公元前用负数，如 -221 表示公元前221年）
-- start_precision: 开始时间精度（0=精确到日, 1=精确到月, 2=精确到年）
-- end_ts: 结束时间（可选，null 表示没有结束时间）
-- end_precision: 结束时间精度（同上）
+- start_ts: 开始时间戳（整数，YYYYMMDD格式，公元前用负数）
+  * 2024年1月1日 → 20240101
+  * 1969年 → 19690101（只知道年份时默认1月1日）
+  * 公元前221年 → -2210101
+  * 2023年5月 → 20230501（只知道年月时默认1日）
+- start_precision: 开始时间精度（整数，0=年级别，1=月级别，2=日级别）
+  * 0 = 只知道到年份，如"1969年"
+  * 1 = 知道到月份，如"1969年3月"
+  * 2 = 知道到具体日期，如"1969年3月15日"
+- end_ts: 结束时间戳（格式同start_ts，null表示没有结束时间）
+- end_precision: 结束时间精度（格式同start_precision）
 - description: 事件详细描述
 - tips: 补充说明或备注（可选）
 - location_name: 地点名称
@@ -31,18 +75,18 @@ function buildSystemPrompt() {
 - location_lng: 经度（不知道则为 null）
 - sort_order: 排序序号（从1开始）
 
-【输出格式】
+【输出格式示例】
 {
   "events": [
     {
-      "title": "事件标题",
-      "start_ts": 2024,
-      "start_precision": 2,
+      "title": "Unix 原型开发",
+      "start_ts": 19690101,
+      "start_precision": 0,
       "end_ts": null,
       "end_precision": 0,
-      "description": "事件详细描述",
-      "tips": "补充说明",
-      "location_name": "地点名称",
+      "description": "1969年Unix操作系统原型开发",
+      "tips": "",
+      "location_name": "贝尔实验室",
       "location_lat": null,
       "location_lng": null,
       "sort_order": 1
@@ -51,8 +95,9 @@ function buildSystemPrompt() {
 }
 
 【严格要求】
+- 时间戳必须使用 YYYYMMDD 格式的整数，绝不能只写年份（如1969要写成19690101）
+- 精度定义：0=年，1=月，2=日
 - 只输出 JSON，不要有任何其他内容
-- 不要在 JSON 前后添加任何文字、注释或 markdown
 - 确保 JSON 可以直接被 JSON.parse() 解析`;
 }
 
@@ -184,22 +229,52 @@ async function extractFromHtml(html, options = {}) {
   const categoryCode = options.category_code || extractionConfig.default_category_code || 'history';
   const subCategoryCode = options.sub_category_code || extractionConfig.default_sub_category_code || 'events';
   
-  const eventsWithDefaults = events.map((e, idx) => ({
-    category_code: categoryCode,
-    sub_category_code: subCategoryCode,
-    title: e.title || '',
-    start_ts: e.start_ts !== undefined && e.start_ts !== null ? e.start_ts : null,
-    start_precision: e.start_precision !== undefined ? e.start_precision : (extractionConfig.start_precision_default || 2),
-    end_ts: e.end_ts !== undefined && e.end_ts !== null ? e.end_ts : null,
-    end_precision: e.end_precision !== undefined ? e.end_precision : (extractionConfig.end_precision_default || 0),
-    description: e.description || '',
-    tips: e.tips || '',
-    location_lat: e.location_lat !== undefined ? e.location_lat : null,
-    location_lng: e.location_lng !== undefined ? e.location_lng : null,
-    location_name: e.location_name || '',
-    sort_order: e.sort_order !== undefined ? e.sort_order : (idx + 1)
-  }));
-  
+  const eventsWithDefaults = events.map((e, idx) => {
+    const startTs = normalizeTimestamp(e.start_ts);
+    const endTs = normalizeTimestamp(e.end_ts);
+    let startPrecision = normalizePrecision(e.start_precision);
+    let endPrecision = normalizePrecision(e.end_precision);
+
+    if (startTs !== null) {
+      const absStart = Math.abs(startTs);
+      if (absStart % 10000 === 101) {
+        startPrecision = 0;
+      } else if (absStart % 100 === 1) {
+        startPrecision = 1;
+      }
+    }
+    if (endTs !== null) {
+      const absEnd = Math.abs(endTs);
+      if (absEnd % 10000 === 101) {
+        endPrecision = 0;
+      } else if (absEnd % 100 === 1) {
+        endPrecision = 1;
+      }
+    }
+
+    return {
+      category_code: categoryCode,
+      sub_category_code: subCategoryCode,
+      title: e.title || '',
+      start_ts: startTs,
+      start_precision: startPrecision,
+      end_ts: endTs,
+      end_precision: endPrecision,
+      description: e.description || '',
+      tips: e.tips || '',
+      location_lat: e.location_lat !== undefined && e.location_lat !== null ? Number(e.location_lat) : null,
+      location_lng: e.location_lng !== undefined && e.location_lng !== null ? Number(e.location_lng) : null,
+      location_name: e.location_name || '',
+      sort_order: e.sort_order !== undefined ? Number(e.sort_order) : (idx + 1)
+    };
+  });
+
+  console.log(`\n时间规范化结果:`);
+  eventsWithDefaults.forEach((e, idx) => {
+    console.log(`  [${idx + 1}] ${e.title}: start_ts=${e.start_ts} (精度=${e.start_precision}), end_ts=${e.end_ts} (精度=${e.end_precision})`);
+  });
+  console.log('');
+
   return {
     version: '1.0',
     export_time: new Date().toISOString(),

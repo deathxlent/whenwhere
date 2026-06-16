@@ -30,7 +30,7 @@
     "default_category_name": "历史",
     "default_sub_category_code": "events",
     "default_sub_category_name": "历史事件",
-    "start_precision_default": 2,
+    "start_precision_default": 0,
     "end_precision_default": 0
   },
   "server": {

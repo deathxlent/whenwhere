@@ -1,0 +1,89 @@
+{
+  "version": "1.0",
+  "export_time": "2026-06-16T10:50:32.051Z",
+  "exported_event_count": 4,
+  "maps": [],
+  "categories": [
+    {
+      "code": "history",
+      "name": "历史",
+      "sort_order": 1
+    }
+  ],
+  "sub_categories": [
+    {
+      "category_code": "history",
+      "code": "events",
+      "name": "历史事件",
+      "sort_order": 1,
+      "map_code": null,
+      "center_lat": null,
+      "center_lng": null,
+      "default_zoom": 2,
+      "min_zoom": 2,
+      "max_zoom": 8
+    }
+  ],
+  "events": [
+    {
+      "category_code": "history",
+      "sub_category_code": "events",
+      "title": "Unix 原型开发",
+      "start_ts": 1969,
+      "start_precision": 2,
+      "end_ts": null,
+      "end_precision": 0,
+      "description": "美国 AT&T 贝尔实验室的研究人员在1969年前后在小型计算机上实现了早期 Unix 原型，标志着 Unix 操作系统的诞生。",
+      "tips": "",
+      "location_lat": 40.6956,
+      "location_lng": -74.379,
+      "location_name": "贝尔实验室 (Murray Hill, New Jersey, USA)",
+      "sort_order": 1
+    },
+    {
+      "category_code": "history",
+      "sub_category_code": "events",
+      "title": "Unix 名称提出",
+      "start_ts": 1970,
+      "start_precision": 2,
+      "end_ts": null,
+      "end_precision": 0,
+      "description": "Brian Kernighan 在1970年前后提出了“Unix”这一名称，作为对 Multics 的谐趣式呼应。",
+      "tips": "",
+      "location_lat": 40.6956,
+      "location_lng": -74.379,
+      "location_name": "贝尔实验室 (Murray Hill, New Jersey, USA)",
+      "sort_order": 2
+    },
+    {
+      "category_code": "history",
+      "sub_category_code": "events",
+      "title": "Unix 系统化对外介绍开始",
+      "start_ts": 1973,
+      "start_precision": 2,
+      "end_ts": null,
+      "end_precision": 0,
+      "description": "1973 年后，Unix 逐步以更系统化的方式对外介绍，推动了其在学术界和工业界的采用与移植。",
+      "tips": "",
+      "location_lat": 40.6956,
+      "location_lng": -74.379,
+      "location_name": "贝尔实验室 (Murray Hill, New Jersey, USA)",
+      "sort_order": 3
+    },
+    {
+      "category_code": "history",
+      "sub_category_code": "events",
+      "title": "Ritchie 与 Thompson 发表 Unix 论文",
+      "start_ts": 1974,
+      "start_precision": 2,
+      "end_ts": null,
+      "end_precision": 0,
+      "description": "1974 年，Dennis M. Ritchie 与 Ken Thompson 在期刊论文中对 Unix 的设计目标、系统结构与编程环境作了较为完整的公开描述，推动了学术界与工程界的采用与移植。",
+      "tips": "",
+      "location_lat": 40.6956,
+      "location_lng": -74.379,
+      "location_name": "贝尔实验室 (Murray Hill, New Jersey, USA)",
+      "sort_order": 4
+    }
+  ]
+}
