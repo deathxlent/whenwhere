@@ -98,21 +98,7 @@ router.put('/:id', (req, res) => {
   let finalTileSubdomains = map.tile_subdomains;
   let finalSortOrder = map.sort_order;
 
-  if (isBound) {
-    const restrictedChanged =
-      (name != null && name !== map.name) ||
-      (code != null && code !== map.code) ||
-      (tile_type != null && tile_type !== map.tile_type) ||
-      (tile_url != null && tile_url !== map.tile_url) ||
-      (tile_subdomains != null && tile_subdomains !== map.tile_subdomains) ||
-      (sort_order !== undefined && sort_order !== null && sort_order != map.sort_order);
-    if (restrictedChanged) {
-      return res.json({
-        success: false,
-        message: '该地图已绑定到子类，仅允许修改：描述、最小缩放、最大缩放、距离单位、距离倍率'
-      });
-    }
-  } else {
+  if (!isBound) {
     if (code != null && code !== map.code) {
       const exists = db.prepare('SELECT id FROM maps WHERE code = ? AND id != ?').get(code, id);
       if (exists) {
