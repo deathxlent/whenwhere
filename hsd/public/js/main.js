@@ -565,7 +565,7 @@ async function renderMapsView() {
           <div class="map-card-name">${escapeHtml(map.name)}</div>
           <div style="margin-top:4px;"><span class="map-card-code">${escapeHtml(map.code)}</span></div>
         </div>
-        ${isBound ? '<span class="bound-tag">🔒 已绑定</span>' : '<span class="free-tag">✓ 可编辑</span>'}
+        ${isBound ? '<span class="bound-tag">🔗 已绑定</span>' : '<span class="free-tag">✓ 完全编辑</span>'}
       </div>
       <div class="map-card-desc">${escapeHtml(map.description || '暂无描述')}</div>
       <div class="map-card-meta">
@@ -576,7 +576,7 @@ async function renderMapsView() {
       ${bindSubsHtml}
       <div class="map-card-actions">
         <button class="btn btn-default btn-sm" data-action="view" data-id="${map.id}">👁️ 查看</button>
-        <button class="btn btn-default btn-sm" data-action="edit" data-id="${map.id}" ${isBound ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>✏️ 编辑</button>
+        <button class="btn btn-default btn-sm" data-action="edit" data-id="${map.id}">✏️ 编辑</button>
         <button class="btn btn-danger btn-sm" data-action="delete" data-id="${map.id}" ${isBound ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>🗑️</button>
       </div>
     </div>
@@ -604,13 +604,14 @@ async function renderMapsView() {
         <div>5. 设置合适的缩放范围（建议min=2, max=8~12）和排序</div>
         <div>6. 保存后，到「类别管理」中给对应子类绑定此新地图</div>
         <div style="margin-top:10px;"><strong>三、注意事项：</strong></div>
-        <div>• 地图一旦被子类绑定则无法直接编辑/删除，需先解除所有子类的绑定才能修改</div>
+        <div>• 地图被子类绑定后：仅允许修改「描述、最小缩放、最大缩放、距离单位、距离倍率」</div>
+        <div>• 地图被子类绑定后：名称、代码、瓦片配置、排序均无法修改，删除也被禁止</div>
         <div>• 建议设置合理的中心点（经纬度）和默认缩放级别，提升用户体验</div>
         <div>• 自定义瓦片服务需确保CORS跨域配置正确</div>
       </div>
     </div>
-    <div style="margin-bottom:20px;padding:14px;background:#fff5f5;border-radius:8px;color:#742a2a;font-size:13px;">
-      ⚠️ <strong>注意：</strong>已有子类别绑定的地图无法编辑和删除，需要先解除绑定才能操作。
+    <div style="margin-bottom:20px;padding:14px;background:#fffbeb;border-radius:8px;color:#78350f;font-size:13px;">
+      ⚠️ <strong>注意：</strong>已有子类别绑定的地图<strong>仅允许修改：描述、最小/最大缩放、距离单位/倍率</strong>，其他字段（名称/代码/瓦片/排序）不可修改，且删除被禁止。
     </div>
     <div class="three-col-grid">${cardsHtml || '<div style="grid-column:span 3;text-align:center;padding:60px;color:#a0aec0;"><div style="font-size:48px;margin-bottom:16px;">🗺️</div>暂无地图，点击右上角「+ 新增地图」</div>'}</div>
   `;
@@ -656,8 +657,16 @@ function confirmDeleteMap(map) {
 function openMapModal(map = null, isViewOnly = false) {
   const isEdit = map != null && !isViewOnly;
   const mode = isViewOnly ? '查看' : (isEdit ? '编辑' : '添加');
-  const disabled = isViewOnly ? 'disabled' : '';
   const tileType = map?.tile_type || 'hybrid';
+  const isBound = map && (map.bind_count || 0) > 0 && !isViewOnly;
+
+  const nameDisabled = isViewOnly || isBound ? 'disabled' : '';
+  const codeDisabled = isViewOnly || isEdit ? 'readonly' : '';
+  const descDisabled = isViewOnly ? 'disabled' : '';
+  const tileDisabled = isViewOnly || isBound ? 'disabled' : '';
+  const zoomDisabled = isViewOnly ? 'disabled' : '';
+  const sortDisabled = isViewOnly || isBound ? 'disabled' : '';
+  const distDisabled = isViewOnly ? 'disabled' : '';
 
   const html = `
     <div class="modal-overlay" id="map-modal">
@@ -667,55 +676,55 @@ function openMapModal(map = null, isViewOnly = false) {
           <button class="modal-close" onclick="document.getElementById('map-modal').remove();">&times;</button>
         </div>
         <div class="modal-body">
-          ${(map && (map.bind_count || 0) > 0 && !isViewOnly) ?
-            `<div class="disabled-hint">⚠️ 该地图已绑定 ${map.bind_count} 个子类别，只能编辑名称、描述、排序，其他字段无法修改</div>` : ''}
+          ${isBound ?
+            `<div class="disabled-hint">⚠️ 该地图已绑定 ${map.bind_count} 个子类别，仅允许修改：描述、最小缩放、最大缩放、距离单位、距离倍率</div>` : ''}
           ${isViewOnly ? `<div class="disabled-hint" style="background:#ebf8ff;color:#2c5282;">🔍 查看模式，内容不可编辑</div>` : ''}
           <div class="form-grid">
             <div>
               <label class="form-label">地图名称 *</label>
-              <input class="form-control" id="map-name" value="${map ? escapeHtml(map.name) : ''}" placeholder="如：世界地图" ${disabled}>
+              <input class="form-control" id="map-name" value="${map ? escapeHtml(map.name) : ''}" placeholder="如：世界地图" ${nameDisabled}>
             </div>
             <div>
               <label class="form-label">地图代码 *</label>
-              <input class="form-control" id="map-code" value="${map ? escapeHtml(map.code) : ''}" placeholder="如：world（英文唯一）" ${isEdit || isViewOnly ? 'readonly' : ''}>
+              <input class="form-control" id="map-code" value="${map ? escapeHtml(map.code) : ''}" placeholder="如：world（英文唯一）" ${codeDisabled}>
             </div>
           </div>
           <div style="margin-top:14px;">
             <label class="form-label">描述</label>
-            <textarea class="form-control" id="map-desc" rows="2" ${disabled}>${map ? escapeHtml(map.description || '') : ''}</textarea>
+            <textarea class="form-control" id="map-desc" rows="2" ${descDisabled}>${map ? escapeHtml(map.description || '') : ''}</textarea>
           </div>
           <div style="margin-top:14px;">
             <label class="form-label">瓦片类型</label>
             <div class="tile-type-options" id="tile-type-options">
-              <div class="tile-type-option ${tileType === 'osm' ? 'selected' : ''}" data-type="osm">🌐 OSM标准</div>
-              <div class="tile-type-option ${tileType === 'amap_street' ? 'selected' : ''}" data-type="amap_street">🛣️ 高德街道</div>
-              <div class="tile-type-option ${tileType === 'amap_satellite' ? 'selected' : ''}" data-type="amap_satellite">🛰️ 高德卫星</div>
-              <div class="tile-type-option ${tileType === 'hybrid' ? 'selected' : ''}" data-type="hybrid">🎯 混合(推荐)</div>
-              <div class="tile-type-option ${tileType === 'custom' ? 'selected' : ''}" data-type="custom">⚙️ 自定义</div>
+              <div class="tile-type-option ${tileType === 'osm' ? 'selected' : ''} ${tileDisabled ? 'disabled-option' : ''}" data-type="osm">🌐 OSM标准</div>
+              <div class="tile-type-option ${tileType === 'amap_street' ? 'selected' : ''} ${tileDisabled ? 'disabled-option' : ''}" data-type="amap_street">🛣️ 高德街道</div>
+              <div class="tile-type-option ${tileType === 'amap_satellite' ? 'selected' : ''} ${tileDisabled ? 'disabled-option' : ''}" data-type="amap_satellite">🛰️ 高德卫星</div>
+              <div class="tile-type-option ${tileType === 'hybrid' ? 'selected' : ''} ${tileDisabled ? 'disabled-option' : ''}" data-type="hybrid">🎯 混合(推荐)</div>
+              <div class="tile-type-option ${tileType === 'custom' ? 'selected' : ''} ${tileDisabled ? 'disabled-option' : ''}" data-type="custom">⚙️ 自定义</div>
             </div>
           </div>
           <div class="form-grid" style="margin-top:14px;">
             <div>
               <label class="form-label">最小缩放</label>
-              <input class="form-control" type="number" min="0" max="18" id="map-min-zoom" value="${map ? (map.min_zoom || 0) : 2}" ${disabled}>
+              <input class="form-control" type="number" min="0" max="18" id="map-min-zoom" value="${map ? (map.min_zoom || 0) : 2}" ${zoomDisabled}>
             </div>
             <div>
               <label class="form-label">最大缩放</label>
-              <input class="form-control" type="number" min="0" max="18" id="map-max-zoom" value="${map ? (map.max_zoom || 18) : 8}" ${disabled}>
+              <input class="form-control" type="number" min="0" max="18" id="map-max-zoom" value="${map ? (map.max_zoom || 18) : 8}" ${zoomDisabled}>
             </div>
             <div>
               <label class="form-label">排序</label>
-              <input class="form-control" type="number" id="map-sort" value="${map ? (map.sort_order || 0) : 0}">
+              <input class="form-control" type="number" id="map-sort" value="${map ? (map.sort_order || 0) : 0}" ${sortDisabled}>
             </div>
           </div>
           <div class="form-grid" style="margin-top:14px;">
             <div>
               <label class="form-label">距离单位</label>
-              <input class="form-control" id="map-distance-unit" value="${map && map.distance_unit ? escapeHtml(map.distance_unit) : 'km'}" placeholder="如：km、米、光年、天文单位" ${disabled}>
+              <input class="form-control" id="map-distance-unit" value="${map && map.distance_unit ? escapeHtml(map.distance_unit) : 'km'}" placeholder="如：km、米、光年、天文单位" ${distDisabled}>
             </div>
             <div>
               <label class="form-label">距离倍率</label>
-              <input class="form-control" type="number" step="any" id="map-distance-scale" value="${map && map.distance_scale != null ? map.distance_scale : 1}" placeholder="如：1、3、0.001" ${disabled}>
+              <input class="form-control" type="number" step="any" id="map-distance-scale" value="${map && map.distance_scale != null ? map.distance_scale : 1}" placeholder="如：1、3、0.001" ${distDisabled}>
             </div>
           </div>
           <div id="custom-tile-fields" style="margin-top:14px;display:${tileType === 'custom' ? '' : 'none'};">
@@ -723,11 +732,11 @@ function openMapModal(map = null, isViewOnly = false) {
             <div class="form-grid">
               <div style="grid-column:span 2;">
                 <label class="form-label">瓦片URL模板</label>
-                <input class="form-control" id="map-tile-url" value="${map && map.tile_url ? escapeHtml(map.tile_url) : ''}" placeholder="https://{s}.tile.example.com/{z}/{x}/{y}.png" ${disabled}>
+                <input class="form-control" id="map-tile-url" value="${map && map.tile_url ? escapeHtml(map.tile_url) : ''}" placeholder="https://{s}.tile.example.com/{z}/{x}/{y}.png" ${tileDisabled}>
               </div>
               <div>
                 <label class="form-label">子域名（逗号分隔）</label>
-                <input class="form-control" id="map-tile-sd" value="${map && map.tile_subdomains ? escapeHtml(map.tile_subdomains) : 'a,b,c'}" placeholder="a,b,c" ${disabled}>
+                <input class="form-control" id="map-tile-sd" value="${map && map.tile_subdomains ? escapeHtml(map.tile_subdomains) : 'a,b,c'}" placeholder="a,b,c" ${tileDisabled}>
               </div>
             </div>
           </div>
@@ -743,7 +752,7 @@ function openMapModal(map = null, isViewOnly = false) {
 
   let selectedTileType = tileType;
   document.querySelectorAll('#tile-type-options .tile-type-option').forEach(opt => {
-    if (isViewOnly || (map && (map.bind_count || 0) > 0)) return;
+    if (isViewOnly || isBound) return;
     opt.addEventListener('click', () => {
       document.querySelectorAll('#tile-type-options .tile-type-option').forEach(o => o.classList.remove('selected'));
       opt.classList.add('selected');
@@ -1013,6 +1022,10 @@ async function renderMapView() {
             <div class="form-group">
               <label class="form-label">说明</label>
               <textarea class="form-control" id="f-desc" placeholder="事件详细说明..." rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">小贴士</label>
+              <textarea class="form-control" id="f-tips" placeholder="小贴士（猜图时显示，非必填）" rows="2"></textarea>
             </div>
             <div class="form-group">
               <label class="form-label required">图片（至少1张）</label>
@@ -1878,6 +1891,8 @@ function resetAddForm() {
   document.getElementById('f-end-month').value = '';
   document.getElementById('f-end-day').value = '';
   document.getElementById('f-desc').value = '';
+  const fTips = document.getElementById('f-tips');
+  if (fTips) fTips.value = '';
   document.getElementById('image-previews').innerHTML = '';
   document.getElementById('disp-lat').textContent = '-';
   document.getElementById('disp-lng').textContent = '-';
@@ -1981,6 +1996,7 @@ async function submitEvent() {
       end_ts: endTs,
       end_precision: endPrecision,
       description: document.getElementById('f-desc').value.trim() || null,
+      tips: document.getElementById('f-tips').value.trim() || null,
       location_lat: parseFloat(lat),
       location_lng: parseFloat(lng),
       location_name: document.getElementById('f-locname').value.trim() || null,
@@ -2459,11 +2475,20 @@ function makeDraggable(element, handle) {
 
 function openEditMapView(event) {
   state.currentEditingEvent = event;
+  state.drawMode = (event.location_lat2 != null && event.location_lng2 != null) ? 'rect' : 'point';
   setBreadcrumb(`首页 / ${state.currentCategory.name} / ${state.currentSubCategory.name} / ${event.title} / 修改`);
 
   document.getElementById('main-view').innerHTML = `
     <div class="map-edit-view">
       <div id="map"></div>
+      <div class="map-hint-bar">
+        <div class="map-hint" id="edit-map-hint">
+          📍 当前：${state.drawMode === 'rect' ? '▢ 框选模式 - 拖拽地图绘制框选区域' : '📍 选点模式 - 点击地图选择位置'}
+        </div>
+        <button type="button" class="btn ${state.drawMode === 'rect' ? 'btn-warning' : 'btn-default'}" id="edit-toggle-draw-mode">
+          ${state.drawMode === 'rect' ? '▢ 框选模式' : '📍 选点模式'}
+        </button>
+      </div>
       <div class="floating-panel" id="edit-panel">
         <div class="floating-panel-header" id="edit-panel-header">
           <span class="floating-panel-title">修改事件</span>
@@ -2474,8 +2499,14 @@ function openEditMapView(event) {
               <label class="form-label required">事件名称</label>
               <input type="text" class="form-control" id="e-title" value="${escapeHtml(event.title || '')}" placeholder="请输入事件名称">
             </div>
-            <div class="form-row">
-              <div class="form-group">
+            <div class="form-group" style="margin-bottom:8px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+                <input type="checkbox" id="e-location-only" style="width:16px;height:16px;" ${event.location_only ? 'checked' : ''}>
+                仅猜测地点（不猜时间）
+              </label>
+            </div>
+            <div class="form-row" id="edit-time-section">
+              <div class="form-group" id="edit-start-time-group">
                 <label class="form-label">开始时间</label>
                 <div class="era-toggle" id="edit-start-era">
                   <button type="button" class="era-toggle-btn" data-era="ce">公元</button>
@@ -2498,7 +2529,7 @@ function openEditMapView(event) {
                   <button type="button" class="date-precision-btn" data-precision="2">年月日</button>
                 </div>
               </div>
-              <div class="form-group">
+              <div class="form-group" id="edit-end-time-group">
                 <div class="form-label-row">
                   <label class="form-label">结束时间</label>
                   <button type="button" class="sync-btn" id="edit-sync-end-btn">⟳ 同步开始</button>
@@ -2535,12 +2566,22 @@ function openEditMapView(event) {
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">纬度</label>
+                <label class="form-label">纬度（左上角）</label>
                 <input type="number" step="any" class="form-control" id="e-lat" value="${event.location_lat ?? ''}" placeholder="39.9042">
               </div>
               <div class="form-group">
-                <label class="form-label">经度</label>
+                <label class="form-label">经度（左上角）</label>
                 <input type="number" step="any" class="form-control" id="e-lng" value="${event.location_lng ?? ''}" placeholder="116.4074">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">纬度2（右下角，留空=点选）</label>
+                <input type="number" step="any" class="form-control" id="e-lat2" value="${event.location_lat2 ?? ''}" placeholder="留空表示点选">
+              </div>
+              <div class="form-group">
+                <label class="form-label">经度2（右下角，留空=点选）</label>
+                <input type="number" step="any" class="form-control" id="e-lng2" value="${event.location_lng2 ?? ''}" placeholder="留空表示点选">
               </div>
             </div>
             <div class="form-group">
@@ -2633,17 +2674,221 @@ function openEditMapView(event) {
   }
 
   let editMarker = null;
-  if (event.location_lat && event.location_lng) {
-    editMarker = L.marker([event.location_lat, event.location_lng], {
-      draggable: true
-    }).addTo(state.map);
+  let editRect = null;
+  let rectStartLatLng = null;
+  let drawingRect = null;
 
-    editMarker.on('dragend', () => {
-      const pos = editMarker.getLatLng();
-      document.getElementById('e-lat').value = pos.lat.toFixed(6);
-      document.getElementById('e-lng').value = pos.lng.toFixed(6);
-    });
+  function clearMapOverlays() {
+    if (editMarker) { state.map.removeLayer(editMarker); editMarker = null; }
+    if (editRect) { state.map.removeLayer(editRect); editRect = null; }
+    if (drawingRect) { state.map.removeLayer(drawingRect); drawingRect = null; }
   }
+
+  function updateMapHint() {
+    const hint = document.getElementById('edit-map-hint');
+    if (hint) {
+      hint.textContent = state.drawMode === 'rect'
+        ? '▢ 当前：框选模式 - 拖拽地图绘制框选区域'
+        : '📍 当前：选点模式 - 点击地图选择位置';
+    }
+  }
+
+  function showMarker(lat, lng) {
+    if (editMarker) {
+      editMarker.setLatLng([lat, lng]);
+    } else {
+      editMarker = L.marker([lat, lng], { draggable: true }).addTo(state.map);
+      editMarker.on('dragend', () => {
+        const pos = editMarker.getLatLng();
+        document.getElementById('e-lat').value = pos.lat.toFixed(6);
+        document.getElementById('e-lng').value = pos.lng.toFixed(6);
+        document.getElementById('e-lat2').value = '';
+        document.getElementById('e-lng2').value = '';
+      });
+    }
+  }
+
+  function showRect(lat1, lng1, lat2, lng2) {
+    const south = Math.min(lat1, lat2);
+    const north = Math.max(lat1, lat2);
+    const west = Math.min(lng1, lng2);
+    const east = Math.max(lng1, lng2);
+    const rectBounds = [[south, west], [north, east]];
+
+    if (editRect) {
+      editRect.setBounds(rectBounds);
+    } else {
+      editRect = L.rectangle(rectBounds, {
+        color: '#ef4444',
+        weight: 2,
+        fillColor: '#ef4444',
+        fillOpacity: 0.12,
+        draggable: true,
+        resizable: true
+      }).addTo(state.map);
+
+      editRect.on('dragend', () => {
+        const b = editRect.getBounds();
+        document.getElementById('e-lat').value = b.getNorth().toFixed(6);
+        document.getElementById('e-lng').value = b.getWest().toFixed(6);
+        document.getElementById('e-lat2').value = b.getSouth().toFixed(6);
+        document.getElementById('e-lng2').value = b.getEast().toFixed(6);
+      });
+
+      if (typeof L.EditControl === 'undefined') {
+        editRect.on('mousedown', () => {});
+      }
+    }
+  }
+
+  function updateFromInputs() {
+    const lat1 = parseFloat(document.getElementById('e-lat').value);
+    const lng1 = parseFloat(document.getElementById('e-lng').value);
+    const lat2Text = document.getElementById('e-lat2').value;
+    const lng2Text = document.getElementById('e-lng2').value;
+    const lat2 = lat2Text ? parseFloat(lat2Text) : null;
+    const lng2 = lng2Text ? parseFloat(lng2Text) : null;
+    const hasBoth = !isNaN(lat1) && !isNaN(lng1) && lat2 != null && !isNaN(lat2) && lng2 != null && !isNaN(lng2);
+    const hasSingle = !isNaN(lat1) && !isNaN(lng1);
+
+    if (hasBoth) {
+      state.drawMode = 'rect';
+      updateDrawModeBtn();
+      clearMapOverlays();
+      showRect(lat1, lng1, lat2, lng2);
+      updateMapHint();
+      state.map.fitBounds([[Math.min(lat1,lat2), Math.min(lng1,lng2)], [Math.max(lat1,lat2), Math.max(lng1,lng2)]], { padding: [40, 40], maxZoom: mapMaxZoom });
+    } else if (hasSingle) {
+      state.drawMode = 'point';
+      updateDrawModeBtn();
+      clearMapOverlays();
+      showMarker(lat1, lng1);
+      updateMapHint();
+      state.map.panTo([lat1, lng1]);
+    }
+  }
+
+  function updateDrawModeBtn() {
+    const btn = document.getElementById('edit-toggle-draw-mode');
+    if (!btn) return;
+    if (state.drawMode === 'rect') {
+      btn.textContent = '▢ 框选模式';
+      btn.classList.remove('btn-default');
+      btn.classList.add('btn-warning');
+    } else {
+      btn.textContent = '📍 选点模式';
+      btn.classList.remove('btn-warning');
+      btn.classList.add('btn-default');
+    }
+  }
+
+  document.getElementById('edit-toggle-draw-mode').addEventListener('click', () => {
+    if (state.drawMode === 'point') {
+      state.drawMode = 'rect';
+    } else {
+      state.drawMode = 'point';
+      document.getElementById('e-lat2').value = '';
+      document.getElementById('e-lng2').value = '';
+      if (editRect) { state.map.removeLayer(editRect); editRect = null; }
+      const lat = document.getElementById('e-lat').value;
+      const lng = document.getElementById('e-lng').value;
+      if (lat && lng) showMarker(parseFloat(lat), parseFloat(lng));
+    }
+    updateDrawModeBtn();
+    updateMapHint();
+  });
+
+  document.getElementById('e-location-only').addEventListener('change', (e) => {
+    const disabled = e.target.checked;
+    const timeSection = document.getElementById('edit-time-section');
+    if (timeSection) {
+      timeSection.style.opacity = disabled ? '0.4' : '1';
+      timeSection.style.pointerEvents = disabled ? 'none' : '';
+    }
+  });
+
+  if (event.location_only) {
+    const timeSection = document.getElementById('edit-time-section');
+    if (timeSection) {
+      timeSection.style.opacity = '0.4';
+      timeSection.style.pointerEvents = 'none';
+    }
+  }
+
+  if (state.drawMode === 'rect' && event.location_lat && event.location_lng && event.location_lat2 != null && event.location_lng2 != null) {
+    showRect(event.location_lat, event.location_lng, event.location_lat2, event.location_lng2);
+    try {
+      state.map.fitBounds([[Math.min(event.location_lat, event.location_lat2), Math.min(event.location_lng, event.location_lng2)], [Math.max(event.location_lat, event.location_lat2), Math.max(event.location_lng, event.location_lng2)]], { padding: [50, 50], maxZoom: mapMaxZoom });
+    } catch(e) {}
+  } else if (event.location_lat && event.location_lng) {
+    showMarker(event.location_lat, event.location_lng);
+  }
+
+  document.getElementById('e-lat').addEventListener('change', updateFromInputs);
+  document.getElementById('e-lng').addEventListener('change', updateFromInputs);
+  document.getElementById('e-lat2').addEventListener('change', updateFromInputs);
+  document.getElementById('e-lng2').addEventListener('change', updateFromInputs);
+
+  state.map.on('click', (e) => {
+    if (state.drawMode === 'rect') return;
+    const { lat, lng } = e.latlng;
+    document.getElementById('e-lat').value = lat.toFixed(6);
+    document.getElementById('e-lng').value = lng.toFixed(6);
+    document.getElementById('e-lat2').value = '';
+    document.getElementById('e-lng2').value = '';
+    clearMapOverlays();
+    showMarker(lat, lng);
+  });
+
+  state.map.on('mousedown', (e) => {
+    if (state.drawMode !== 'rect') return;
+    if (e.originalEvent.button !== undefined && e.originalEvent.button !== 0) return;
+    rectStartLatLng = e.latlng;
+    const { lat, lng } = e.latlng;
+    document.getElementById('e-lat').value = lat.toFixed(6);
+    document.getElementById('e-lng').value = lng.toFixed(6);
+    document.getElementById('e-lat2').value = '';
+    document.getElementById('e-lng2').value = '';
+    if (editRect) { state.map.removeLayer(editRect); editRect = null; }
+    if (editMarker) { state.map.removeLayer(editMarker); editMarker = null; }
+    drawingRect = L.rectangle([[lat, lng], [lat, lng]], {
+      color: '#f59e0b', weight: 2, dashArray: '5,5', fill: false
+    }).addTo(state.map);
+  });
+
+  state.map.on('mousemove', (e) => {
+    if (!drawingRect || state.drawMode !== 'rect') return;
+    drawingRect.setBounds([
+      [rectStartLatLng.lat, rectStartLatLng.lng],
+      [e.latlng.lat, e.latlng.lng]
+    ]);
+  });
+
+  state.map.on('mouseup', (e) => {
+    if (!drawingRect || state.drawMode !== 'rect') return;
+    const endLat = e.latlng.lat;
+    const endLng = e.latlng.lng;
+    const startLat = rectStartLatLng.lat;
+    const startLng = rectStartLatLng.lng;
+    const north = Math.max(startLat, endLat);
+    const south = Math.min(startLat, endLat);
+    const west = Math.min(startLng, endLng);
+    const east = Math.max(startLng, endLng);
+    const latSpan = Math.abs(north - south);
+    const lngSpan = Math.abs(east - west);
+
+    if (drawingRect) { state.map.removeLayer(drawingRect); drawingRect = null; }
+    rectStartLatLng = null;
+
+    if (latSpan < 0.0001 && lngSpan < 0.0001) return;
+
+    document.getElementById('e-lat').value = north.toFixed(6);
+    document.getElementById('e-lng').value = west.toFixed(6);
+    document.getElementById('e-lat2').value = south.toFixed(6);
+    document.getElementById('e-lng2').value = east.toFixed(6);
+
+    showRect(north, west, south, east);
+  });
 
   const panel = document.getElementById('edit-panel');
   const panelHeader = document.getElementById('edit-panel-header');
@@ -2683,47 +2928,6 @@ function openEditMapView(event) {
     });
   });
 
-  const latInput = document.getElementById('e-lat');
-  const lngInput = document.getElementById('e-lng');
-
-  function updateMarkerFromInputs() {
-    const lat = parseFloat(latInput.value);
-    const lng = parseFloat(lngInput.value);
-    if (!isNaN(lat) && !isNaN(lng)) {
-      if (editMarker) {
-        editMarker.setLatLng([lat, lng]);
-      } else {
-        editMarker = L.marker([lat, lng], { draggable: true }).addTo(state.map);
-        editMarker.on('dragend', () => {
-          const pos = editMarker.getLatLng();
-          latInput.value = pos.lat.toFixed(6);
-          lngInput.value = pos.lng.toFixed(6);
-        });
-      }
-      state.map.panTo([lat, lng]);
-    }
-  }
-
-  latInput.addEventListener('change', updateMarkerFromInputs);
-  lngInput.addEventListener('change', updateMarkerFromInputs);
-
-  state.map.on('click', (e) => {
-    const { lat, lng } = e.latlng;
-    latInput.value = lat.toFixed(6);
-    lngInput.value = lng.toFixed(6);
-
-    if (editMarker) {
-      editMarker.setLatLng([lat, lng]);
-    } else {
-      editMarker = L.marker([lat, lng], { draggable: true }).addTo(state.map);
-      editMarker.on('dragend', () => {
-        const pos = editMarker.getLatLng();
-        latInput.value = pos.lat.toFixed(6);
-        lngInput.value = pos.lng.toFixed(6);
-      });
-    }
-  });
-
   document.getElementById('edit-cancel-btn').addEventListener('click', renderEventList);
 
   document.getElementById('edit-save-btn').addEventListener('click', async () => {
@@ -2733,11 +2937,18 @@ function openEditMapView(event) {
       return;
     }
 
+    const locationOnly = document.getElementById('e-location-only').checked;
+
     const startEra = document.querySelector('#edit-start-era .era-toggle-btn.active').dataset.era;
     const startPrecision = parseInt(document.querySelector('#edit-start-precision-row .date-precision-btn.active').dataset.precision);
     const startYear = document.getElementById('e-start-year').value;
     const startMonth = document.getElementById('e-start-month').value;
     const startDay = document.getElementById('e-start-day').value;
+
+    if (!locationOnly && !startYear) {
+      toast('请输入开始时间的年份，或勾选「仅猜测地点」', 'error');
+      return;
+    }
 
     let startTs = startYear ? dateToTs(startYear, startMonth || 1, startDay || 1, startEra === 'bce') : null;
     if (startTs !== null && startPrecision === 0) startTs = dateToTs(startYear, 1, 1, startEra === 'bce');
@@ -2756,6 +2967,9 @@ function openEditMapView(event) {
       else endTs = dateToTs(endYear, endMonth || 1, endDay || 1, endEra === 'bce');
     }
 
+    const lat2Val = document.getElementById('e-lat2').value;
+    const lng2Val = document.getElementById('e-lng2').value;
+
     const data = {
       category_id: state.currentCategory.id,
       sub_category_id: state.currentSubCategory.id,
@@ -2768,6 +2982,9 @@ function openEditMapView(event) {
       tips: document.getElementById('e-tips').value.trim() || null,
       location_lat: document.getElementById('e-lat').value || null,
       location_lng: document.getElementById('e-lng').value || null,
+      location_lat2: lat2Val || null,
+      location_lng2: lng2Val || null,
+      location_only: locationOnly ? 1 : 0,
       location_name: document.getElementById('e-locname').value.trim() || null,
       sort_order: parseInt(document.getElementById('e-sort').value) || 0
     };

@@ -1469,6 +1469,12 @@ textarea.form-control {
   color: #2b6cb0;
 }
 
+.tile-type-option.disabled-option {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .disabled-hint {
   background: #fff5f5;
   color: #742a2a;

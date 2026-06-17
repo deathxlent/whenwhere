@@ -89,39 +89,71 @@ router.put('/:id', (req, res) => {
   }
 
   const bindCount = db.prepare('SELECT COUNT(*) as count FROM sub_categories WHERE map_id = ?').get(id).count;
-  if (bindCount > 0) {
-    return res.json({ success: false, message: '该地图已绑定到子类，无法修改' });
+  const isBound = bindCount > 0;
+
+  let finalName = map.name;
+  let finalCode = map.code;
+  let finalTileType = map.tile_type;
+  let finalTileUrl = map.tile_url;
+  let finalTileSubdomains = map.tile_subdomains;
+  let finalSortOrder = map.sort_order;
+
+  if (isBound) {
+    const restrictedChanged =
+      (name != null && name !== map.name) ||
+      (code != null && code !== map.code) ||
+      (tile_type != null && tile_type !== map.tile_type) ||
+      (tile_url != null && tile_url !== map.tile_url) ||
+      (tile_subdomains != null && tile_subdomains !== map.tile_subdomains) ||
+      (sort_order !== undefined && sort_order !== null && sort_order != map.sort_order);
+    if (restrictedChanged) {
+      return res.json({
+        success: false,
+        message: '该地图已绑定到子类，仅允许修改：描述、最小缩放、最大缩放、距离单位、距离倍率'
+      });
+    }
+  } else {
+    if (code != null && code !== map.code) {
+      const exists = db.prepare('SELECT id FROM maps WHERE code = ? AND id != ?').get(code, id);
+      if (exists) {
+        return res.json({ success: false, message: '地图编码已存在' });
+      }
+    }
+    finalName = name != null ? (name || null) : map.name;
+    finalCode = code != null ? (code || null) : map.code;
+    finalTileType = tile_type != null ? (tile_type || null) : map.tile_type;
+    finalTileUrl = tile_url != null ? (tile_url || null) : map.tile_url;
+    finalTileSubdomains = tile_subdomains != null ? (tile_subdomains || null) : map.tile_subdomains;
+    finalSortOrder = sort_order !== undefined ? (sort_order !== null ? sort_order : map.sort_order) : map.sort_order;
   }
 
-  if (code && code !== map.code) {
-    const exists = db.prepare('SELECT id FROM maps WHERE code = ? AND id != ?').get(code, id);
-    if (exists) {
-      return res.json({ success: false, message: '地图编码已存在' });
-    }
-  }
+  const finalDescription = description != null ? (description || null) : map.description;
+  const finalMinZoom = min_zoom !== undefined ? (min_zoom !== null ? min_zoom : map.min_zoom) : map.min_zoom;
+  const finalMaxZoom = max_zoom !== undefined ? (max_zoom !== null ? max_zoom : map.max_zoom) : map.max_zoom;
+  const finalDistanceUnit = distance_unit != null ? (distance_unit || null) : map.distance_unit;
+  const finalDistanceScale = distance_scale !== undefined ? (distance_scale !== null ? distance_scale : map.distance_scale) : map.distance_scale;
 
   db.prepare(`
     UPDATE maps SET
-      name = COALESCE(?, name),
-      code = COALESCE(?, code),
+      name = ?,
+      code = ?,
       description = ?,
-      tile_type = COALESCE(?, tile_type),
+      tile_type = ?,
       tile_url = ?,
       tile_subdomains = ?,
-      min_zoom = COALESCE(?, min_zoom),
-      max_zoom = COALESCE(?, max_zoom),
-      sort_order = COALESCE(?, sort_order),
-      distance_unit = COALESCE(?, distance_unit),
-      distance_scale = COALESCE(?, distance_scale)
+      min_zoom = ?,
+      max_zoom = ?,
+      sort_order = ?,
+      distance_unit = ?,
+      distance_scale = ?,
+      updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `).run(
-    name || null, code || null, description || null,
-    tile_type || null, tile_url || null, tile_subdomains || null,
-    min_zoom !== undefined ? min_zoom : null,
-    max_zoom !== undefined ? max_zoom : null,
-    sort_order !== undefined ? sort_order : null,
-    distance_unit || null,
-    distance_scale !== undefined ? distance_scale : null,
+    finalName, finalCode, finalDescription,
+    finalTileType, finalTileUrl, finalTileSubdomains,
+    finalMinZoom, finalMaxZoom,
+    finalSortOrder,
+    finalDistanceUnit, finalDistanceScale,
     id
   );
 
