@@ -116,6 +116,7 @@ router.get('/:id/sub-categories', (req, res) => {
       m.bounds_south as map_bounds_south, m.bounds_west as map_bounds_west,
       m.bounds_north as map_bounds_north, m.bounds_east as map_bounds_east,
       m.tile_ext as map_tile_ext, m.tile_size as map_tile_size,
+      m.distance_unit as map_distance_unit, m.distance_scale as map_distance_scale,
       (SELECT COUNT(*) FROM events e WHERE e.sub_category_id = sc.id) as event_count
     FROM sub_categories sc
     LEFT JOIN maps m ON sc.map_id = m.id
@@ -150,7 +151,8 @@ router.get('/sub-categories/:id', (req, res) => {
       m.crs_type as map_crs_type,
       m.bounds_south as map_bounds_south, m.bounds_west as map_bounds_west,
       m.bounds_north as map_bounds_north, m.bounds_east as map_bounds_east,
-      m.tile_ext as map_tile_ext, m.tile_size as map_tile_size
+      m.tile_ext as map_tile_ext, m.tile_size as map_tile_size,
+      m.distance_unit as map_distance_unit, m.distance_scale as map_distance_scale
     FROM sub_categories sc
     JOIN categories c ON sc.category_id = c.id
     LEFT JOIN maps m ON sc.map_id = m.id

@@ -44,7 +44,8 @@ router.get('/:id', (req, res) => {
 router.post('/', (req, res) => {
   const {
     name, code, description, tile_type, tile_url,
-    tile_subdomains, min_zoom, max_zoom, sort_order
+    tile_subdomains, min_zoom, max_zoom, sort_order,
+    distance_unit, distance_scale
   } = req.body;
 
   if (!name || !code) {
@@ -58,14 +59,16 @@ router.post('/', (req, res) => {
 
   const result = db.prepare(`
     INSERT INTO maps (name, code, description, tile_type, tile_url,
-      tile_subdomains, min_zoom, max_zoom, sort_order)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      tile_subdomains, min_zoom, max_zoom, sort_order, distance_unit, distance_scale)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     name, code, description || null, tile_type || 'hybrid',
     tile_url || null, tile_subdomains || null,
     min_zoom !== undefined ? min_zoom : 0,
     max_zoom !== undefined ? max_zoom : 18,
-    sort_order || 0
+    sort_order || 0,
+    distance_unit || 'km',
+    distance_scale !== undefined ? distance_scale : 1
   );
 
   const map = db.prepare('SELECT * FROM maps WHERE id = ?').get(result.lastInsertRowid);
@@ -76,7 +79,8 @@ router.put('/:id', (req, res) => {
   const { id } = req.params;
   const {
     name, code, description, tile_type, tile_url,
-    tile_subdomains, min_zoom, max_zoom, sort_order
+    tile_subdomains, min_zoom, max_zoom, sort_order,
+    distance_unit, distance_scale
   } = req.body;
 
   const map = db.prepare('SELECT * FROM maps WHERE id = ?').get(id);
@@ -106,7 +110,9 @@ router.put('/:id', (req, res) => {
       tile_subdomains = ?,
       min_zoom = COALESCE(?, min_zoom),
       max_zoom = COALESCE(?, max_zoom),
-      sort_order = COALESCE(?, sort_order)
+      sort_order = COALESCE(?, sort_order),
+      distance_unit = COALESCE(?, distance_unit),
+      distance_scale = COALESCE(?, distance_scale)
     WHERE id = ?
   `).run(
     name || null, code || null, description || null,
@@ -114,6 +120,8 @@ router.put('/:id', (req, res) => {
     min_zoom !== undefined ? min_zoom : null,
     max_zoom !== undefined ? max_zoom : null,
     sort_order !== undefined ? sort_order : null,
+    distance_unit || null,
+    distance_scale !== undefined ? distance_scale : null,
     id
   );
 

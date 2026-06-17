@@ -953,7 +953,41 @@ function onGameMapClick(e) {
     }).addTo(appState.map);
   }
 
-  showTimePicker();
+  if (appState.currentEvent && appState.currentEvent.location_only) {
+    showLocationConfirm();
+  } else {
+    showTimePicker();
+  }
+}
+
+function showLocationConfirm() {
+  if (document.getElementById('location-confirm-overlay')) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'time-picker-overlay';
+  overlay.id = 'location-confirm-overlay';
+  overlay.innerHTML = `
+    <div class="time-picker-panel">
+      <div class="time-picker-title">确认位置</div>
+      <div style="padding:20px;text-align:center;color:#4a5568;">
+        已选择位置，确定提交吗？
+      </div>
+      <div class="time-picker-actions">
+        <button class="btn btn-secondary" id="lc-cancel">取消</button>
+        <button class="btn btn-primary" id="lc-confirm">确定</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('lc-cancel').addEventListener('click', () => {
+    overlay.remove();
+  });
+
+  document.getElementById('lc-confirm').addEventListener('click', () => {
+    overlay.remove();
+    submitGuess();
+  });
 }
 
 function showTimePicker() {
@@ -1237,11 +1271,13 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
   const shownImages = appState.shownImageIndices.map(i => appState.currentImages[i]).filter(Boolean);
   const isPreciseLocation = result.precise_location === true;
   const isPreciseTime = result.precise_time === true;
+  const distanceUnit = result.distance_unit || 'km';
+  const isLocationOnly = result.location_only === true;
 
   const timeDiffSigned = result.time_diff_years;
   const timeColorClass = timeDiffSigned === null ? 'wrong' : (timeDiffSigned === 0 ? 'correct' : (timeDiffSigned > 0 ? 'time-positive' : 'time-negative'));
   const distanceColor = result.distance_km === null ? 'wrong' : (result.distance_km <= 500 ? 'correct' : 'wrong');
-  const distanceText = result.distance_km === null ? '未作答' : `${result.distance_km} 公里`;
+  const distanceText = result.distance_km === null ? '未作答' : `${result.distance_km} ${distanceUnit}`;
   const timeDiffAbs = timeDiffSigned === null ? null : Math.abs(timeDiffSigned);
   const timeDiffText = timeDiffSigned === null ? '未作答' : (timeDiffSigned === 0 ? '完全正确！' : `${timeDiffSigned > 0 ? '+' : ''}${timeDiffSigned} 年`);
 
@@ -1268,7 +1304,7 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
               <div><span class="label">事件：</span><span class="value">${result.correct_title}</span></div>
               ${result.correct_description ? `<div><span class="label">说明：</span><span class="value">${result.correct_description}</span></div>` : ''}
               ${result.correct_tips ? `<div><span class="label">小贴士：</span><span class="value">${result.correct_tips}</span></div>` : ''}
-              <div><span class="label">时间：</span><span class="value">${result.correct_start_display}${result.correct_end_display && result.correct_end_display !== result.correct_start_display ? ' ~ ' + result.correct_end_display : ''}</span></div>
+              ${!isLocationOnly ? `<div><span class="label">时间：</span><span class="value">${result.correct_start_display}${result.correct_end_display && result.correct_end_display !== result.correct_start_display ? ' ~ ' + result.correct_end_display : ''}</span></div>` : ''}
               <div><span class="label">地点：</span><span class="value">${result.correct_location_name || '未知'}</span></div>
             </div>
           </div>
@@ -1280,11 +1316,13 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
                 <div class="score-label">距离</div>
                 ${isPreciseLocation ? '<div class="precise-tag">精准</div>' : ''}
               </div>
+              ${!isLocationOnly ? `
               <div class="score-item">
                 <div class="score-value ${timeColorClass}">${timeDiffText}</div>
                 <div class="score-label">时间偏差</div>
                 ${isPreciseTime ? '<div class="precise-tag">精准</div>' : ''}
               </div>
+              ` : ''}
               <div class="score-item">
                 <div class="score-value">${elapsedSeconds.toFixed(1)}</div>
                 <div class="score-label">耗时（秒）</div>
@@ -1325,8 +1363,12 @@ function initResultMap(result) {
 
   const correctLat = result.correct_lat;
   const correctLng = result.correct_lng;
+  const correctLat2 = result.correct_lat2;
+  const correctLng2 = result.correct_lng2;
   const guessLat = appState.guessLat;
   const guessLng = appState.guessLng;
+  const distanceUnit = result.distance_unit || 'km';
+  const isRect = correctLat2 != null && correctLng2 != null;
 
   const cfg = appState.mapConfig || {};
   const tileType = cfg.tileType || 'hybrid';
@@ -1341,7 +1383,13 @@ function initResultMap(result) {
   let mapCenter = [30, 120];
   let mapZoom = 2;
   if (correctLat != null && correctLng != null) {
-    if (guessLat != null && guessLng != null) {
+    if (isRect) {
+      const north = Math.max(correctLat, correctLat2);
+      const south = Math.min(correctLat, correctLat2);
+      const east = Math.max(correctLng, correctLng2);
+      const west = Math.min(correctLng, correctLng2);
+      mapCenter = [(north + south) / 2, (east + west) / 2];
+    } else if (guessLat != null && guessLng != null) {
       mapCenter = [(correctLat + guessLat) / 2, (correctLng + guessLng) / 2];
     } else {
       mapCenter = [correctLat, correctLng];
@@ -1373,20 +1421,46 @@ function initResultMap(result) {
     } catch(e) {}
   }
 
+  const mapLayers = [];
+
   if (correctLat != null && correctLng != null) {
-    const correctMarker = L.marker([correctLat, correctLng], {
-      icon: L.divIcon({
-        className: 'correct-answer-marker',
-        html: '<div class="answer-pin correct-pin"><div class="pin-inner">✓</div></div>',
-        iconSize: [36, 48],
-        iconAnchor: [18, 48]
-      })
-    }).addTo(resultMap);
-    correctMarker.bindTooltip(result.correct_location_name || '正确位置', {
-      permanent: false,
-      direction: 'top',
-      className: 'correct-tooltip'
-    });
+    if (isRect) {
+      const north = Math.max(correctLat, correctLat2);
+      const south = Math.min(correctLat, correctLat2);
+      const east = Math.max(correctLng, correctLng2);
+      const west = Math.min(correctLng, correctLng2);
+
+      const rectBounds = [[south, west], [north, east]];
+      const rect = L.rectangle(rectBounds, {
+        color: '#e53e3e',
+        weight: 3,
+        fillColor: '#e53e3e',
+        fillOpacity: 0.15,
+        dashArray: null
+      }).addTo(resultMap);
+      mapLayers.push(rect);
+
+      rect.bindTooltip(result.correct_location_name || '正确区域', {
+        permanent: false,
+        direction: 'top',
+        className: 'correct-tooltip'
+      });
+    } else {
+      const correctMarker = L.marker([correctLat, correctLng], {
+        icon: L.divIcon({
+          className: 'correct-answer-marker',
+          html: '<div class="answer-pin correct-pin"><div class="pin-inner">✓</div></div>',
+          iconSize: [36, 48],
+          iconAnchor: [18, 48]
+        })
+      }).addTo(resultMap);
+      mapLayers.push(correctMarker);
+      correctMarker.bindTooltip(result.correct_location_name || '正确位置', {
+        permanent: false,
+        direction: 'top',
+        className: 'correct-tooltip'
+      });
+    }
 
     if (guessLat != null && guessLng != null) {
       const guessMarker = L.marker([guessLat, guessLng], {
@@ -1397,9 +1471,31 @@ function initResultMap(result) {
           iconAnchor: [18, 48]
         })
       }).addTo(resultMap);
+      mapLayers.push(guessMarker);
+
+      let lineEndLat = correctLat;
+      let lineEndLng = correctLng;
+      if (isRect) {
+        const north = Math.max(correctLat, correctLat2);
+        const south = Math.min(correctLat, correctLat2);
+        const east = Math.max(correctLng, correctLng2);
+        const west = Math.min(correctLng, correctLng2);
+
+        let closestLat = guessLat;
+        let closestLng = guessLng;
+
+        if (guessLat < south) closestLat = south;
+        else if (guessLat > north) closestLat = north;
+
+        if (guessLng < west) closestLng = west;
+        else if (guessLng > east) closestLng = east;
+
+        lineEndLat = closestLat;
+        lineEndLng = closestLng;
+      }
 
       const dashedLine = L.polyline(
-        [[guessLat, guessLng], [correctLat, correctLng]],
+        [[guessLat, guessLng], [lineEndLat, lineEndLng]],
         {
           color: '#fbbf24',
           weight: 3,
@@ -1407,26 +1503,34 @@ function initResultMap(result) {
           opacity: 0.9
         }
       ).addTo(resultMap);
+      mapLayers.push(dashedLine);
 
-      const midLat = (guessLat + correctLat) / 2;
-      const midLng = (guessLng + correctLng) / 2;
+      const midLat = (guessLat + lineEndLat) / 2;
+      const midLng = (guessLng + lineEndLng) / 2;
       const distanceLabel = L.marker([midLat, midLng], {
         icon: L.divIcon({
           className: 'distance-label-marker',
-          html: `<div class="distance-label">${result.distance_km} km</div>`,
+          html: `<div class="distance-label">${result.distance_km} ${distanceUnit}</div>`,
           iconSize: [100, 30],
           iconAnchor: [50, 15]
         }),
         interactive: false
       }).addTo(resultMap);
+      mapLayers.push(distanceLabel);
 
-      if (crsType !== 'simple') {
-        const group = L.featureGroup([correctMarker, guessMarker, dashedLine]);
+      if (crsType !== 'simple' && mapLayers.length > 0) {
+        const group = L.featureGroup(mapLayers);
         resultMap.fitBounds(group.getBounds().pad(0.3), { maxZoom: maxZoom });
       }
     } else {
       if (crsType === 'simple' && bounds) {
         try { resultMap.fitBounds(bounds, { animate: false }); } catch(e) {}
+      } else if (isRect) {
+        const north = Math.max(correctLat, correctLat2);
+        const south = Math.min(correctLat, correctLat2);
+        const east = Math.max(correctLng, correctLng2);
+        const west = Math.min(correctLng, correctLng2);
+        resultMap.fitBounds([[south, west], [north, east]], { maxZoom: maxZoom, padding: [50, 50] });
       }
     }
   }
@@ -1469,7 +1573,7 @@ async function renderStatsPage() {
           </div>
           <div class="stats-card">
             <div class="num">${totals.avg_distance ?? 0}</div>
-            <div class="lbl">平均距离(km)</div>
+            <div class="lbl">平均距离</div>
           </div>
           <div class="stats-card">
             <div class="num">${totals.avg_time_diff ?? 0}</div>
@@ -1483,7 +1587,7 @@ async function renderStatsPage() {
         <div class="stats-summary" style="grid-template-columns:repeat(7,1fr);margin-top:12px;">
           <div class="stats-card small">
             <div class="num">${totals.total_distance ?? 0}</div>
-            <div class="lbl">总距离(km)</div>
+            <div class="lbl">总距离</div>
           </div>
           <div class="stats-card small">
             <div class="num">${totals.total_time_diff ?? 0}</div>
@@ -1516,7 +1620,7 @@ async function renderStatsPage() {
               <tr>
                 <th>日期</th>
                 <th>局数</th>
-                <th>距离(km)</th>
+                <th>距离</th>
                 <th>时间差(年)</th>
                 <th>耗时(秒)</th>
                 <th>精准位置</th>

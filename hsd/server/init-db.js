@@ -116,12 +116,20 @@ db.exec(`
 
 const eventsColInfo = db.pragma('table_info(events)');
 const eventsCols = eventsColInfo.map(c => c.name);
-if (!eventsCols.includes('tips')) {
-  try {
-    db.exec('ALTER TABLE events ADD COLUMN tips TEXT');
-    console.log('Added column events.tips');
-  } catch(e) { console.warn('Add column events.tips failed:', e.message); }
-}
+const eventsNewCols = [
+  { name: 'tips', type: 'TEXT' },
+  { name: 'location_lat2', type: 'REAL' },
+  { name: 'location_lng2', type: 'REAL' },
+  { name: 'location_only', type: 'INTEGER DEFAULT 0' }
+];
+eventsNewCols.forEach(col => {
+  if (!eventsCols.includes(col.name)) {
+    try {
+      db.exec(`ALTER TABLE events ADD COLUMN ${col.name} ${col.type}`);
+      console.log(`Added column events.${col.name}`);
+    } catch(e) { console.warn(`Add column ${col.name} failed:`, e.message); }
+  }
+});
 
 const mapsColInfo = db.pragma('table_info(maps)');
 const mapsCols = mapsColInfo.map(c => c.name);
@@ -132,7 +140,9 @@ const mapNewCols = [
   { name: 'bounds_north', type: 'REAL' },
   { name: 'bounds_east', type: 'REAL' },
   { name: 'tile_ext', type: 'TEXT DEFAULT "png"' },
-  { name: 'tile_size', type: 'INTEGER DEFAULT 256' }
+  { name: 'tile_size', type: 'INTEGER DEFAULT 256' },
+  { name: 'distance_unit', type: 'TEXT DEFAULT "km"' },
+  { name: 'distance_scale', type: 'REAL DEFAULT 1' }
 ];
 mapNewCols.forEach(col => {
   if (!mapsCols.includes(col.name)) {

@@ -6,6 +6,10 @@ let state = {
   currentEvents: [],
   map: null,
   mapClickMarker: null,
+  mapClickRect: null,
+  mapDrawingRect: null,
+  drawMode: 'point',
+  rectStartLatLng: null,
   provinceLayer: null,
   admin1Labels: [],
   pendingImages: [],
@@ -704,6 +708,16 @@ function openMapModal(map = null, isViewOnly = false) {
               <input class="form-control" type="number" id="map-sort" value="${map ? (map.sort_order || 0) : 0}">
             </div>
           </div>
+          <div class="form-grid" style="margin-top:14px;">
+            <div>
+              <label class="form-label">距离单位</label>
+              <input class="form-control" id="map-distance-unit" value="${map && map.distance_unit ? escapeHtml(map.distance_unit) : 'km'}" placeholder="如：km、米、光年、天文单位" ${disabled}>
+            </div>
+            <div>
+              <label class="form-label">距离倍率</label>
+              <input class="form-control" type="number" step="any" id="map-distance-scale" value="${map && map.distance_scale != null ? map.distance_scale : 1}" placeholder="如：1、3、0.001" ${disabled}>
+            </div>
+          </div>
           <div id="custom-tile-fields" style="margin-top:14px;display:${tileType === 'custom' ? '' : 'none'};">
             <div style="font-weight:600;color:#2d3748;margin-bottom:8px;">⚙️ 自定义瓦片配置</div>
             <div class="form-grid">
@@ -747,12 +761,14 @@ function openMapModal(map = null, isViewOnly = false) {
       const min_zoom = parseInt(document.getElementById('map-min-zoom').value) || 0;
       const max_zoom = parseInt(document.getElementById('map-max-zoom').value) || 18;
       const sort_order = parseInt(document.getElementById('map-sort').value) || 0;
+      const distance_unit = document.getElementById('map-distance-unit').value.trim() || 'km';
+      const distance_scale = parseFloat(document.getElementById('map-distance-scale').value);
       let tile_url = document.getElementById('map-tile-url').value.trim() || null;
       let tile_subdomains = document.getElementById('map-tile-sd').value.trim() || null;
 
       if (!name || !code) { toast('请填写名称和代码', 'error'); return; }
 
-      const data = { name, code, description, tile_type: selectedTileType, min_zoom, max_zoom, sort_order };
+      const data = { name, code, description, tile_type: selectedTileType, min_zoom, max_zoom, sort_order, distance_unit, distance_scale: isNaN(distance_scale) ? 1 : distance_scale };
       if (selectedTileType === 'custom') {
         data.tile_url = tile_url;
         data.tile_subdomains = tile_subdomains;
@@ -916,8 +932,9 @@ async function renderMapView() {
         <div class="map-toolbar">
           <button class="btn btn-default btn-sm" id="back-home-btn">← 返回</button>
           <button class="btn btn-default btn-sm" id="view-list-btn">列表视图</button>
+          <button class="btn btn-default btn-sm" id="toggle-draw-mode">📍 选点模式</button>
         </div>
-        <div class="map-hint" id="map-hint">点击地图任意位置来添加事件</div>
+        <div class="map-hint" id="map-hint">点击地图选择位置，或切换为框选模式画框</div>
       </div>
       <div class="add-panel" id="add-panel">
         <div class="add-panel-header">
@@ -928,6 +945,13 @@ async function renderMapView() {
           <form id="add-form">
             <div class="coordinate-display" id="coord-display">
               纬度: <span id="disp-lat">-</span> &nbsp; 经度: <span id="disp-lng">-</span>
+              &nbsp;&nbsp; 纬度2: <span id="disp-lat2">-</span> &nbsp; 经度2: <span id="disp-lng2">-</span>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+                <input type="checkbox" id="f-location-only" style="width:16px;height:16px;">
+                仅猜测地点（不猜时间）
+              </label>
             </div>
             <div class="form-group">
               <label class="form-label required">事件名称</label>
@@ -937,7 +961,7 @@ async function renderMapView() {
               <label class="form-label">地点名称</label>
               <input type="text" class="form-control" id="f-locname" placeholder="如：北京天安门">
             </div>
-            <div class="form-group">
+            <div class="form-group" id="add-start-time-group">
               <label class="form-label">开始时间</label>
               <div class="era-toggle" id="start-era">
                 <button type="button" class="era-toggle-btn active" data-era="ce">公元</button>
@@ -960,7 +984,7 @@ async function renderMapView() {
                 <button type="button" class="date-precision-btn active" data-precision="2">年月日</button>
               </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="add-end-time-group">
               <div class="form-label-row">
                 <label class="form-label">结束时间</label>
                 <button type="button" class="sync-btn" id="sync-end-btn">⟳ 同步开始</button>
@@ -1424,6 +1448,8 @@ function updateLabelVisibility() {
 }
 
 function onMapClick(e) {
+  if (state.drawMode === 'rect') return;
+
   const { lat, lng } = e.latlng;
 
   if (state.mapClickMarker) {
@@ -1439,6 +1465,13 @@ function onMapClick(e) {
     }).addTo(state.map);
   }
 
+  if (state.mapClickRect) {
+    state.map.removeLayer(state.mapClickRect);
+    state.mapClickRect = null;
+    document.getElementById('disp-lat2').textContent = '-';
+    document.getElementById('disp-lng2').textContent = '-';
+  }
+
   document.getElementById('disp-lat').textContent = lat.toFixed(6);
   document.getElementById('disp-lng').textContent = lng.toFixed(6);
   document.getElementById('f-locname').focus();
@@ -1452,12 +1485,119 @@ function onMapClick(e) {
   if (hint) hint.style.opacity = '0';
 }
 
+function onMapMouseDown(e) {
+  if (state.drawMode !== 'rect') return;
+
+  state.rectStartLatLng = e.latlng;
+  state.mapDraggingWasEnabled = state.map.dragging.enabled();
+
+  if (state.mapDraggingWasEnabled) {
+    state.map.dragging.disable();
+  }
+
+  state.map.on('mousemove', onMapMouseMove);
+  state.map.on('mouseup', onMapMouseUp);
+}
+
+function onMapMouseMove(e) {
+  if (!state.rectStartLatLng) return;
+
+  const bounds = L.latLngBounds(state.rectStartLatLng, e.latlng);
+
+  if (state.mapDrawingRect) {
+    state.mapDrawingRect.setBounds(bounds);
+  } else {
+    state.mapDrawingRect = L.rectangle(bounds, {
+      color: '#e53e3e',
+      weight: 2,
+      fillOpacity: 0.15
+    }).addTo(state.map);
+  }
+}
+
+function onMapMouseUp(e) {
+  if (!state.rectStartLatLng) return;
+
+  state.map.off('mousemove', onMapMouseMove);
+  state.map.off('mouseup', onMapMouseUp);
+
+  if (state.mapDraggingWasEnabled) {
+    state.map.dragging.enable();
+  }
+
+  if (state.mapDrawingRect) {
+    const bounds = state.mapDrawingRect.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+
+    if (state.mapClickRect) {
+      state.map.removeLayer(state.mapClickRect);
+    }
+    state.mapClickRect = state.mapDrawingRect;
+    state.mapDrawingRect = null;
+
+    document.getElementById('disp-lat').textContent = ne.lat.toFixed(6);
+    document.getElementById('disp-lng').textContent = sw.lng.toFixed(6);
+    document.getElementById('disp-lat2').textContent = sw.lat.toFixed(6);
+    document.getElementById('disp-lng2').textContent = ne.lng.toFixed(6);
+
+    if (state.mapClickMarker) {
+      state.map.removeLayer(state.mapClickMarker);
+      state.mapClickMarker = null;
+    }
+
+    const panel = document.getElementById('add-panel');
+    if (!panel.classList.contains('open')) {
+      panel.classList.add('open');
+    }
+
+    const hint = document.getElementById('map-hint');
+    if (hint) hint.style.opacity = '0';
+  }
+
+  state.rectStartLatLng = null;
+}
+
 function initAddPanel() {
   state.pendingImages = [];
+  state.drawMode = 'point';
 
   document.getElementById('close-panel-btn').addEventListener('click', closeAddPanel);
   document.getElementById('cancel-add-btn').addEventListener('click', closeAddPanel);
   document.getElementById('submit-add-btn').addEventListener('click', submitEvent);
+
+  const drawModeBtn = document.getElementById('toggle-draw-mode');
+  if (drawModeBtn) {
+    drawModeBtn.addEventListener('click', () => {
+      if (state.drawMode === 'point') {
+        state.drawMode = 'rect';
+        drawModeBtn.textContent = '▢ 框选模式';
+        drawModeBtn.classList.remove('btn-default');
+        drawModeBtn.classList.add('btn-warning');
+      } else {
+        state.drawMode = 'point';
+        drawModeBtn.textContent = '📍 选点模式';
+        drawModeBtn.classList.remove('btn-warning');
+        drawModeBtn.classList.add('btn-default');
+      }
+    });
+  }
+
+  document.getElementById('f-location-only').addEventListener('change', (e) => {
+    const disabled = e.target.checked;
+    const startGroup = document.getElementById('add-start-time-group');
+    const endGroup = document.getElementById('add-end-time-group');
+    if (startGroup) {
+      startGroup.style.opacity = disabled ? '0.4' : '1';
+      startGroup.style.pointerEvents = disabled ? 'none' : '';
+    }
+    if (endGroup) {
+      endGroup.style.opacity = disabled ? '0.4' : '1';
+      endGroup.style.pointerEvents = disabled ? 'none' : '';
+    }
+  });
+
+  state.map.on('mousedown', onMapMouseDown);
 
   initEraToggle('start-era');
   initEraToggle('end-era');
@@ -1712,6 +1852,14 @@ function closeAddPanel() {
     state.map.removeLayer(state.mapClickMarker);
     state.mapClickMarker = null;
   }
+  if (state.mapClickRect) {
+    state.map.removeLayer(state.mapClickRect);
+    state.mapClickRect = null;
+  }
+  if (state.mapDrawingRect) {
+    state.map.removeLayer(state.mapDrawingRect);
+    state.mapDrawingRect = null;
+  }
 
   resetAddForm();
   state.pendingImages = [];
@@ -1733,6 +1881,18 @@ function resetAddForm() {
   document.getElementById('image-previews').innerHTML = '';
   document.getElementById('disp-lat').textContent = '-';
   document.getElementById('disp-lng').textContent = '-';
+  document.getElementById('disp-lat2').textContent = '-';
+  document.getElementById('disp-lng2').textContent = '-';
+
+  const locOnlyCheckbox = document.getElementById('f-location-only');
+  if (locOnlyCheckbox) {
+    locOnlyCheckbox.checked = false;
+  }
+
+  const startGroup = document.getElementById('add-start-time-group');
+  const endGroup = document.getElementById('add-end-time-group');
+  if (startGroup) { startGroup.style.opacity = '1'; startGroup.style.pointerEvents = ''; }
+  if (endGroup) { endGroup.style.opacity = '1'; endGroup.style.pointerEvents = ''; }
 
   document.querySelectorAll('.era-toggle-btn[data-era="ce"]').forEach(b => {
     b.classList.add('active');
@@ -1776,8 +1936,10 @@ async function submitEvent() {
 
   if (state.pendingImages.length === 0) { toast('请至少添加一张图片（上传或URL）', 'error'); return; }
 
+  const locationOnly = document.getElementById('f-location-only').checked;
+
   const startYear = document.getElementById('f-start-year').value;
-  if (!startYear) { toast('请输入开始时间的年份', 'error'); return; }
+  if (!locationOnly && !startYear) { toast('请输入开始时间的年份', 'error'); return; }
 
   const startEra = document.querySelector('#start-era .era-toggle-btn.active').dataset.era;
   const startPrecision = parseInt(document.querySelector('#start-precision-row .date-precision-btn.active').dataset.precision);
@@ -1807,6 +1969,9 @@ async function submitEvent() {
   submitBtn.textContent = '添加中...';
 
   try {
+    const lat2Text = document.getElementById('disp-lat2').textContent;
+    const lng2Text = document.getElementById('disp-lng2').textContent;
+
     const eventData = {
       category_id: state.currentCategory.id,
       sub_category_id: state.currentSubCategory.id,
@@ -1818,7 +1983,10 @@ async function submitEvent() {
       description: document.getElementById('f-desc').value.trim() || null,
       location_lat: parseFloat(lat),
       location_lng: parseFloat(lng),
-      location_name: document.getElementById('f-locname').value.trim() || null
+      location_name: document.getElementById('f-locname').value.trim() || null,
+      location_lat2: lat2Text !== '-' ? parseFloat(lat2Text) : null,
+      location_lng2: lng2Text !== '-' ? parseFloat(lng2Text) : null,
+      location_only: locationOnly ? 1 : 0
     };
 
     const res = await API.post('/events', eventData);
@@ -2004,8 +2172,14 @@ function showEventForm(event = null) {
           <label class="form-label required">事件名称</label>
           <input type="text" class="form-control" id="f-title" value="${escapeHtml(event?.title || '')}" placeholder="请输入事件名称" required>
         </div>
-        <div class="form-row">
-          <div class="form-group">
+        <div class="form-group" style="margin-bottom:8px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" id="f-location-only" style="width:16px;height:16px;" ${isEdit && event.location_only ? 'checked' : ''}>
+            仅猜测地点（不猜时间）
+          </label>
+        </div>
+        <div class="form-row" id="modal-time-section">
+          <div class="form-group" id="modal-start-time-group">
             <label class="form-label">开始时间</label>
             <div class="era-toggle" id="modal-start-era">
               <button type="button" class="era-toggle-btn ${!startParts.isBce ? 'active' : ''}" data-era="ce">公元</button>
@@ -2028,7 +2202,7 @@ function showEventForm(event = null) {
               <button type="button" class="date-precision-btn ${(!isEdit || event.start_precision === 2) ? 'active' : ''}" data-precision="2">年月日</button>
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group" id="modal-end-time-group">
             <div class="form-label-row">
               <label class="form-label">结束时间</label>
               <button type="button" class="sync-btn" id="modal-sync-end-btn">⟳ 同步开始</button>
@@ -2073,6 +2247,16 @@ function showEventForm(event = null) {
             <input type="number" step="any" class="form-control" id="f-lng" value="${event?.location_lng ?? ''}" placeholder="116.4074">
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">纬度2（框选右下角）</label>
+            <input type="number" step="any" class="form-control" id="f-lat2" value="${event?.location_lat2 ?? ''}" placeholder="留空表示选点">
+          </div>
+          <div class="form-group">
+            <label class="form-label">经度2（框选右下角）</label>
+            <input type="number" step="any" class="form-control" id="f-lng2" value="${event?.location_lng2 ?? ''}" placeholder="留空表示选点">
+          </div>
+        </div>
         <div class="form-group">
           <label class="form-label">地点名称</label>
           <input type="text" class="form-control" id="f-locname" value="${escapeHtml(event?.location_name || '')}" placeholder="如：北京天安门">
@@ -2113,7 +2297,26 @@ function showEventForm(event = null) {
     });
   });
 
+  document.getElementById('f-location-only').addEventListener('change', (e) => {
+    const disabled = e.target.checked;
+    const timeSection = document.getElementById('modal-time-section');
+    if (timeSection) {
+      timeSection.style.opacity = disabled ? '0.4' : '1';
+      timeSection.style.pointerEvents = disabled ? 'none' : '';
+    }
+  });
+
+  if (isEdit && event.location_only) {
+    const timeSection = document.getElementById('modal-time-section');
+    if (timeSection) {
+      timeSection.style.opacity = '0.4';
+      timeSection.style.pointerEvents = 'none';
+    }
+  }
+
   document.getElementById('save-btn').addEventListener('click', async () => {
+    const locationOnly = document.getElementById('f-location-only').checked;
+
     const startEra = document.querySelector('#modal-start-era .era-toggle-btn.active').dataset.era;
     const startPrecision = parseInt(document.querySelector('#modal-start-precision-row .date-precision-btn.active').dataset.precision);
     const startYear = document.getElementById('f-start-year').value;
@@ -2149,6 +2352,9 @@ function showEventForm(event = null) {
       tips: document.getElementById('f-tips').value.trim() || null,
       location_lat: document.getElementById('f-lat').value || null,
       location_lng: document.getElementById('f-lng').value || null,
+      location_lat2: document.getElementById('f-lat2').value || null,
+      location_lng2: document.getElementById('f-lng2').value || null,
+      location_only: document.getElementById('f-location-only').checked,
       location_name: document.getElementById('f-locname').value.trim() || null,
       sort_order: parseInt(document.getElementById('f-sort').value) || 0
     };

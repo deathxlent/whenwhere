@@ -67,10 +67,12 @@ router.get('/random-event', (req, res) => {
   const events = db.prepare(`
     SELECT e.*,
       c.code as category_code, c.name as category_name,
-      sc.code as sub_category_code, sc.name as sub_category_name
+      sc.code as sub_category_code, sc.name as sub_category_name,
+      m.distance_unit, m.distance_scale
     FROM events e
     JOIN categories c ON e.category_id = c.id
     JOIN sub_categories sc ON e.sub_category_id = sc.id
+    LEFT JOIN maps m ON sc.map_id = m.id
     WHERE sc.code IN (${placeholders}) AND e.is_active = 1
   `).all(...codes);
 
@@ -105,6 +107,9 @@ router.get('/random-event', (req, res) => {
       tips: event.tips,
       location_lat: event.location_lat,
       location_lng: event.location_lng,
+      location_lat2: event.location_lat2,
+      location_lng2: event.location_lng2,
+      location_only: event.location_only ? true : false,
       location_name: event.location_name,
       start_ts: event.start_ts,
       start_precision: event.start_precision,
@@ -114,10 +119,65 @@ router.get('/random-event', (req, res) => {
       end_display: tsToDisplay(event.end_ts, event.end_precision),
       sub_category_code: event.sub_category_code,
       sub_category_name: event.sub_category_name,
+      distance_unit: event.distance_unit || 'km',
+      distance_scale: event.distance_scale != null ? event.distance_scale : 1,
       images: imageData
     }
   });
 });
+
+function expandBoundsByKm(lat1, lng1, lat2, lng2, km) {
+  const R = 6371;
+  const latDelta = (km / R) * (180 / Math.PI);
+  const avgLat = (lat1 + lat2) / 2;
+  const lngDelta = (km / (R * Math.cos(avgLat * Math.PI / 180))) * (180 / Math.PI);
+
+  const north = Math.max(lat1, lat2) + latDelta;
+  const south = Math.min(lat1, lat2) - latDelta;
+  const east = Math.max(lng1, lng2) + lngDelta;
+  const west = Math.min(lng1, lng2) - lngDelta;
+
+  return { north, south, east, west };
+}
+
+function distanceToRectBounds(guessLat, guessLng, lat1, lng1, lat2, lng2) {
+  const R = 6371;
+
+  const north = Math.max(lat1, lat2);
+  const south = Math.min(lat1, lat2);
+  const east = Math.max(lng1, lng2);
+  const west = Math.min(lng1, lng2);
+
+  if (guessLat >= south && guessLat <= north && guessLng >= west && guessLng <= east) {
+    const distToNorth = haversineDistance(guessLat, guessLng, north, guessLng);
+    const distToSouth = haversineDistance(guessLat, guessLng, south, guessLng);
+    const distToEast = haversineDistance(guessLat, guessLng, guessLat, east);
+    const distToWest = haversineDistance(guessLat, guessLng, guessLat, west);
+    return Math.min(distToNorth, distToSouth, distToEast, distToWest);
+  }
+
+  let closestLat = guessLat;
+  let closestLng = guessLng;
+
+  if (guessLat < south) closestLat = south;
+  else if (guessLat > north) closestLat = north;
+
+  if (guessLng < west) closestLng = west;
+  else if (guessLng > east) closestLng = east;
+
+  return haversineDistance(guessLat, guessLng, closestLat, closestLng);
+}
+
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 router.post('/submit', (req, res) => {
   const { user_id, event_id, guess_lat, guess_lng, guess_year, guess_month, guess_day, elapsed_seconds, timed_out } = req.body;
@@ -127,9 +187,11 @@ router.post('/submit', (req, res) => {
   }
 
   const event = db.prepare(`
-    SELECT e.*, sc.code as sub_category_code
+    SELECT e.*, sc.code as sub_category_code,
+      m.distance_unit, m.distance_scale
     FROM events e
     JOIN sub_categories sc ON e.sub_category_id = sc.id
+    LEFT JOIN maps m ON sc.map_id = m.id
     WHERE e.id = ?
   `).get(event_id);
 
@@ -137,24 +199,40 @@ router.post('/submit', (req, res) => {
     return res.json({ success: false, message: '事件不存在' });
   }
 
-  const R = 6371;
-  let distanceKm = null;
+  const distanceUnit = event.distance_unit || 'km';
+  const distanceScale = event.distance_scale != null ? event.distance_scale : 1;
+  let rawDistanceKm = null;
   let preciseLocation = false;
+
   if (event.location_lat && event.location_lng && guess_lat != null && guess_lng != null) {
-    const dLat = (guess_lat - event.location_lat) * Math.PI / 180;
-    const dLon = (guess_lng - event.location_lng) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(event.location_lat * Math.PI / 180) * Math.cos(guess_lat * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    distanceKm = Math.round(R * c);
-    preciseLocation = distanceKm <= 50;
+    if (event.location_lat2 != null && event.location_lng2 != null) {
+      const expanded = expandBoundsByKm(event.location_lat, event.location_lng, event.location_lat2, event.location_lng2, 50);
+      const guessLatNum = parseFloat(guess_lat);
+      const guessLngNum = parseFloat(guess_lng);
+
+      if (guessLatNum >= expanded.south && guessLatNum <= expanded.north &&
+          guessLngNum >= expanded.west && guessLngNum <= expanded.east) {
+        preciseLocation = true;
+      }
+
+      rawDistanceKm = distanceToRectBounds(guessLatNum, guessLngNum,
+        event.location_lat, event.location_lng,
+        event.location_lat2, event.location_lng2);
+    } else {
+      rawDistanceKm = haversineDistance(
+        parseFloat(guess_lat), parseFloat(guess_lng),
+        event.location_lat, event.location_lng
+      );
+      preciseLocation = rawDistanceKm <= 50;
+    }
   }
+
+  const distanceKm = rawDistanceKm != null ? Math.round(rawDistanceKm * distanceScale) : null;
 
   let timeDiffYears = null;
   let timeIn = null;
   let preciseTime = false;
-  if (guess_year != null && event.start_ts != null) {
+  if (!event.location_only && guess_year != null && event.start_ts != null) {
     const startYear = tsToYear(event.start_ts);
     const endYear = event.end_ts ? tsToYear(event.end_ts) : startYear;
     const guessYearVal = guess_year;
@@ -179,7 +257,7 @@ router.post('/submit', (req, res) => {
 
   const existing = db.prepare('SELECT * FROM game_stats WHERE user_id = ? AND stat_date = ?').get(user_id, today);
 
-  const distanceForStats = preciseLocation ? 0 : (distanceKm || 0);
+  const distanceForStats = preciseLocation ? 0 : (rawDistanceKm != null ? Math.round(rawDistanceKm) : 0);
   const timeForStats = preciseTime ? 0 : Math.abs(timeDiffYears || 0);
   const elapsedForStats = elapsed_seconds || 0;
   const preciseLocCount = preciseLocation ? 1 : 0;
@@ -213,14 +291,19 @@ router.post('/submit', (req, res) => {
       precise_location: preciseLocation,
       precise_time: preciseTime,
       timed_out: !!timed_out,
+      location_only: event.location_only ? true : false,
       correct_lat: event.location_lat,
       correct_lng: event.location_lng,
+      correct_lat2: event.location_lat2,
+      correct_lng2: event.location_lng2,
       correct_location_name: event.location_name,
       correct_title: event.title,
       correct_description: event.description,
       correct_tips: event.tips,
       correct_start_display: tsToDisplay(event.start_ts, event.start_precision),
-      correct_end_display: tsToDisplay(event.end_ts, event.end_precision)
+      correct_end_display: tsToDisplay(event.end_ts, event.end_precision),
+      distance_unit: distanceUnit,
+      distance_scale: distanceScale
     }
   });
 });
