@@ -210,13 +210,14 @@ maps.forEach(m => {
         name = ?, description = ?, tile_type = ?, tile_url = ?, tile_subdomains = ?,
         min_zoom = ?, max_zoom = ?, sort_order = ?, crs_type = ?,
         bounds_south = ?, bounds_west = ?, bounds_north = ?, bounds_east = ?,
-        tile_ext = ?, tile_size = ?
+        tile_ext = ?, tile_size = ?, distance_unit = ?, distance_scale = ?
       WHERE code = ?
     `).run(
       m.name, m.description, m.tile_type, m.tile_url, m.tile_subdomains,
       m.min_zoom, m.max_zoom, m.sort_order, m.crs_type,
       m.bounds_south || null, m.bounds_west || null, m.bounds_north || null, m.bounds_east || null,
       m.tile_ext, m.tile_size,
+      m.distance_unit || 'km', m.distance_scale !== undefined ? m.distance_scale : 1,
       m.code
     );
   } else {

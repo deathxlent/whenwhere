@@ -59,14 +59,19 @@ router.post('/', (req, res) => {
 
   const result = db.prepare(`
     INSERT INTO maps (name, code, description, tile_type, tile_url,
-      tile_subdomains, min_zoom, max_zoom, sort_order, distance_unit, distance_scale)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      tile_subdomains, min_zoom, max_zoom, sort_order, crs_type,
+      bounds_south, bounds_west, bounds_north, bounds_east,
+      tile_ext, tile_size, distance_unit, distance_scale)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     name, code, description || null, tile_type || 'hybrid',
     tile_url || null, tile_subdomains || null,
     min_zoom !== undefined ? min_zoom : 0,
     max_zoom !== undefined ? max_zoom : 18,
     sort_order || 0,
+    'epsg3857',
+    null, null, null, null,
+    'png', 256,
     distance_unit || 'km',
     distance_scale !== undefined ? distance_scale : 1
   );
@@ -80,6 +85,8 @@ router.put('/:id', (req, res) => {
   const {
     name, code, description, tile_type, tile_url,
     tile_subdomains, min_zoom, max_zoom, sort_order,
+    crs_type, bounds_south, bounds_west, bounds_north, bounds_east,
+    tile_ext, tile_size,
     distance_unit, distance_scale
   } = req.body;
 
@@ -97,6 +104,13 @@ router.put('/:id', (req, res) => {
   let finalTileUrl = map.tile_url;
   let finalTileSubdomains = map.tile_subdomains;
   let finalSortOrder = map.sort_order;
+  let finalCrsType = map.crs_type;
+  let finalBoundsSouth = map.bounds_south;
+  let finalBoundsWest = map.bounds_west;
+  let finalBoundsNorth = map.bounds_north;
+  let finalBoundsEast = map.bounds_east;
+  let finalTileExt = map.tile_ext;
+  let finalTileSize = map.tile_size;
 
   if (!isBound) {
     if (code != null && code !== map.code) {
@@ -111,6 +125,13 @@ router.put('/:id', (req, res) => {
     finalTileUrl = tile_url != null ? (tile_url || null) : map.tile_url;
     finalTileSubdomains = tile_subdomains != null ? (tile_subdomains || null) : map.tile_subdomains;
     finalSortOrder = sort_order !== undefined ? (sort_order !== null ? sort_order : map.sort_order) : map.sort_order;
+    finalCrsType = crs_type != null ? (crs_type || null) : map.crs_type;
+    finalBoundsSouth = bounds_south !== undefined ? (bounds_south !== null ? bounds_south : null) : map.bounds_south;
+    finalBoundsWest = bounds_west !== undefined ? (bounds_west !== null ? bounds_west : null) : map.bounds_west;
+    finalBoundsNorth = bounds_north !== undefined ? (bounds_north !== null ? bounds_north : null) : map.bounds_north;
+    finalBoundsEast = bounds_east !== undefined ? (bounds_east !== null ? bounds_east : null) : map.bounds_east;
+    finalTileExt = tile_ext != null ? (tile_ext || null) : map.tile_ext;
+    finalTileSize = tile_size !== undefined ? (tile_size !== null ? tile_size : map.tile_size) : map.tile_size;
   }
 
   const finalDescription = description != null ? (description || null) : map.description;
@@ -130,15 +151,23 @@ router.put('/:id', (req, res) => {
       min_zoom = ?,
       max_zoom = ?,
       sort_order = ?,
+      crs_type = ?,
+      bounds_south = ?,
+      bounds_west = ?,
+      bounds_north = ?,
+      bounds_east = ?,
+      tile_ext = ?,
+      tile_size = ?,
       distance_unit = ?,
-      distance_scale = ?,
-      updated_at = CURRENT_TIMESTAMP
+      distance_scale = ?
     WHERE id = ?
   `).run(
     finalName, finalCode, finalDescription,
     finalTileType, finalTileUrl, finalTileSubdomains,
     finalMinZoom, finalMaxZoom,
     finalSortOrder,
+    finalCrsType, finalBoundsSouth, finalBoundsWest, finalBoundsNorth, finalBoundsEast,
+    finalTileExt, finalTileSize,
     finalDistanceUnit, finalDistanceScale,
     id
   );

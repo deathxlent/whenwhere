@@ -161,8 +161,8 @@ router.post('/zip', upload.single('file'), async (req, res) => {
           const result = db.prepare(`
             INSERT INTO maps (name, code, description, tile_type, tile_url, tile_subdomains,
               min_zoom, max_zoom, sort_order, crs_type, bounds_south, bounds_west,
-              bounds_north, bounds_east, tile_ext, tile_size, center_lat, center_lng, default_zoom)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              bounds_north, bounds_east, tile_ext, tile_size, distance_unit, distance_scale)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `).run(
             m.name, m.code, m.description || null, m.tile_type || 'custom',
             m.tile_url || null, m.tile_subdomains || null,
@@ -176,9 +176,8 @@ router.post('/zip', upload.single('file'), async (req, res) => {
             m.bounds_east !== undefined ? m.bounds_east : null,
             m.tile_ext || 'png',
             m.tile_size || 256,
-            m.center_lat !== undefined ? m.center_lat : null,
-            m.center_lng !== undefined ? m.center_lng : null,
-            m.default_zoom !== undefined ? m.default_zoom : 2
+            m.distance_unit || 'km',
+            m.distance_scale !== undefined ? m.distance_scale : 1
           );
           mapCodeToId[m.code] = result.lastInsertRowid;
           results.maps.success++;
@@ -352,8 +351,9 @@ router.post('/zip', upload.single('file'), async (req, res) => {
           db.prepare(`
             INSERT INTO events (category_id, sub_category_id, title,
               start_ts, start_precision, end_ts, end_precision,
-              description, tips, location_lat, location_lng, location_name, sort_order)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              description, tips, location_lat, location_lng, location_name, sort_order,
+              location_lat2, location_lng2, location_only)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `).run(
             catId, subId, e.title,
             e.start_ts !== undefined ? e.start_ts : null,
@@ -363,7 +363,10 @@ router.post('/zip', upload.single('file'), async (req, res) => {
             e.description || null, e.tips || null,
             e.location_lat !== undefined ? e.location_lat : null,
             e.location_lng !== undefined ? e.location_lng : null,
-            e.location_name || null, e.sort_order || 0
+            e.location_name || null, e.sort_order || 0,
+            e.location_lat2 !== undefined ? e.location_lat2 : null,
+            e.location_lng2 !== undefined ? e.location_lng2 : null,
+            e.location_only ? 1 : 0
           );
           results.events.success++;
         } catch (err) {
@@ -475,8 +478,8 @@ router.post('/json', (req, res) => {
           const result = db.prepare(`
             INSERT INTO maps (name, code, description, tile_type, tile_url, tile_subdomains,
               min_zoom, max_zoom, sort_order, crs_type, bounds_south, bounds_west,
-              bounds_north, bounds_east, tile_ext, tile_size, center_lat, center_lng, default_zoom)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              bounds_north, bounds_east, tile_ext, tile_size, distance_unit, distance_scale)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `).run(
             m.name, m.code, m.description || null, m.tile_type || 'custom',
             m.tile_url || null, m.tile_subdomains || null,
@@ -490,9 +493,8 @@ router.post('/json', (req, res) => {
             m.bounds_east !== undefined ? m.bounds_east : null,
             m.tile_ext || 'png',
             m.tile_size || 256,
-            m.center_lat !== undefined ? m.center_lat : null,
-            m.center_lng !== undefined ? m.center_lng : null,
-            m.default_zoom !== undefined ? m.default_zoom : 2
+            m.distance_unit || 'km',
+            m.distance_scale !== undefined ? m.distance_scale : 1
           );
           mapCodeToId[m.code] = result.lastInsertRowid;
           results.maps.success++;
@@ -666,8 +668,9 @@ router.post('/json', (req, res) => {
           db.prepare(`
             INSERT INTO events (category_id, sub_category_id, title,
               start_ts, start_precision, end_ts, end_precision,
-              description, tips, location_lat, location_lng, location_name, sort_order)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              description, tips, location_lat, location_lng, location_name, sort_order,
+              location_lat2, location_lng2, location_only)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `).run(
             catId, subId, e.title,
             e.start_ts !== undefined ? e.start_ts : null,
@@ -677,7 +680,10 @@ router.post('/json', (req, res) => {
             e.description || null, e.tips || null,
             e.location_lat !== undefined ? e.location_lat : null,
             e.location_lng !== undefined ? e.location_lng : null,
-            e.location_name || null, e.sort_order || 0
+            e.location_name || null, e.sort_order || 0,
+            e.location_lat2 !== undefined ? e.location_lat2 : null,
+            e.location_lng2 !== undefined ? e.location_lng2 : null,
+            e.location_only ? 1 : 0
           );
           results.events.success++;
         } catch (err) {
