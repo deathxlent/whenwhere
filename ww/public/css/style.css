@@ -1,6 +1,6 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: system-ui, sans-serif; background: #0a0a2e; color: #fff; min-height: 100vh; overflow: hidden; }
-#app { width: 100vw; height: 100vh; position: relative; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #0a0a2e; color: #fff; min-height: 100vh; min-height: 100dvh; overflow: hidden; }
+#app { width: 100vw; width: 100dvw; height: 100vh; height: 100dvh; position: relative; }
 
 .login-page { display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #0a0a2e 0%, #1a1a4e 50%, #0a0a2e 100%); position: relative; overflow: hidden; }
 .login-page::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900"><rect fill="%230a0a2e" width="1440" height="900"/><circle cx="200" cy="400" r="150" fill="%23ffffff08"/><circle cx="1200" cy="200" r="200" fill="%23ffffff05"/><circle cx="700" cy="700" r="180" fill="%23ffffff06"/></svg>') center/cover no-repeat; opacity: 0.5; }
@@ -271,6 +271,219 @@ body { font-family: system-ui, sans-serif; background: #0a0a2e; color: #fff; min
   .login-title { font-size: 26px; }
 }
 
+@media (orientation: portrait), (max-width: 640px) {
+  body { overflow: hidden; }
+
+  .game-page { height: 100vh; height: 100dvh; }
+
+  .game-sidebar {
+    position: absolute;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 55vh;
+    height: 55dvh;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    transform: translateY(0);
+    transition: transform 0.3s ease-out;
+  }
+  .game-sidebar.hidden {
+    transform: translateY(calc(100% - 36px));
+  }
+
+  .sidebar-toggle-btn {
+    top: auto;
+    right: 16px;
+    bottom: calc(55vh - 1px);
+    bottom: calc(55dvh - 1px);
+    left: 50%;
+    transform: translateX(-50%) rotate(-90deg);
+    width: 60px;
+    height: 28px;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-bottom: none;
+    transition: bottom 0.3s;
+  }
+  .sidebar-toggle-btn.collapsed {
+    bottom: 0;
+  }
+
+  .timer-text { font-size: 22px; padding: 8px; }
+
+  .game-actions .btn { padding: 10px 16px; font-size: 14px; }
+
+  .game-hint {
+    bottom: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    max-width: 90vw;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .time-picker-overlay {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 15vh;
+    padding-top: 15dvh;
+  }
+  .time-picker-panel {
+    width: 100%;
+    max-width: 92vw;
+    padding: 20px 18px;
+    border-radius: 14px;
+  }
+  .time-picker-title { font-size: 16px; margin-bottom: 14px; }
+  .precision-btn { padding: 6px; font-size: 12px; }
+  .time-picker-actions .btn { padding: 10px; font-size: 14px; }
+
+  .result-page-with-map { height: 100vh; height: 100dvh; }
+  .result-overlay {
+    position: absolute;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60vh;
+    height: 60dvh;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    animation: slideInUp 0.3s ease-out;
+  }
+  .result-overlay-content { padding: 20px 18px; }
+  .result-title { font-size: 20px; margin-bottom: 16px; }
+  .result-card { padding: 16px; margin-bottom: 14px; }
+  .result-card h3 { font-size: 14px; margin-bottom: 10px; }
+  .result-info { font-size: 13px; line-height: 1.8; }
+  .score-value { font-size: 24px; }
+  .result-actions .btn { min-width: 120px; padding: 10px 16px; font-size: 14px; }
+
+  .result-page { padding: 20px 14px; }
+  .result-title { font-size: 22px; margin-bottom: 20px; }
+  .result-images img { width: 46%; height: 100px; }
+  .score-item { padding: 14px; min-width: 90px; }
+
+  .stats-page { padding: 24px 14px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .stats-title { font-size: 20px; margin-bottom: 18px; }
+  .stats-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stats-summary > .stats-card { padding: 12px; min-width: 0; }
+  .stats-summary:not([style*="grid-template-columns:repeat(7,1fr)"]) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stats-summary[style*="grid-template-columns:repeat(7,1fr)"] {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+  }
+  .stats-card { padding: 12px; min-width: 0; }
+  .stats-card .num { font-size: 22px; }
+  .stats-card.small .num { font-size: 16px; }
+  .stats-period-tabs {
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .period-tab { padding: 6px 12px; font-size: 12px; }
+  .stats-table {
+    font-size: 11px;
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    white-space: nowrap;
+  }
+  .stats-table th, .stats-table td { padding: 8px 6px; font-size: 11px; }
+
+  .main-content {
+    padding-top: 60px;
+    padding-bottom: 40px;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .main-prompt { font-size: 18px; margin-bottom: 18px; text-align: center; }
+  .tabs-container { gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+  .tab-btn { padding: 8px 14px; font-size: 13px; }
+  .options-panel { padding: 14px; min-width: 0; width: 100%; max-width: 92vw; margin-bottom: 16px; }
+  .checkbox-item { padding: 6px 0; }
+  .checkbox-item label { font-size: 14px; }
+
+  .leaderboard-section {
+    padding: 14px;
+    margin-top: 16px;
+    max-width: 92vw;
+  }
+  .leaderboard-title { font-size: 16px; margin-bottom: 12px; }
+  .leaderboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .leaderboard-period-tabs {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .leaderboard-tabs {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .lb-tab { padding: 6px 10px; font-size: 11px; }
+  .leaderboard-item { padding: 8px 10px; }
+  .lb-rank { width: 32px; font-size: 13px; }
+  .lb-medal { font-size: 16px; }
+  .lb-username { font-size: 13px; }
+  .lb-value { font-size: 13px; }
+
+  .btn-primary, .btn-secondary, .btn-success, .btn-danger, .btn-warning, .btn-default {
+    font-size: 14px;
+    padding: 10px 18px;
+    min-height: 44px;
+  }
+
+  .form-control {
+    font-size: 16px;
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+    padding-top: 12vh;
+    padding-top: 12dvh;
+  }
+  .modal-content {
+    padding: 20px 18px;
+    max-width: 94vw;
+  }
+  .modal-content .result-title { font-size: 18px; }
+  .modal-content .result-subtitle { font-size: 13px; }
+  .modal-content .result-failed-icon { font-size: 48px; margin-bottom: 12px; }
+  .modal-content .result-actions { margin-top: 18px; gap: 8px; }
+  .modal-content .result-actions .btn {
+    min-height: 44px;
+    font-size: 13px;
+    padding: 8px 12px;
+    min-width: 90px;
+  }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
 .province-label, .country-label, .admin1-label {
   color: #000;
   font-size: 11px;
@@ -316,6 +529,38 @@ body { font-family: system-ui, sans-serif; background: #0a0a2e; color: #fff; min
 .result-failed-icon { font-size: 64px; margin-bottom: 16px; }
 .result-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
 .result-subtitle { color: rgba(255,255,255,0.6); font-size: 14px; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  padding: 16px;
+}
+.modal-content {
+  background: rgba(20,20,50,0.98);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 440px;
+}
+.modal-content .result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+  justify-content: center;
+}
+.modal-content .result-actions .btn {
+  flex: 1;
+  min-width: 100px;
+}
 
 .precise-banner {
   text-align: center;

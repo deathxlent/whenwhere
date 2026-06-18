@@ -969,7 +969,7 @@ function showLocationConfirm() {
   overlay.innerHTML = `
     <div class="time-picker-panel">
       <div class="time-picker-title">确认位置</div>
-      <div style="padding:20px;text-align:center;color:#4a5568;">
+      <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.85);">
         已选择位置，确定提交吗？
       </div>
       <div class="time-picker-actions">
