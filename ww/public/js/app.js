@@ -317,6 +317,7 @@ async function renderMainPage() {
       <div class="user-menu">
         <button class="user-menu-btn" id="user-menu-btn">${appState.user.username} ▾</button>
         <div class="user-menu-dropdown" id="user-menu-dropdown">
+          <div class="user-menu-item" id="menu-favorites">⭐ 我的收藏</div>
           <div class="user-menu-item" id="menu-stats">📊 个人统计</div>
           <div class="user-menu-item" id="menu-logout">🚪 退出</div>
         </div>
@@ -352,7 +353,7 @@ async function renderMainPage() {
   initBgMap();
   initUserMenu();
   initLeaderboard();
-  await loadCategoriesAndInitTabs();
+  loadCategoriesAndInitTabs();
 }
 
 async function loadCategoriesAndInitTabs() {
@@ -592,6 +593,11 @@ function initUserMenu() {
 
   document.addEventListener('click', () => {
     dropdown.classList.remove('show');
+  });
+
+  document.getElementById('menu-favorites').addEventListener('click', () => {
+    dropdown.classList.remove('show');
+    renderFavoritesPage();
   });
 
   document.getElementById('menu-stats').addEventListener('click', () => {
@@ -1282,6 +1288,7 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
   const timeDiffText = timeDiffSigned === null ? '未作答' : (timeDiffSigned === 0 ? '完全正确！' : `${timeDiffSigned > 0 ? '+' : ''}${timeDiffSigned} 年`);
 
   const titleText = isTimedOut ? '时间到！结果揭晓' : '结果揭晓';
+  const eventId = appState.currentEvent ? appState.currentEvent.id : null;
 
   const app = document.getElementById('app');
   app.innerHTML = `
@@ -1301,11 +1308,31 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
           <div class="result-card">
             <h3>正确答案</h3>
             <div class="result-info">
-              <div><span class="label">事件：</span><span class="value">${result.correct_title}</span></div>
+              <div>
+                <span class="label">事件：</span>
+                <span class="value event-title-row">
+                  <span class="event-title-text">${result.correct_title}</span>
+                  <button class="icon-btn search-event-btn" title="用 Bing 搜索此事件" id="search-event-btn">🔍</button>
+                </span>
+              </div>
               ${result.correct_description ? `<div><span class="label">说明：</span><span class="value">${result.correct_description}</span></div>` : ''}
               ${result.correct_tips ? `<div><span class="label">小贴士：</span><span class="value">${result.correct_tips}</span></div>` : ''}
               ${!isLocationOnly ? `<div><span class="label">时间：</span><span class="value">${result.correct_start_display}${result.correct_end_display && result.correct_end_display !== result.correct_start_display ? ' ~ ' + result.correct_end_display : ''}</span></div>` : ''}
               <div><span class="label">地点：</span><span class="value">${result.correct_location_name || '未知'}</span></div>
+            </div>
+            <div class="event-actions-row" id="event-actions-row">
+              <button class="vote-btn vote-up-btn" id="vote-up-btn" title="点赞">
+                <span class="vote-icon">👍</span>
+                <span class="vote-count" id="vote-up-count">0</span>
+              </button>
+              <button class="vote-btn vote-down-btn" id="vote-down-btn" title="踩">
+                <span class="vote-icon">👎</span>
+                <span class="vote-count" id="vote-down-count">0</span>
+              </button>
+              <button class="vote-btn favorite-btn" id="favorite-btn" title="收藏">
+                <span class="vote-icon" id="favorite-icon">☆</span>
+                <span class="vote-count">收藏</span>
+              </button>
             </div>
           </div>
           <div class="result-card">
@@ -1349,6 +1376,101 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
   document.getElementById('back-main-btn').addEventListener('click', () => {
     cleanupGame();
     renderMainPage();
+  });
+
+  document.getElementById('search-event-btn').addEventListener('click', () => {
+    const query = encodeURIComponent(result.correct_title);
+    window.open(`https://www.bing.com/search?q=${query}`, '_blank');
+  });
+
+  if (eventId && appState.user) {
+    loadEventVotesAndFavorite(eventId);
+    initVoteAndFavoriteHandlers(eventId);
+  }
+}
+
+async function loadEventVotesAndFavorite(eventId) {
+  try {
+    const voteRes = await API.get(`/game/vote/${eventId}?user_id=${appState.user.id}`);
+    if (voteRes.success) {
+      document.getElementById('vote-up-count').textContent = voteRes.data.up_count;
+      document.getElementById('vote-down-count').textContent = voteRes.data.down_count;
+      updateVoteButtons(voteRes.data.my_vote);
+    }
+  } catch (e) {
+    console.warn('加载投票状态失败:', e);
+  }
+
+  try {
+    const favRes = await API.get(`/game/favorite/check/${eventId}?user_id=${appState.user.id}`);
+    if (favRes.success) {
+      updateFavoriteButton(favRes.data.is_favorite);
+    }
+  } catch (e) {
+    console.warn('加载收藏状态失败:', e);
+  }
+}
+
+function updateVoteButtons(myVote) {
+  const upBtn = document.getElementById('vote-up-btn');
+  const downBtn = document.getElementById('vote-down-btn');
+  if (!upBtn || !downBtn) return;
+
+  upBtn.classList.remove('active');
+  downBtn.classList.remove('active');
+  if (myVote === 1) upBtn.classList.add('active');
+  if (myVote === -1) downBtn.classList.add('active');
+}
+
+function updateFavoriteButton(isFavorite) {
+  const icon = document.getElementById('favorite-icon');
+  const btn = document.getElementById('favorite-btn');
+  if (!icon || !btn) return;
+
+  if (isFavorite) {
+    icon.textContent = '★';
+    btn.classList.add('active');
+  } else {
+    icon.textContent = '☆';
+    btn.classList.remove('active');
+  }
+}
+
+function initVoteAndFavoriteHandlers(eventId) {
+  document.getElementById('vote-up-btn').addEventListener('click', async () => {
+    const res = await API.post('/game/vote', {
+      user_id: appState.user.id,
+      event_id: eventId,
+      vote_type: 1
+    });
+    if (res.success) {
+      document.getElementById('vote-up-count').textContent = res.data.up_count;
+      document.getElementById('vote-down-count').textContent = res.data.down_count;
+      updateVoteButtons(res.data.my_vote);
+    }
+  });
+
+  document.getElementById('vote-down-btn').addEventListener('click', async () => {
+    const res = await API.post('/game/vote', {
+      user_id: appState.user.id,
+      event_id: eventId,
+      vote_type: -1
+    });
+    if (res.success) {
+      document.getElementById('vote-up-count').textContent = res.data.up_count;
+      document.getElementById('vote-down-count').textContent = res.data.down_count;
+      updateVoteButtons(res.data.my_vote);
+    }
+  });
+
+  document.getElementById('favorite-btn').addEventListener('click', async () => {
+    const res = await API.post('/game/favorite', {
+      user_id: appState.user.id,
+      event_id: eventId
+    });
+    if (res.success) {
+      updateFavoriteButton(res.data.is_favorite);
+    }
   });
 }
 
@@ -1536,6 +1658,107 @@ function initResultMap(result) {
   }
 
   appState.map = resultMap;
+}
+
+async function renderFavoritesPage() {
+  cleanupGame();
+  appState.currentView = 'favorites';
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="favorites-page">
+      <div class="page-header">
+        <button class="btn btn-secondary" id="fav-back-btn">← 返回主界面</button>
+        <h2>⭐ 我的收藏</h2>
+        <div></div>
+      </div>
+      <div class="favorites-search-bar">
+        <input type="text" id="fav-search-input" placeholder="搜索收藏的事件名称..." />
+        <button class="btn btn-primary" id="fav-search-btn">搜索</button>
+      </div>
+      <div class="favorites-list" id="favorites-list">
+        <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.5);">加载中...</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('fav-back-btn').addEventListener('click', () => {
+    renderMainPage();
+  });
+
+  let searchTimeout = null;
+  const searchInput = document.getElementById('fav-search-input');
+  const doSearch = () => {
+    loadFavorites(searchInput.value.trim());
+  };
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(doSearch, 300);
+  });
+  document.getElementById('fav-search-btn').addEventListener('click', doSearch);
+
+  loadFavorites('');
+}
+
+async function loadFavorites(keyword) {
+  const listEl = document.getElementById('favorites-list');
+  if (!listEl) return;
+
+  if (!appState.user || !appState.user.id) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.5);">请先登录</div>';
+    return;
+  }
+
+  listEl.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.5);">加载中...</div>';
+
+  try {
+    const res = await API.get(`/game/favorites/${appState.user.id}?keyword=${encodeURIComponent(keyword || '')}`);
+    if (res.success && res.data && res.data.length > 0) {
+      renderFavoritesList(res.data);
+    } else {
+      listEl.innerHTML = `<div style="text-align:center;padding:60px;color:rgba(255,255,255,0.5);">${keyword ? '没有找到匹配的收藏事件' : '还没有收藏任何事件'}</div>`;
+    }
+  } catch (e) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.5);">加载失败</div>';
+  }
+}
+
+function renderFavoritesList(items) {
+  const listEl = document.getElementById('favorites-list');
+  if (!listEl) return;
+
+  listEl.innerHTML = items.map(item => `
+    <div class="favorite-card" data-event-id="${item.id}">
+      <div class="fav-main-info">
+        <div class="fav-title-row">
+          <h3 class="fav-title">${escapeHtml(item.title)}</h3>
+          <button class="icon-btn search-event-btn" title="用 Bing 搜索" onclick="window.open('https://www.bing.com/search?q=${encodeURIComponent(item.title)}', '_blank')">🔍</button>
+        </div>
+        <div class="fav-meta">
+          <span class="fav-category">[${escapeHtml(item.category_name)}${item.sub_category_name ? ' / ' + escapeHtml(item.sub_category_name) : ''}]</span>
+          <span class="fav-time">${escapeHtml(item.start_display || '-')}${item.end_display && item.end_display !== item.start_display ? ' ~ ' + escapeHtml(item.end_display) : ''}</span>
+          <span class="fav-location">📍 ${escapeHtml(item.location_name || '未知')}</span>
+        </div>
+        ${item.description ? `<div class="fav-description">${escapeHtml(item.description)}</div>` : ''}
+      </div>
+      <div class="fav-actions">
+        <button class="btn btn-danger fav-unfav-btn" data-event-id="${item.id}" title="取消收藏">★ 已收藏</button>
+      </div>
+    </div>
+  `).join('');
+
+  listEl.querySelectorAll('.fav-unfav-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const eventId = e.currentTarget.dataset.eventId;
+      const res = await API.post('/game/favorite', {
+        user_id: appState.user.id,
+        event_id: eventId
+      });
+      if (res.success && !res.data.is_favorite) {
+        const keyword = document.getElementById('fav-search-input').value.trim();
+        loadFavorites(keyword);
+      }
+    });
+  });
 }
 
 async function renderStatsPage() {

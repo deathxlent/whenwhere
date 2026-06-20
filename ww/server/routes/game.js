@@ -370,6 +370,176 @@ router.get('/stats/:userId', (req, res) => {
   });
 });
 
+router.post('/vote', (req, res) => {
+  const { user_id, event_id, vote_type } = req.body;
+
+  if (!user_id || !event_id || vote_type === undefined) {
+    return res.json({ success: false, message: '参数不完整' });
+  }
+
+  const voteTypeInt = parseInt(vote_type);
+  if (voteTypeInt !== 1 && voteTypeInt !== -1) {
+    return res.json({ success: false, message: 'vote_type 只能是 1(赞) 或 -1(踩)' });
+  }
+
+  const existing = db.prepare('SELECT * FROM event_votes WHERE user_id = ? AND event_id = ?').get(user_id, event_id);
+
+  if (existing) {
+    if (existing.vote_type === voteTypeInt) {
+      db.prepare('DELETE FROM event_votes WHERE user_id = ? AND event_id = ?').run(user_id, event_id);
+    } else {
+      db.prepare('UPDATE event_votes SET vote_type = ?, created_at = CURRENT_TIMESTAMP WHERE user_id = ? AND event_id = ?').run(voteTypeInt, user_id, event_id);
+    }
+  } else {
+    db.prepare('INSERT INTO event_votes (user_id, event_id, vote_type) VALUES (?, ?, ?)').run(user_id, event_id, voteTypeInt);
+  }
+
+  const stats = db.prepare(`
+    SELECT
+      SUM(CASE WHEN vote_type = 1 THEN 1 ELSE 0 END) as up_count,
+      SUM(CASE WHEN vote_type = -1 THEN 1 ELSE 0 END) as down_count
+    FROM event_votes WHERE event_id = ?
+  `).get(event_id);
+
+  const current = db.prepare('SELECT vote_type FROM event_votes WHERE user_id = ? AND event_id = ?').get(user_id, event_id);
+
+  res.json({
+    success: true,
+    data: {
+      up_count: stats.up_count || 0,
+      down_count: stats.down_count || 0,
+      my_vote: current ? current.vote_type : 0
+    }
+  });
+});
+
+router.get('/vote/:eventId', (req, res) => {
+  const { eventId } = req.params;
+  const { user_id } = req.query;
+
+  const stats = db.prepare(`
+    SELECT
+      SUM(CASE WHEN vote_type = 1 THEN 1 ELSE 0 END) as up_count,
+      SUM(CASE WHEN vote_type = -1 THEN 1 ELSE 0 END) as down_count
+    FROM event_votes WHERE event_id = ?
+  `).get(eventId);
+
+  let myVote = 0;
+  if (user_id) {
+    const current = db.prepare('SELECT vote_type FROM event_votes WHERE user_id = ? AND event_id = ?').get(user_id, eventId);
+    myVote = current ? current.vote_type : 0;
+  }
+
+  res.json({
+    success: true,
+    data: {
+      up_count: stats.up_count || 0,
+      down_count: stats.down_count || 0,
+      my_vote: myVote
+    }
+  });
+});
+
+router.post('/favorite', (req, res) => {
+  const { user_id, event_id } = req.body;
+
+  if (!user_id || !event_id) {
+    return res.json({ success: false, message: '参数不完整' });
+  }
+
+  const existing = db.prepare('SELECT * FROM user_favorites WHERE user_id = ? AND event_id = ?').get(user_id, event_id);
+
+  if (existing) {
+    db.prepare('DELETE FROM user_favorites WHERE user_id = ? AND event_id = ?').run(user_id, event_id);
+    res.json({ success: true, data: { is_favorite: false }, message: '已取消收藏' });
+  } else {
+    db.prepare('INSERT INTO user_favorites (user_id, event_id) VALUES (?, ?)').run(user_id, event_id);
+    res.json({ success: true, data: { is_favorite: true }, message: '已收藏' });
+  }
+});
+
+router.get('/favorites/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { keyword = '' } = req.query;
+
+  let whereClause = 'WHERE uf.user_id = ?';
+  const params = [userId];
+
+  if (keyword && keyword.trim()) {
+    whereClause += ' AND e.title LIKE ?';
+    params.push('%' + keyword.trim() + '%');
+  }
+
+  const favorites = db.prepare(`
+    SELECT e.*,
+      c.code as category_code, c.name as category_name,
+      sc.code as sub_category_code, sc.name as sub_category_name,
+      uf.created_at as favorited_at
+    FROM user_favorites uf
+    JOIN events e ON uf.event_id = e.id
+    JOIN categories c ON e.category_id = c.id
+    JOIN sub_categories sc ON e.sub_category_id = sc.id
+    ${whereClause}
+    ORDER BY uf.created_at DESC
+  `).all(...params);
+
+  const data = favorites.map(f => {
+    let startDisplay = '-';
+    let endDisplay = '-';
+    if (f.start_ts !== null && f.start_ts !== undefined) {
+      const absTs = Math.abs(f.start_ts);
+      const sign = f.start_ts < 0 ? -1 : 1;
+      const day = absTs % 100;
+      const rest = Math.floor(absTs / 100);
+      const month = rest % 100;
+      const year = Math.floor(rest / 100) * sign;
+      const prefix = year < 0 ? '公元前' : '';
+      const absYear = Math.abs(year);
+      if (f.start_precision === 0) startDisplay = `${prefix}${absYear}年`;
+      else if (f.start_precision === 1) startDisplay = `${prefix}${absYear}年${month}月`;
+      else startDisplay = `${prefix}${absYear}年${month}月${day}日`;
+    }
+    if (f.end_ts !== null && f.end_ts !== undefined) {
+      const absTs = Math.abs(f.end_ts);
+      const sign = f.end_ts < 0 ? -1 : 1;
+      const day = absTs % 100;
+      const rest = Math.floor(absTs / 100);
+      const month = rest % 100;
+      const year = Math.floor(rest / 100) * sign;
+      const prefix = year < 0 ? '公元前' : '';
+      const absYear = Math.abs(year);
+      if (f.end_precision === 0) endDisplay = `${prefix}${absYear}年`;
+      else if (f.end_precision === 1) endDisplay = `${prefix}${absYear}年${month}月`;
+      else endDisplay = `${prefix}${absYear}年${month}月${day}日`;
+    }
+    return {
+      id: f.id,
+      title: f.title,
+      description: f.description,
+      category_name: f.category_name,
+      sub_category_name: f.sub_category_name,
+      start_display: startDisplay,
+      end_display: endDisplay,
+      location_name: f.location_name,
+      favorited_at: f.favorited_at
+    };
+  });
+
+  res.json({ success: true, data });
+});
+
+router.get('/favorite/check/:eventId', (req, res) => {
+  const { eventId } = req.params;
+  const { user_id } = req.query;
+
+  if (!user_id) {
+    return res.json({ success: true, data: { is_favorite: false } });
+  }
+
+  const existing = db.prepare('SELECT * FROM user_favorites WHERE user_id = ? AND event_id = ?').get(user_id, eventId);
+  res.json({ success: true, data: { is_favorite: !!existing } });
+});
+
 router.get('/leaderboard', (req, res) => {
   const { period = 'all' } = req.query;
   const range = getDateRange(period);

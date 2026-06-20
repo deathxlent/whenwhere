@@ -31,6 +31,33 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_game_stats_user_date ON game_stats(user_id, stat_date);
   CREATE INDEX IF NOT EXISTS idx_game_stats_date ON game_stats(stat_date);
+
+  CREATE TABLE IF NOT EXISTS event_votes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    event_id INTEGER NOT NULL,
+    vote_type INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (event_id) REFERENCES events(id),
+    UNIQUE(user_id, event_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_event_votes_event ON event_votes(event_id);
+  CREATE INDEX IF NOT EXISTS idx_event_votes_user ON event_votes(user_id);
+
+  CREATE TABLE IF NOT EXISTS user_favorites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    event_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (event_id) REFERENCES events(id),
+    UNIQUE(user_id, event_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_user_favorites_user ON user_favorites(user_id);
+  CREATE INDEX IF NOT EXISTS idx_user_favorites_event ON user_favorites(event_id);
 `);
 
 const tableInfo = db.pragma('table_info(game_stats)');

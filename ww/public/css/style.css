@@ -760,3 +760,199 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #0a0a2e; c
 .precise-location-card .num { color: #34d399; }
 .precise-time-card { border-color: rgba(59,130,246,0.3); }
 .precise-time-card .num { color: #60a5fa; }
+
+.icon-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8);
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.icon-btn:hover {
+  background: rgba(59,130,246,0.2);
+  border-color: rgba(59,130,246,0.5);
+}
+
+.event-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.event-title-text {
+  font-weight: 600;
+  color: rgba(255,255,255,0.95);
+}
+
+.event-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.vote-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+.vote-btn.active {
+  background: rgba(59,130,246,0.15);
+  border-color: rgba(59,130,246,0.4);
+  color: #60a5fa;
+}
+.vote-up-btn.active {
+  background: rgba(16,185,129,0.15);
+  border-color: rgba(16,185,129,0.4);
+  color: #34d399;
+}
+.vote-down-btn.active {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.4);
+  color: #f87171;
+}
+.favorite-btn.active {
+  background: rgba(251,191,36,0.15);
+  border-color: rgba(251,191,36,0.4);
+  color: #fbbf24;
+}
+.vote-icon {
+  font-size: 16px;
+}
+.vote-count {
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.favorites-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  padding: 24px;
+  color: white;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 900px;
+  margin: 0 auto 24px;
+}
+.page-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.favorites-search-bar {
+  display: flex;
+  gap: 10px;
+  max-width: 900px;
+  margin: 0 auto 24px;
+}
+.favorites-search-bar input {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+}
+.favorites-search-bar input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+.favorites-search-bar input:focus {
+  border-color: #3b82f6;
+  background: rgba(59,130,246,0.08);
+}
+
+.favorites-list {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.favorite-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+.favorite-card:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.15);
+}
+.fav-main-info {
+  flex: 1;
+  min-width: 0;
+}
+.fav-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.fav-title {
+  margin: 0;
+  font-size: 17px;
+  color: rgba(255,255,255,0.95);
+}
+.fav-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 8px;
+}
+.fav-description {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+}
+.fav-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.fav-unfav-btn {
+  white-space: nowrap;
+  background: rgba(251,191,36,0.15);
+  border: 1px solid rgba(251,191,36,0.4);
+  color: #fbbf24;
+}
+.fav-unfav-btn:hover {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.4);
+  color: #f87171;
+}
+
+.btn-danger {
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.4);
+  color: #f87171;
+}
+.btn-danger:hover {
+  background: rgba(239,68,68,0.25);
+}
