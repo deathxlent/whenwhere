@@ -85,11 +85,19 @@ router.post('/', (req, res) => {
     category_id, sub_category_id, title,
     start_ts, start_precision, end_ts, end_precision,
     description, tips, location_lat, location_lng, location_name, sort_order,
-    location_lat2, location_lng2, location_only
+    location_lat2, location_lng2, location_only,
+    image_urls
   } = req.body;
 
   if (!category_id || !sub_category_id || !title) {
     return res.json({ success: false, message: '缺少必填参数' });
+  }
+
+  const hasTips = !!(tips && tips.trim());
+  const hasImageUrls = !!(image_urls && Array.isArray(image_urls) && image_urls.length > 0);
+
+  if (!hasTips && !hasImageUrls) {
+    return res.json({ success: false, message: '提示(tips)、图片URL、上传图片 三者至少需要至少填写一项' });
   }
 
   const result = db.prepare(`
@@ -121,7 +129,8 @@ router.put('/:id', (req, res) => {
     title,
     start_ts, start_precision, end_ts, end_precision,
     description, tips, location_lat, location_lng, location_name, sort_order,
-    location_lat2, location_lng2, location_only
+    location_lat2, location_lng2, location_only,
+    image_urls
   } = req.body;
 
   if (!title) {
@@ -131,6 +140,15 @@ router.put('/:id', (req, res) => {
   const event = db.prepare('SELECT * FROM events WHERE id = ?').get(id);
   if (!event) {
     return res.json({ success: false, message: '事件不存在' });
+  }
+
+  const hasTips = !!(tips && tips.trim());
+  const hasImageUrls = !!(image_urls && Array.isArray(image_urls) && image_urls.length > 0);
+  const existingImages = db.prepare('SELECT COUNT(*) as cnt FROM event_images WHERE event_id = ?').get(id).cnt;
+  const hasExistingImages = existingImages > 0;
+
+  if (!hasTips && !hasImageUrls && !hasExistingImages) {
+    return res.json({ success: false, message: '提示(tips)、图片URL、上传图片 三者至少需要至少填写一项' });
   }
 
   db.prepare(`

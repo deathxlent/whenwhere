@@ -1949,7 +1949,12 @@ async function submitEvent() {
     }
   }
 
-  if (state.pendingImages.length === 0) { toast('请至少添加一张图片（上传或URL）', 'error'); return; }
+  const fTips = document.getElementById('f-tips');
+  const tipsVal = fTips ? fTips.value.trim() : '';
+  if (state.pendingImages.length === 0 && !tipsVal) {
+    toast('图片（上传或URL）、提示(tips) 三者至少需要至少填写一项', 'error');
+    return;
+  }
 
   const locationOnly = document.getElementById('f-location-only').checked;
 
@@ -2376,6 +2381,17 @@ function showEventForm(event = null) {
     };
 
     if (!data.title) { toast('请输入事件名称', 'error'); return; }
+
+    if (isEdit) {
+      // 编辑模式交给后端校验（会检查已有图片 + tips + 新提交图片）
+    } else {
+      // 新增模式下，此弹窗不处理图片，必须填写 tips
+      const hasTips = !!(data.tips && data.tips.trim());
+      if (!hasTips) {
+        toast('新增事件时，提示(tips) 必填（如需添加图片请使用「地图添加」模式或保存后通过图片管理添加）', 'error');
+        return;
+      }
+    }
 
     let res;
     if (isEdit) {
@@ -2970,6 +2986,8 @@ function openEditMapView(event) {
     const lat2Val = document.getElementById('e-lat2').value;
     const lng2Val = document.getElementById('e-lng2').value;
 
+    const tipsText = document.getElementById('e-tips').value.trim();
+
     const data = {
       category_id: state.currentCategory.id,
       sub_category_id: state.currentSubCategory.id,
@@ -2979,7 +2997,7 @@ function openEditMapView(event) {
       end_ts: endTs,
       end_precision: endPrecision,
       description: document.getElementById('e-desc').value.trim() || null,
-      tips: document.getElementById('e-tips').value.trim() || null,
+      tips: tipsText || null,
       location_lat: document.getElementById('e-lat').value || null,
       location_lng: document.getElementById('e-lng').value || null,
       location_lat2: lat2Val || null,

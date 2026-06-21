@@ -28,5 +28,8 @@ let appState = {
   statsPeriod: 'all',
   mapConfig: null,
   _leaderboardData: null,
-  _leaderboardType: 'by_games'
+  _leaderboardType: 'by_games',
+  currentAchievementTab: 'all',
+  _achievementsData: null,
+  _rankHistoryData: null
 };

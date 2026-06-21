@@ -21,6 +21,7 @@ app.use('/tiles', express.static(path.join(STATIC_PATH, 'tiles')));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/game', require('./routes/game'));
 app.use('/api/categories', require('./routes/categories'));
+app.use('/api/achievements', require('./routes/achievements'));
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'WW服务运行正常', timestamp: new Date().toISOString() });
