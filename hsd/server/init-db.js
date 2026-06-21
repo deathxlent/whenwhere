@@ -91,6 +91,12 @@ db.exec(`
     image_count INTEGER DEFAULT 0,
     sort_order INTEGER DEFAULT 0,
     is_active INTEGER DEFAULT 1,
+    tips TEXT,
+    location_lat2 REAL,
+    location_lng2 REAL,
+    location_only INTEGER DEFAULT 0,
+    video_url TEXT,
+    audio_url TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id),
@@ -120,7 +126,9 @@ const eventsNewCols = [
   { name: 'tips', type: 'TEXT' },
   { name: 'location_lat2', type: 'REAL' },
   { name: 'location_lng2', type: 'REAL' },
-  { name: 'location_only', type: 'INTEGER DEFAULT 0' }
+  { name: 'location_only', type: 'INTEGER DEFAULT 0' },
+  { name: 'video_url', type: 'TEXT' },
+  { name: 'audio_url', type: 'TEXT' }
 ];
 eventsNewCols.forEach(col => {
   if (!eventsCols.includes(col.name)) {

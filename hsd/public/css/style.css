@@ -1628,3 +1628,10 @@ textarea.form-control {
 .btn-danger {
   background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
 }
+
+.form-hint {
+  font-size: 11px;
+  color: #a0aec0;
+  margin-top: 4px;
+  line-height: 1.4;
+}

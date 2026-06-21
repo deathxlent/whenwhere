@@ -122,7 +122,9 @@ router.get('/random-event', (req, res) => {
       sub_category_name: event.sub_category_name,
       distance_unit: event.distance_unit || 'km',
       distance_scale: event.distance_scale != null ? event.distance_scale : 1,
-      images: imageData
+      images: imageData,
+      video_url: event.video_url,
+      audio_url: event.audio_url
     }
   });
 });
@@ -304,6 +306,8 @@ router.post('/submit', (req, res) => {
       correct_title: event.title,
       correct_description: event.description,
       correct_tips: event.tips,
+      correct_video_url: event.video_url,
+      correct_audio_url: event.audio_url,
       correct_start_display: tsToDisplay(event.start_ts, event.start_precision),
       correct_end_display: tsToDisplay(event.end_ts, event.end_precision),
       distance_unit: distanceUnit,

@@ -6,6 +6,22 @@ const path = require('path');
 
 const IMAGES_ROOT = path.join(__dirname, '..', '..', '..', 'ww', 'static', 'images');
 
+function isValidVideoUrl(url) {
+  if (!url) return false;
+  const youkuPattern = /^(https?:\/\/)?(v\.)?youku\.com\//i;
+  const bilibiliPattern = /^(https?:\/\/)?(www\.|m\.)?bilibili\.com\//i;
+  const bilibiliShortPattern = /^(https?:\/\/)?b23\.tv\//i;
+  return youkuPattern.test(url) || bilibiliPattern.test(url) || bilibiliShortPattern.test(url);
+}
+
+function isValidAudioUrl(url) {
+  if (!url) return false;
+  const qqPattern = /^(https?:\/\/)?(y\.qq\.com|music\.qq\.com)\//i;
+  const neteasePattern = /^(https?:\/\/)?(music\.163\.com|y\.music\.163\.com)\//i;
+  const mp3Pattern = /\.mp3(\?.*)?$/i;
+  return qqPattern.test(url) || neteasePattern.test(url) || mp3Pattern.test(url);
+}
+
 function tsToDisplay(ts, precision) {
   if (ts === null || ts === undefined) return '-';
   const absTs = Math.abs(ts);
@@ -86,7 +102,7 @@ router.post('/', (req, res) => {
     start_ts, start_precision, end_ts, end_precision,
     description, tips, location_lat, location_lng, location_name, sort_order,
     location_lat2, location_lng2, location_only,
-    image_urls
+    image_urls, video_url, audio_url
   } = req.body;
 
   if (!category_id || !sub_category_id || !title) {
@@ -95,17 +111,27 @@ router.post('/', (req, res) => {
 
   const hasTips = !!(tips && tips.trim());
   const hasImageUrls = !!(image_urls && Array.isArray(image_urls) && image_urls.length > 0);
+  const hasVideoUrl = !!(video_url && video_url.trim());
+  const hasAudioUrl = !!(audio_url && audio_url.trim());
 
-  if (!hasTips && !hasImageUrls) {
-    return res.json({ success: false, message: '提示(tips)、图片URL、上传图片 三者至少需要至少填写一项' });
+  if (!hasTips && !hasImageUrls && !hasVideoUrl && !hasAudioUrl) {
+    return res.json({ success: false, message: '提示(tips)、图片URL、上传图片、视频URL、音频URL 至少需要填写一项' });
+  }
+
+  if (hasVideoUrl && !isValidVideoUrl(video_url.trim())) {
+    return res.json({ success: false, message: '视频URL格式不正确，仅支持优酷和bilibili链接' });
+  }
+
+  if (hasAudioUrl && !isValidAudioUrl(audio_url.trim())) {
+    return res.json({ success: false, message: '音频URL格式不正确，仅支持QQ音乐、网易云音乐或.mp3结尾的链接' });
   }
 
   const result = db.prepare(`
     INSERT INTO events (category_id, sub_category_id, title,
       start_ts, start_precision, end_ts, end_precision,
       description, tips, location_lat, location_lng, location_name, sort_order,
-      location_lat2, location_lng2, location_only)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      location_lat2, location_lng2, location_only, video_url, audio_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     category_id, sub_category_id, title,
     start_ts || null, start_precision !== undefined ? start_precision : 0,
@@ -114,7 +140,9 @@ router.post('/', (req, res) => {
     location_lat || null, location_lng || null,
     location_name || null, sort_order || 0,
     location_lat2 || null, location_lng2 || null,
-    location_only ? 1 : 0
+    location_only ? 1 : 0,
+    video_url ? video_url.trim() : null,
+    audio_url ? audio_url.trim() : null
   );
 
   const event = db.prepare('SELECT * FROM events WHERE id = ?').get(result.lastInsertRowid);
@@ -130,7 +158,7 @@ router.put('/:id', (req, res) => {
     start_ts, start_precision, end_ts, end_precision,
     description, tips, location_lat, location_lng, location_name, sort_order,
     location_lat2, location_lng2, location_only,
-    image_urls
+    image_urls, video_url, audio_url
   } = req.body;
 
   if (!title) {
@@ -144,11 +172,28 @@ router.put('/:id', (req, res) => {
 
   const hasTips = !!(tips && tips.trim());
   const hasImageUrls = !!(image_urls && Array.isArray(image_urls) && image_urls.length > 0);
+  const hasVideoUrl = !!(video_url !== undefined && video_url !== null && video_url.trim());
+  const hasAudioUrl = !!(audio_url !== undefined && audio_url !== null && audio_url.trim());
   const existingImages = db.prepare('SELECT COUNT(*) as cnt FROM event_images WHERE event_id = ?').get(id).cnt;
   const hasExistingImages = existingImages > 0;
+  const hasExistingVideo = !!(event.video_url && event.video_url.trim());
+  const hasExistingAudio = !!(event.audio_url && event.audio_url.trim());
 
-  if (!hasTips && !hasImageUrls && !hasExistingImages) {
-    return res.json({ success: false, message: '提示(tips)、图片URL、上传图片 三者至少需要至少填写一项' });
+  const finalHasTips = hasTips || !!(event.tips && event.tips.trim());
+  const finalHasImages = hasImageUrls || hasExistingImages;
+  const finalHasVideo = hasVideoUrl || (video_url === undefined && hasExistingVideo);
+  const finalHasAudio = hasAudioUrl || (audio_url === undefined && hasExistingAudio);
+
+  if (!finalHasTips && !finalHasImages && !finalHasVideo && !finalHasAudio) {
+    return res.json({ success: false, message: '提示(tips)、图片URL、上传图片、视频URL、音频URL 至少需要填写一项' });
+  }
+
+  if (hasVideoUrl && !isValidVideoUrl(video_url.trim())) {
+    return res.json({ success: false, message: '视频URL格式不正确，仅支持优酷和bilibili链接' });
+  }
+
+  if (hasAudioUrl && !isValidAudioUrl(audio_url.trim())) {
+    return res.json({ success: false, message: '音频URL格式不正确，仅支持QQ音乐、网易云音乐或.mp3结尾的链接' });
   }
 
   db.prepare(`
@@ -156,6 +201,7 @@ router.put('/:id', (req, res) => {
       title = ?, start_ts = ?, start_precision = ?, end_ts = ?, end_precision = ?,
       description = ?, tips = ?, location_lat = ?, location_lng = ?, location_name = ?,
       sort_order = ?, location_lat2 = ?, location_lng2 = ?, location_only = ?,
+      video_url = ?, audio_url = ?,
       updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `).run(
@@ -169,6 +215,8 @@ router.put('/:id', (req, res) => {
     location_name || null, sort_order || 0,
     location_lat2 || null, location_lng2 || null,
     location_only ? 1 : 0,
+    video_url !== undefined ? (video_url ? video_url.trim() : null) : event.video_url,
+    audio_url !== undefined ? (audio_url ? audio_url.trim() : null) : event.audio_url,
     id
   );
 

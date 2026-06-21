@@ -2258,6 +2258,16 @@ function showEventForm(event = null) {
           <label class="form-label">小贴士</label>
           <textarea class="form-control" id="f-tips" placeholder="小贴士（猜图时显示，非必填）">${escapeHtml(event?.tips || '')}</textarea>
         </div>
+        <div class="form-group">
+          <label class="form-label">视频URL</label>
+          <input type="text" class="form-control" id="f-video-url" value="${escapeHtml(event?.video_url || '')}" placeholder="支持优酷、bilibili链接">
+          <div class="form-hint">仅支持 youku.com / bilibili.com / b23.tv 链接</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">音频URL</label>
+          <input type="text" class="form-control" id="f-audio-url" value="${escapeHtml(event?.audio_url || '')}" placeholder="支持QQ音乐、网易云音乐或.mp3链接">
+          <div class="form-hint">支持 y.qq.com / music.163.com / .mp3 结尾的链接</div>
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">纬度</label>
@@ -2377,18 +2387,22 @@ function showEventForm(event = null) {
       location_lng2: document.getElementById('f-lng2').value || null,
       location_only: document.getElementById('f-location-only').checked,
       location_name: document.getElementById('f-locname').value.trim() || null,
-      sort_order: parseInt(document.getElementById('f-sort').value) || 0
+      sort_order: parseInt(document.getElementById('f-sort').value) || 0,
+      video_url: document.getElementById('f-video-url').value.trim() || null,
+      audio_url: document.getElementById('f-audio-url').value.trim() || null
     };
 
     if (!data.title) { toast('请输入事件名称', 'error'); return; }
 
     if (isEdit) {
-      // 编辑模式交给后端校验（会检查已有图片 + tips + 新提交图片）
+      // 编辑模式交给后端校验
     } else {
-      // 新增模式下，此弹窗不处理图片，必须填写 tips
+      // 新增模式下，此弹窗不处理图片，检查 tips / video / audio 至少有一个
       const hasTips = !!(data.tips && data.tips.trim());
-      if (!hasTips) {
-        toast('新增事件时，提示(tips) 必填（如需添加图片请使用「地图添加」模式或保存后通过图片管理添加）', 'error');
+      const hasVideo = !!(data.video_url && data.video_url.trim());
+      const hasAudio = !!(data.audio_url && data.audio_url.trim());
+      if (!hasTips && !hasVideo && !hasAudio) {
+        toast('提示(tips)、视频URL、音频URL 至少需要填写一项（如需添加图片请使用「地图添加」模式）', 'error');
         return;
       }
     }
@@ -2579,6 +2593,16 @@ function openEditMapView(event) {
             <div class="form-group">
               <label class="form-label">小贴士</label>
               <textarea class="form-control" id="e-tips" placeholder="小贴士（猜图时显示，非必填）" rows="2">${escapeHtml(event.tips || '')}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">视频URL</label>
+              <input type="text" class="form-control" id="e-video-url" value="${escapeHtml(event.video_url || '')}" placeholder="支持优酷、bilibili链接">
+              <div class="form-hint">仅支持 youku.com / bilibili.com / b23.tv 链接</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">音频URL</label>
+              <input type="text" class="form-control" id="e-audio-url" value="${escapeHtml(event.audio_url || '')}" placeholder="支持QQ音乐、网易云音乐或.mp3链接">
+              <div class="form-hint">支持 y.qq.com / music.163.com / .mp3 结尾的链接</div>
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -3004,7 +3028,9 @@ function openEditMapView(event) {
       location_lng2: lng2Val || null,
       location_only: locationOnly ? 1 : 0,
       location_name: document.getElementById('e-locname').value.trim() || null,
-      sort_order: parseInt(document.getElementById('e-sort').value) || 0
+      sort_order: parseInt(document.getElementById('e-sort').value) || 0,
+      video_url: document.getElementById('e-video-url').value.trim() || null,
+      audio_url: document.getElementById('e-audio-url').value.trim() || null
     };
 
     const res = await API.put(`/events/${event.id}`, data);

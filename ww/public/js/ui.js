@@ -431,6 +431,8 @@ function renderGamePage() {
         <div class="timer-bar"><div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div></div>
         <div class="timer-text" id="timer-text">30</div>
         <div class="image-area" id="image-area"></div>
+        <div class="video-area" id="video-area" style="display:none;"></div>
+        <div class="audio-area" id="audio-area" style="display:none;"></div>
         <div class="tips-area" id="tips-area" style="display:none;"></div>
         <div class="game-actions">
           <button class="btn btn-warning" id="give-up-btn">放弃</button>
@@ -468,6 +470,8 @@ function renderGamePage() {
   appState.map.on('click', onGameMapClick);
 
   renderCurrentImages();
+  renderVideo();
+  renderAudio();
   renderTips();
   startTimer();
 
@@ -536,6 +540,83 @@ function renderTips() {
   } else {
     tipsArea.style.display = 'none';
   }
+}
+
+function renderVideo() {
+  const videoArea = document.getElementById('video-area');
+  if (!videoArea || !appState.currentEvent) return;
+
+  const videoUrl = appState.currentEvent.video_url;
+  if (videoUrl && videoUrl.trim()) {
+    videoArea.style.display = 'block';
+    videoArea.innerHTML = `
+      <div class="media-label">▶️ 视频</div>
+      <div class="video-thumbnail" onclick="openVideoPlayer('${escapeHtml(videoUrl)}')">
+        <div class="video-play-icon">▶</div>
+        <div class="video-url-text">${escapeHtml(videoUrl)}</div>
+      </div>
+    `;
+  } else {
+    videoArea.style.display = 'none';
+  }
+}
+
+function renderAudio() {
+  const audioArea = document.getElementById('audio-area');
+  if (!audioArea || !appState.currentEvent) return;
+
+  const audioUrl = appState.currentEvent.audio_url;
+  if (audioUrl && audioUrl.trim()) {
+    audioArea.style.display = 'block';
+    const isMp3 = /\.mp3(\?.*)?$/i.test(audioUrl);
+    let audioContent = '';
+    if (isMp3) {
+      audioContent = `
+        <div class="media-label">🎵 音频</div>
+        <audio controls class="audio-player" src="${escapeHtml(audioUrl)}"></audio>
+      `;
+    } else {
+      audioContent = `
+        <div class="media-label">🎵 音频</div>
+        <div class="audio-link" onclick="window.open('${escapeHtml(audioUrl)}', '_blank')">
+          <span class="audio-link-icon">🔗</span>
+          <span class="audio-link-text">在新窗口打开</span>
+        </div>
+      `;
+    }
+    audioArea.innerHTML = audioContent;
+  } else {
+    audioArea.style.display = 'none';
+  }
+}
+
+function openVideoPlayer(url) {
+  const existing = document.getElementById('video-player-modal');
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'video-player-modal';
+  modal.className = 'video-player-modal';
+  modal.innerHTML = `
+    <div class="video-player-overlay"></div>
+    <div class="video-player-container">
+      <button class="video-player-close" onclick="closeVideoPlayer()">×</button>
+      <div class="video-player-content">
+        <iframe src="${escapeHtml(url)}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.querySelector('.video-player-overlay').addEventListener('click', closeVideoPlayer);
+}
+
+function closeVideoPlayer() {
+  const modal = document.getElementById('video-player-modal');
+  if (modal) modal.remove();
 }
 
 function openImageViewer(src) {
@@ -784,6 +865,27 @@ function renderResultPage(result, elapsedSeconds, isTimedOut) {
               </div>
               ${result.correct_description ? `<div><span class="label">说明：</span><span class="value">${result.correct_description}</span></div>` : ''}
               ${result.correct_tips ? `<div><span class="label">小贴士：</span><span class="value">${result.correct_tips}</span></div>` : ''}
+              ${result.correct_video_url ? `
+                <div class="result-media-item">
+                  <span class="label">视频：</span>
+                  <div class="result-video-thumbnail" onclick="openVideoPlayer('${escapeHtml(result.correct_video_url)}')">
+                    <span class="video-play-icon-small">▶</span>
+                    <span class="result-video-url">${escapeHtml(result.correct_video_url)}</span>
+                  </div>
+                </div>
+              ` : ''}
+              ${result.correct_audio_url ? `
+                <div class="result-media-item">
+                  <span class="label">音频：</span>
+                  ${(/\.mp3(\?.*)?$/i.test(result.correct_audio_url) ? `
+                    <audio controls class="result-audio-player" src="${escapeHtml(result.correct_audio_url)}"></audio>
+                  ` : `
+                    <div class="result-audio-link" onclick="window.open('${escapeHtml(result.correct_audio_url)}', '_blank')">
+                      🔗 在新窗口打开
+                    </div>
+                  `)}
+                </div>
+              ` : ''}
               ${!isLocationOnly ? `<div><span class="label">时间：</span><span class="value">${result.correct_start_display}${result.correct_end_display && result.correct_end_display !== result.correct_start_display ? ' ~ ' + result.correct_end_display : ''}</span></div>` : ''}
               <div><span class="label">地点：</span><span class="value">${result.correct_location_name || '未知'}</span></div>
             </div>
