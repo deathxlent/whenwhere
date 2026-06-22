@@ -2,10 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+const { WW_STATIC_PATH } = require('./config');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const WW_STATIC_PATH = path.join(__dirname, '..', '..', 'ww', 'static');
 const PUBLIC_PATH = path.join(__dirname, '..', 'public');
 
 app.use(cors());
