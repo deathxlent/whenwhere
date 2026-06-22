@@ -16,9 +16,11 @@ function getEventAnswers(eventId, userId) {
       m.crs_type as map_crs_type,
       m.bounds_south as map_bounds_south, m.bounds_west as map_bounds_west,
       m.bounds_north as map_bounds_north, m.bounds_east as map_bounds_east,
-      m.tile_size as map_tile_size,
-      m.distance_unit, m.distance_scale,
-      m.min_zoom as map_min_zoom, m.max_zoom as map_max_zoom
+      m.tile_ext as map_tile_ext, m.tile_size as map_tile_size,
+      m.center_lat as map_center_lat, m.center_lng as map_center_lng,
+      m.default_zoom as map_default_zoom,
+      m.min_zoom as map_min_zoom, m.max_zoom as map_max_zoom,
+      m.distance_unit, m.distance_scale
     FROM events e
     JOIN categories c ON e.category_id = c.id
     JOIN sub_categories sc ON e.sub_category_id = sc.id
