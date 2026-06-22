@@ -8,7 +8,7 @@ function getEventAnswers(eventId, userId) {
 
   const event = db.prepare(`
     SELECT e.*,
-      c.name as category_name,
+      c.code as category_code, c.name as category_name,
       sc.name as sub_category_name, sc.code as sub_category_code,
       sc.center_lat, sc.center_lng, sc.default_zoom, sc.min_zoom, sc.max_zoom,
       m.tile_type as map_tile_type, m.tile_url as map_tile_url,
@@ -111,10 +111,9 @@ function getEventAnswers(eventId, userId) {
     if (img.file_path && (img.file_path.startsWith('http://') || img.file_path.startsWith('https://'))) {
       return { id: img.id, url: img.file_path };
     }
-    const catCode = (event.category_name || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'misc';
     return {
       id: img.id,
-      url: `/images/${catCode}/${event.sub_category_code || 'general'}/${event.id}/${img.filename}`
+      url: `/images/${event.category_code}/${event.sub_category_code}/${event.id}/${img.filename}`
     };
   });
 
