@@ -45,6 +45,15 @@ HSD.app = {
       case 'import':
         HSD.importView.render(mainView);
         break;
+      case 'export':
+        HSD.exportView.render(mainView);
+        break;
+      case 'extract':
+        HSD.extractView.render(mainView);
+        break;
+      case 'crowd':
+        HSD.crowdView.render(mainView);
+        break;
     }
   }
 };

@@ -1,282 +1,406 @@
-# WhenWhere 项目说明文档
+# WhenWhere 项目总览
 
-## 项目概述
+> 一个基于地理和时间猜测的教育类游戏平台，包含完整的游戏系统和配套的题目维护工具。
 
-WhenWhere 是一个双应用架构的历史时空数据管理和交互游戏系统。包含两个独立的 B/S 应用：
+---
 
-- **HSD (heshidi)** - 历史数据维护应用（数据管理端）
-- **WW (whenwhere)** - 时空猜谜游戏应用（用户交互端）
+## 📋 目录
 
-两个应用共享同一个 SQLite 数据库和图片存储库，彼此独立运行。
+- [项目简介](#项目简介)
+- [核心功能亮点](#核心功能亮点)
+- [项目结构](#项目结构)
+- [系统需求](#系统需求)
+- [快速开始](#快速开始)
+- [子项目说明](#子项目说明)
+- [技术栈](#技术栈)
+- [外部依赖](#外部依赖)
+- [文档索引](#文档索引)
+- [许可证](#许可证)
 
-## 目录结构
+---
+
+## 项目简介
+
+WhenWhere 是一个综合性的「地点 + 时间」猜测游戏平台，灵感来源于 GeoGuessr，但扩展了时间维度的玩法。玩家需要根据图片线索，猜出事件发生的**地点**和**时间**，系统会根据距离和时间误差计算得分。
+
+本项目包含两个独立但配套的子系统：
+
+### 🎮 WW (WhenWhere Game) - 游戏前端
+玩家可以：
+- 选择不同主题分类（中国历史、世界地理、游戏地图等）
+- 在地图上猜测事件发生地点、输入事件发生年份
+- 查看全国/全球玩家排行榜
+- 收集成就、提升段位
+- 收藏题目并分析其他玩家的答题记录
+- 对题目进行投票反馈
+
+### 🛠 HSD (History Spatio-temporal Data) - 数据维护系统
+管理员可以：
+- 管理分类、子分类和地图配置
+- 添加、编辑、导入导出题目（事件）
+- 使用 AI 智能提取信息
+- 众包审核题目质量
+- 管理投票和反馈
+
+---
+
+## 核心功能亮点
+
+### 🌟 游戏特色
+
+| 特色 | 说明 |
+|------|------|
+| **双维度猜测** | 同时猜测地点和时间，比传统 GeoGuessr 更具挑战性 |
+| **渐进式提示** | 随时间推移逐步展示更多图片，平衡难度与体验 |
+| **精准判定** | 位置误差 ≤ 50km 视为精准位置，时间误差 ≤ 1 年视为精准时间 |
+| **成就系统** | 9 种成就类型，按 Tier 1-3 阶梯式解锁 |
+| **段位系统** | 8 个段位等级（青铜→王者），精准次数累计升级 |
+| **答案分析** | 收藏后可查看所有玩家的答题记录分布，地图可视化呈现 |
+| **多地图支持** | 支持真实地理地图和虚拟平面坐标系地图（如游戏地图） |
+| **离线瓦片** | 支持加载本地地图瓦片，无需依赖网络 |
+| **自定义坐标系** | 支持简单平面坐标系，适配任意类型的地图 |
+
+### 🔧 维护系统特色
+
+| 特色 | 说明 |
+|------|------|
+| **可视化编辑** | 地图上直接拖拽选择点或绘制矩形区域 |
+| **智能分类** | 自动根据子分类匹配默认地图配置 |
+| **AI 提取** | 调用 LLM API 自动从文本中提取地点和时间信息 |
+| **批量操作** | 支持 Excel 批量导入，支持 JSON 批量导出 |
+| **版本管理** | 完整的审核状态流转（草稿→待审核→已发布） |
+| **众包审核** | 支持多人投票审核，通过后自动发布 |
+| **数据备份** | 一键导出完整数据包（图片+数据+附件） |
+
+---
+
+## 项目结构
 
 ```
 whenwhere/
-├── hsd/                          # 维护应用（heshidi）
-│   ├── public/                   # 前端静态文件
-│   │   ├── css/style.css         # 样式文件
-│   │   ├── js/common.js          # 公共工具函数
-│   │   ├── js/main.js            # 主页面逻辑
-│   │   └── index.html            # 入口页面
-│   ├── server/                   # Node.js 后端
-│   │   ├── routes/
-│   │   │   ├── categories.js     # 类别/子类别 CRUD
-│   │   │   ├── events.js         # 事件 CRUD
-│   │   │   ├── images.js         # 图片管理
-│   │   │   └── maps.js           # 地图管理
-│   │   ├── app.js                # 应用入口（端口3001）
-│   │   ├── db.js                 # 数据库连接
-│   │   └── init-db.js            # 数据库初始化脚本
-│   └── package.json
-├── ww/                           # 游戏应用（whenwhere）
-│   ├── public/                   # 前端静态文件
-│   │   ├── css/style.css         # 样式文件
-│   │   ├── js/app.js             # 游戏主逻辑
-│   │   ├── lib/leaflet/          # Leaflet地图库
-│   │   ├── tiles/osm/            # 本地OSM瓦片
-│   │   ├── geojson/              # GeoJSON数据
-│   │   │   ├── china_provinces.json
-│   │   │   └── world_admin1_labels.json
-│   │   └── index.html            # 入口页面
-│   ├── server/                   # Node.js 后端
-│   │   ├── routes/
-│   │   │   ├── auth.js           # 登录/注册
-│   │   │   ├── game.js           # 游戏逻辑/统计
-│   │   │   └── categories.js     # 类别/子类别查询
-│   │   ├── app.js                # 应用入口（端口3002）
-│   │   └── db.js                 # 数据库连接
-│   ├── db/whenwhere.db           # SQLite 数据库（共享）
-│   └── static/images/            # 图片存储（共享）
-├── start-hsd.bat                 # HSD 一键启动
-├── start-ww.bat                  # WW 一键启动
-├── README.md                     # 项目说明
-└── devlog.md                     # 开发日志
+├── LICENSE                  # MIT 许可证
+├── README.md                # 本文件（项目总览）
+├── SETUP.md                 # 整体安装指南
+├── FLOW.md                  # 整体业务流程
+├── start.bat                # Windows 一键启动脚本
+├── start.sh                 # Linux/macOS 启动脚本
+├── setup.bat                # Windows 一键安装脚本
+├── setup.sh                 # Linux/macOS 安装脚本
+├── hsd/                     # 🛠 数据维护系统
+│   ├── README.md            # HSD 详细文档
+│   ├── SETUP.md             # HSD 安装指南
+│   ├── FLOW.md              # HSD 业务流程
+│   ├── server/              # Express.js 后端
+│   │   ├── app.js           # 入口文件
+│   │   ├── db.js            # SQLite 数据库连接
+│   │   ├── config.json      # 配置文件（LLM API 等）
+│   │   ├── routes/          # 路由模块
+│   │   ├── utils/           # 工具函数
+│   │   └── init-db.js       # 数据库初始化脚本
+│   ├── public/              # 前端静态文件
+│   │   ├── index.html
+│   │   ├── css/
+│   │   └── js/
+│   ├── db/                  # 数据库文件
+│   │   └── hsd.db
+│   ├── package.json
+│   └── ...
+└── ww/                      # 🎮 游戏系统
+    ├── README.md            # WW 详细文档
+    ├── SETUP.md             # WW 安装指南
+    ├── FLOW.md              # WW 业务流程
+    ├── server/              # Express.js 后端
+    │   ├── app.js           # 入口文件
+    │   ├── db.js            # SQLite 数据库连接
+    │   ├── config.js        # 游戏参数配置
+    │   ├── routes/          # 路由模块
+    │   │   ├── game/        # 游戏核心逻辑（模块化）
+    │   │   ├── auth.js
+    │   │   ├── stats.js
+    │   │   └── ...
+    │   ├── init-db.js       # 数据库初始化脚本
+    │   └── ...
+    ├── public/              # 前端静态文件
+    │   ├── index.html
+    │   ├── css/
+    │   └── js/
+    │       └── pages/       # 页面模块（按功能拆分）
+    ├── static/              # 游戏资源
+    │   ├── images/          # 题目图片
+    │   ├── tiles/           # 地图瓦片
+    │   ├── geojson/         # GeoJSON 数据
+    │   └── lib/             # 第三方库
+    ├── db/                  # 数据库文件
+    │   └── whenwhere.db
+    ├── package.json
+    └── ...
 ```
 
-## 数据库设计
+---
 
-### 表结构
+## 系统需求
 
-**maps（地图配置表）**
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER PK | 主键 |
-| name | TEXT | 地图名称 |
-| code | TEXT UNIQUE | 地图编码 |
-| description | TEXT | 描述 |
-| tile_type | TEXT | 瓦片类型：hybrid/osm/amap_street/amap_satellite/custom |
-| tile_url | TEXT | 自定义瓦片URL |
-| tile_subdomains | TEXT | 瓦片子域名（逗号分隔） |
-| min_zoom | INTEGER | 最小缩放 |
-| max_zoom | INTEGER | 最大缩放 |
-| sort_order | INTEGER | 排序 |
-| is_active | INTEGER | 是否启用 |
+### 硬件需求
 
-**categories（类别表-大类）**
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER PK | 主键 |
-| code | TEXT UNIQUE | 编码 |
-| name | TEXT | 名称 |
-| sort_order | INTEGER | 排序 |
-| is_active | INTEGER | 是否启用 |
+| 组件 | 最低要求 | 推荐配置 |
+|------|----------|----------|
+| CPU | 双核 2.0 GHz | 四核 3.0 GHz 以上 |
+| 内存 | 4 GB RAM | 8 GB RAM 以上 |
+| 磁盘空间 | 5 GB | 20 GB 以上（取决于地图瓦片大小） |
+| 网络 | 可选（用于在线地图瓦片） | 宽带网络 |
 
-**sub_categories（子类别表）**
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER PK | 主键 |
-| category_id | INTEGER FK | 所属大类ID |
-| code | TEXT | 编码 |
-| name | TEXT | 名称 |
-| sort_order | INTEGER | 排序 |
-| is_active | INTEGER | 是否启用 |
-| map_id | INTEGER FK | 绑定地图ID |
-| center_lat | REAL | 中心点纬度 |
-| center_lng | REAL | 中心点经度 |
-| default_zoom | INTEGER | 默认缩放 |
-| min_zoom | INTEGER | 子类最小缩放 |
-| max_zoom | INTEGER | 子类最大缩放 |
+### 软件需求
 
-**events（事件表）**
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER PK | 主键 |
-| category_id | INTEGER FK | 大类ID |
-| sub_category_id | INTEGER FK | 子类别ID |
-| title | TEXT | 事件名称 |
-| start_ts / end_ts | INTEGER | 编码时间戳 |
-| start_precision / end_precision | INTEGER | 时间精度 |
-| description | TEXT | 说明 |
-| location_lat / location_lng | REAL | 坐标 |
-| location_name | TEXT | 地点名称 |
-| image_count | INTEGER | 图片数 |
-| is_active | INTEGER | 是否启用 |
+| 组件 | 版本要求 | 说明 |
+|------|----------|------|
+| Node.js | 20.x 或更高 | LTS 版本推荐 |
+| npm | 9.x 或更高 | 随 Node.js 安装 |
+| 操作系统 | Windows 10+/macOS 10.15+/Linux | 跨平台支持 |
+| 浏览器 | Chrome 90+ / Firefox 88+ / Edge 90+ | 现代浏览器 |
+| 数据库 | SQLite 3 | 无需单独安装（better-sqlite3 自带） |
 
-**event_images（事件图片表）**
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER PK | 主键 |
-| event_id | INTEGER FK | 事件ID |
-| filename / original_name / file_path | TEXT | 文件信息 |
-| sort_order | INTEGER | 排序 |
+### 可选依赖
 
-**users（用户表）**
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER PK | 主键 |
-| username / password_hash / nickname | TEXT | 用户信息 |
+- **C/C++ 编译器** - Windows 下用于编译 better-sqlite3 原生模块
+- **PM2** - 生产环境进程管理
+- **Nginx** - 生产环境反向代理
+- **LLM API Key** - 用于 HSD AI 智能提取功能
 
-**user_stats（用户统计表）**
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER PK | 主键 |
-| user_id | INTEGER FK | 用户ID |
-| total_games / total_distance / total_time_diff | INTEGER/REAL | 统计值 |
-| precise_location_count / precise_time_count | INTEGER | 精准次数 |
-
-### 预置默认数据
-
-- 地图：世界地图、中国地图
-- 大类：初中、高中、人类、宇宙、虚拟
-- 初中子类：中国史（绑定中国地图）、世界史（绑定世界地图）
-
-## 核心业务规则
-
-### 子类别与地图绑定
-- **子类必须绑定地图**才能在WW中显示并游玩
-- **大类有地图时**，可添加维护子类别和事件（与原有初中模块一致）
-- **子类有事件 + 绑地图** → WW对应Tab显示可玩
-- **子类无事件或无地图** → WW显示"建设中"
-
-### 地图管理规则
-- 可新增、删除地图
-- **已绑定子类的地图不可修改/删除**（防止数据异常）
-- 地图可配置：瓦片类型、URL、子域名、缩放范围
-
-### 子类别地图配置
-每个子类别可独立配置地图参数：
-- 中心点经纬度（默认视图中心）
-- 默认缩放级别
-- 最小/最大缩放限制（与地图本身限制取交集）
-
-### 精准判断规则
-- **位置精准**：猜测点距离事件点 ≤ 50公里，统计时距离误差算0
-- **时间精准**：|猜测时间 - 事件时间| ≤ Y × 1%，Y = |事件时间 - 2026|
-  - 例：事件1926年，Y=100年 → 100×1%=1年 → 1925~1927都算精准
-
-## HSD 应用功能（端口3001）
-
-### 导航结构
-- 🏠 首页 → 各类别入口卡片（显示可用子类数/事件数）
-- 📂 类别管理 → 大类列表 → 子类CRUD → 事件维护
-- 🗺️ 地图管理 → 地图增删（已绑子类的地图只读）
-
-### 类别管理
-- **大类**：增删改查，配置排序
-- **子类**：增删改查，必须绑定地图，配置中心点/缩放参数
-- **事件维护**：进入子类后，列表视图 + 地图添加视图
-  - 地图添加：点击地图选点，弹窗填表单，支持图片上传
-  - 列表页：展示全部字段，修改/删除/图片管理
-
-### 地图管理
-- 新增地图：名称、编码、瓦片类型、URL、缩放范围等
-- 删除地图：仅未绑定子类的可删
-- 已绑定地图：灰色锁定状态，不可编辑
-
-## WW 应用功能（端口3002）
-
-### 用户系统
-- 注册/登录（默认测试账号：admin/123456, user1/123456, user2/123456）
-- 个人统计：局数、平均距离、平均时间误差、精准率
-
-### 游戏流程
-1. **主页面Tab动态加载**：从API获取大类，只有有可用子类的大类才显示或可玩
-2. **子类别多选**：勾选要玩的子类（默认全选，显示事件数量）
-3. **开始游戏**：30秒倒计时，侧边栏显示图片（可按E隐藏，空格下一张）
-4. **地图交互**：点击地图选点，时间输入（年/月/日精度）
-5. **提交结果**：
-   - 地图连线显示猜测点→事件点
-   - 距离、时间差、耗时
-   - 精准位置/精准时间判定（绿色标签）
-   - 事件名称、时间、地点、说明、全图
-
-### 排行榜
-- 6种排行：玩最多局、距离最近、时间最准、耗时最少、精准位置、精准时间
-- 4种周期：全部、本周、本月、本年
-
-### 动态Tab规则
-- 大类下有「已绑地图 + 有事件」的子类 → 正常显示并可玩
-- 其他所有情况 → 显示「🏗️ 建设中，敬请期待...」
-
-## API 接口总览
-
-### HSD API (3001)
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET/POST/PUT/DELETE | /api/categories | 大类CRUD |
-| GET/POST/PUT/DELETE | /api/categories/:id/sub-categories | 子类CRUD |
-| GET | /api/maps | 地图列表（含绑定数量） |
-| POST | /api/maps | 新增地图 |
-| PUT | /api/maps/:id | 修改地图（仅未绑子类） |
-| DELETE | /api/maps/:id | 删除地图（仅未绑子类） |
-| GET/POST/PUT/DELETE | /api/events | 事件CRUD |
-| GET/POST/DELETE | /api/images | 图片管理 |
-
-### WW API (3002)
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/auth/register, /api/auth/login | 账号 |
-| GET | /api/categories, /api/categories/:id/sub-categories | 类别查询 |
-| GET | /api/game/random-event | 随机事件 |
-| POST | /api/game/submit-answer | 提交答案（返回评分） |
-| GET | /api/stats/leaderboard, /api/stats/personal | 统计排行 |
+---
 
 ## 快速开始
 
-### HSD 启动
+### 方式一：一键安装（推荐 Windows 用户）
+
+```powershell
+# 1. 克隆或下载项目
+cd whenwhere
+
+# 2. 运行一键安装脚本
+setup.bat
+```
+
+### 方式二：手动安装
+
+#### 1. 安装 Node.js
+
+从 [Node.js 官网](https://nodejs.org/) 下载安装 LTS 版本。
+
+验证安装：
+```bash
+node --version  # v20.x
+npm --version   # 9.x
+```
+
+#### 2. 安装 HSD（维护系统）
 
 ```bash
-cd hsd && npm install && npm run init-db && npm start
+cd hsd
+npm install
+npm run init-db
 ```
-或双击 `start-hsd.bat`
-访问：http://localhost:3001
 
-### WW 启动
+#### 3. 安装 WW（游戏系统）
 
 ```bash
-cd ww && npm install && npm start
+cd ../ww
+npm install
+npm run init-db
 ```
-或双击 `start-ww.bat`
-访问：http://localhost:3002
 
-### 默认端口
-- HSD: **3001**
-- WW: **3002**
+#### 4. 启动服务
+
+**启动 HSD（端口 3001）：**
+```bash
+cd hsd
+npm start
+```
+
+**启动 WW（端口 3000）：**
+```bash
+cd ww
+npm start
+```
+
+#### 5. 访问应用
+
+- HSD 维护系统：`http://localhost:3001`
+- WW 游戏系统：`http://localhost:3000`
+
+---
+
+## 子项目说明
+
+### 🎮 WW (WhenWhere Game)
+
+**核心玩法**：
+1. 选择感兴趣的主题分类
+2. 根据图片线索在地图上点击猜测地点
+3. 输入事件发生的年份
+4. 30秒内提交答案，或时间到自动提交
+5. 系统根据距离误差和时间误差计算得分
+6. 查看结果、解锁成就、提升段位
+
+**游戏机制**：
+- **得分公式**：距离得分(0-50) + 时间得分(0-50) + 精准奖励(+10) + 耗时加成(1.0~1.5x)
+- **精准判定**：距离 ≤ 50km，时间 ≤ 1年
+- **段位提升**：累计精准位置数 + 精准时间数
+- **成就解锁**：完成特定挑战（如连续精准、累计次数等）
+
+### 🛠 HSD (History Spatio-temporal Data)
+
+**主要功能**：
+1. **数据管理**：分类、子分类、地图配置、事件的增删改查
+2. **可视化编辑**：地图上直接设置地点、绘制区域
+3. **数据导入导出**：支持 Excel 导入、JSON/ZIP 导出
+4. **AI 提取**：调用大语言模型自动提取时间地点
+5. **众包审核**：题目提交后需多人投票通过才会发布
+6. **操作日志**：完整的变更记录，支持审计
+
+---
 
 ## 技术栈
 
-| 层级 | 技术选型 |
-|------|----------|
-| 前端 | 原生 HTML + CSS + JavaScript（无框架） |
-| 地图 | Leaflet.js + OSM/高德瓦片 + 本地瓦片 |
-| 后端 | Node.js + Express |
-| 数据库 | SQLite (better-sqlite3) |
-| 文件上传 | Multer |
-| 样式 | 统一系统字体（system-ui, sans-serif） |
+### 前端技术栈
 
-## 环境要求
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| HTML5 | - | 页面结构 |
+| CSS3 | - | 样式设计 |
+| JavaScript (ES6+) | - | 交互逻辑 |
+| [Leaflet.js](https://leafletjs.com/) | 1.9.x | 地图渲染与交互 |
+| [FileSaver.js](https://github.com/eligrey/FileSaver.js) | 2.x | 文件下载 |
+| [JSZip](https://stuk.github.io/jszip/) | 3.x | ZIP 压缩 |
+| [SheetJS](https://sheetjs.com/) | 0.19.x | Excel 处理 |
+| [Tailwind CSS](https://tailwindcss.com/) | - | 样式框架（HSD） |
 
-- Node.js >= 16.0.0
-- npm >= 8.0.0
-- Windows 10/11 或任意支持 Node.js 的系统
+### 后端技术栈
 
-## 注意事项
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| [Node.js](https://nodejs.org/) | 20.x | 运行时环境 |
+| [Express.js](https://expressjs.com/) | 4.x | Web 框架 |
+| [SQLite](https://www.sqlite.org/) | 3.x | 嵌入式数据库 |
+| [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | 11.x | SQLite 高性能驱动 |
+| [crypto](https://nodejs.org/api/crypto.html) | - | 加密模块（Token、哈希） |
+| [multer](https://github.com/expressjs/multer) | 1.x | 文件上传处理 |
 
-1. 数据库和图片存储在 `ww/` 目录下，两应用共享
-2. 删除事件为软删除（is_active=0），图片为硬删除
-3. 地图一旦被子类绑定不可修改或删除，保证数据一致性
-4. 备份：复制 `ww/db/whenwhere.db` 和 `ww/static/images/`
-5. WW的Tab完全动态，新增子类有事件后无需改代码自动出现
+### 数据库设计
+
+**SQLite 数据库**：
+- HSD：`hsd/db/hsd.db`
+- WW：`ww/db/whenwhere.db`
+
+**核心特点**：
+- 零配置，无需单独安装数据库服务
+- 支持 WAL 模式，并发性能优异
+- 单文件数据库，备份迁移简单
+- 支持完整的 ACID 事务
+- 支持外键约束、索引优化
+
+---
+
+## 外部依赖
+
+### 前端外部库
+
+WW 项目使用以下第三方库，已包含在 `ww/static/lib/` 目录中：
+
+| 库 | 文件名 | 用途 |
+|----|--------|------|
+| Leaflet | `leaflet/leaflet.js`, `leaflet/leaflet.css` | 地图渲染 |
+| FileSaver | `FileSaver.min.js` | 文件保存 |
+| JSZip | `jszip.min.js` | ZIP 压缩 |
+
+### 地图瓦片服务
+
+游戏默认使用在线地图瓦片，也支持自定义瓦片：
+
+| 服务 | URL 模板 | 说明 |
+|------|----------|------|
+| OpenStreetMap | `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png` | 低缩放使用 |
+| 高德地图 | `https://webrd0{s}.is.autonavi.com/appmaptile?...` | 高缩放使用（中国境内推荐） |
+| 自定义瓦片 | `/tiles/{map_name}/{z}/{x}/{y}.{ext}` | 放置在 `ww/static/tiles/` 目录 |
+
+### LLM API (HSD AI 功能可选)
+
+HSD 支持使用大语言模型进行智能信息提取，需要配置：
+
+- **OpenAI 兼容 API**：任何兼容 OpenAI API 格式的服务
+- **配置文件**：`hsd/server/config.json`
+
+```json
+{
+  "llm": {
+    "apiKey": "your-api-key",
+    "baseURL": "https://api.openai.com/v1",
+    "model": "gpt-4o-mini"
+  }
+}
+```
+
+---
+
+## 文档索引
+
+### 项目总览（根目录）
+- [README.md](README.md) - 本文件，项目总览
+- [SETUP.md](SETUP.md) - 整体安装与配置指南
+- [FLOW.md](FLOW.md) - 整体业务流程说明
+- [LICENSE](LICENSE) - MIT 许可证
+
+### HSD 维护系统
+- [hsd/README.md](hsd/README.md) - HSD 功能与技术架构详解
+- [hsd/SETUP.md](hsd/SETUP.md) - HSD 安装与配置指南
+- [hsd/FLOW.md](hsd/FLOW.md) - HSD 业务流程说明
+
+### WW 游戏系统
+- [ww/README.md](ww/README.md) - WW 游戏玩法与技术架构详解
+- [ww/SETUP.md](ww/SETUP.md) - WW 安装与配置指南
+- [ww/FLOW.md](ww/FLOW.md) - WW 业务流程说明
+
+---
+
+## 许可证
+
+本项目采用 [MIT License](LICENSE) 开源许可证。
+
+```
+MIT License
+
+Copyright (c) 2026 WhenWhere Project
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## 快速导航
+
+| 操作 | 链接 |
+|------|------|
+| 🎮 开始游戏 | 启动 WW 服务 → `http://localhost:3000` |
+| 🛠 管理题目 | 启动 HSD 服务 → `http://localhost:3001` |
+| 📖 游戏玩法 | [ww/README.md](ww/README.md) |
+| 🔧 安装配置 | [SETUP.md](SETUP.md) |
+| 📊 业务流程 | [FLOW.md](FLOW.md) |
+
+---
+
+**Made with ❤️ by WhenWhere Team**

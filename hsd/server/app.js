@@ -23,6 +23,12 @@ app.use('/api/events', require('./routes/events'));
 app.use('/api/images', require('./routes/images'));
 app.use('/api/maps', require('./routes/maps'));
 app.use('/api/import', require('./routes/import'));
+app.use('/api/export', require('./routes/export'));
+app.use('/api/extract', require('./routes/extract'));
+app.use('/api/crowd/categories', require('./routes/crowd/categories'));
+app.use('/api/crowd/maps', require('./routes/crowd/maps'));
+app.use('/api/crowd/events', require('./routes/crowd/events'));
+app.use('/api/crowd/export', require('./routes/crowd/export'));
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'HSD服务运行正常', timestamp: new Date().toISOString() });
