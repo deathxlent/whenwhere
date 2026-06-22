@@ -11,6 +11,10 @@ function cleanupGame() {
     appState.bgMap.remove();
     appState.bgMap = null;
   }
+  if (appState.answersMap) {
+    appState.answersMap.remove();
+    appState.answersMap = null;
+  }
   appState.mapClickMarker = null;
   appState.admin1Labels = [];
   appState.provinceLayer = null;
@@ -258,6 +262,7 @@ function renderFavoritesList(items) {
         ${item.description ? `<div class="fav-description">${escapeHtml(item.description)}</div>` : ''}
       </div>
       <div class="fav-actions">
+        <button class="btn btn-default fav-view-btn" data-event-id="${item.id}" title="查看大家怎么答">👥 查看答题</button>
         <button class="btn btn-danger fav-unfav-btn" data-event-id="${item.id}" title="取消收藏">★ 已收藏</button>
       </div>
     </div>
@@ -274,6 +279,13 @@ function renderFavoritesList(items) {
         const keyword = document.getElementById('fav-search-input').value.trim();
         loadFavorites(keyword);
       }
+    });
+  });
+
+  listEl.querySelectorAll('.fav-view-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const eventId = e.currentTarget.dataset.eventId;
+      renderAnswersPage(eventId);
     });
   });
 }

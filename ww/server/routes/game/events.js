@@ -180,6 +180,26 @@ function submitAnswer(user_id, event_id, guess_lat, guess_lng, guess_year, guess
   const newlyUnlockedAchievements = updateAchievements(user_id, preciseLocation, preciseTime, event.location_only);
   updateUserRank(user_id);
 
+  db.prepare(`
+    INSERT INTO game_answers
+      (user_id, event_id, guess_lat, guess_lng, guess_year, guess_month, guess_day,
+       distance_km, time_diff_years, precise_location, precise_time, timed_out, elapsed_seconds)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    user_id, event_id,
+    guess_lat != null ? parseFloat(guess_lat) : null,
+    guess_lng != null ? parseFloat(guess_lng) : null,
+    guess_year != null ? parseInt(guess_year) : null,
+    guess_month != null ? parseInt(guess_month) : null,
+    guess_day != null ? parseInt(guess_day) : null,
+    rawDistanceKm != null ? Math.round(rawDistanceKm * distanceScale) : null,
+    timeDiffYears,
+    preciseLocation ? 1 : 0,
+    preciseTime ? 1 : 0,
+    timed_out ? 1 : 0,
+    elapsed_seconds || 0
+  );
+
   return {
     distance_km: distanceKm,
     time_diff_years: timeDiffYears,

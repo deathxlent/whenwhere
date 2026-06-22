@@ -5,6 +5,7 @@ const { getRandomEvent, submitAnswer } = require('./game/events');
 const { getUserStats, getLeaderboard } = require('./game/stats');
 const { submitVote, getVoteStats } = require('./game/votes');
 const { toggleFavorite, getFavorites, checkFavorite } = require('./game/favorites');
+const { getEventAnswers } = require('./game/answers');
 
 router.get('/random-event', (req, res) => {
   try {
@@ -84,6 +85,15 @@ router.get('/favorite/check/:eventId', (req, res) => {
 router.get('/leaderboard', (req, res) => {
   try {
     const data = getLeaderboard(req.query.period);
+    res.json({ success: true, data });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+router.get('/event/:eventId/answers', (req, res) => {
+  try {
+    const data = getEventAnswers(req.params.eventId, req.query.user_id);
     res.json({ success: true, data });
   } catch (e) {
     res.json({ success: false, message: e.message });
