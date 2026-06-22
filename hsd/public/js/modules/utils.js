@@ -14,20 +14,21 @@ HSD.utils = {
   },
 
   tsToYearMonthDay(ts) {
-    if (ts === null || ts === undefined) return null;
-    const isBce = ts < 0;
-    const abs = Math.abs(ts);
-    const year = Math.floor(abs / 10000);
-    const month = Math.floor((abs % 10000) / 100);
-    const day = abs % 100;
-    return { year: isBce ? -year : year, month, day, isBce };
+    if (ts === null || ts === undefined) return { year: '', month: '', day: '', isBce: false };
+    const sign = ts < 0 ? -1 : 1;
+    const absTs = Math.abs(ts);
+    const day = absTs % 100;
+    const rest = Math.floor(absTs / 100);
+    const month = rest % 100;
+    const year = Math.floor(rest / 100) * sign;
+    return { year: Math.abs(year).toString(), month: month.toString(), day: day.toString(), isBce: year < 0 };
   },
 
   formatTs(ts) {
     const p = HSD.utils.tsToYearMonthDay(ts);
-    if (!p) return '';
-    if (p.year < 0) {
-      return `${-p.year}BC${p.month > 0 ? '-' + p.month + (p.day > 0 ? '-' + p.day : '') : ''}`;
+    if (!p || !p.year) return '';
+    if (p.isBce) {
+      return `${p.year}BC${parseInt(p.month) > 0 ? '-' + p.month + (parseInt(p.day) > 0 ? '-' + p.day : '') : ''}`;
     }
     return `${p.year}-${p.month}-${p.day}`;
   },

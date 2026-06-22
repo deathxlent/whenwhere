@@ -2,6 +2,10 @@ window.HSD = window.HSD || {};
 
 HSD.homeView = {
   async render(container) {
+    const breadcrumb = document.getElementById('breadcrumb-text');
+    if (breadcrumb) breadcrumb.textContent = '首页';
+    HSD.mapCore.restoreLayout();
+
     const res = await API.get('/categories');
     if (res.success) HSD.state.categories = res.data;
 

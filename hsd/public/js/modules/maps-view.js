@@ -3,6 +3,8 @@ window.HSD = window.HSD || {};
 HSD.mapsView = {
   async render(container) {
     if (!container) container = document.getElementById('main-view');
+    const breadcrumb = document.getElementById('breadcrumb-text');
+    if (breadcrumb) breadcrumb.textContent = '地图管理';
     HSD.mapCore.restoreLayout();
 
     const res = await API.get('/maps');

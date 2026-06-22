@@ -3,6 +3,8 @@ window.HSD = window.HSD || {};
 HSD.importView = {
   render(container) {
     if (!container) container = document.getElementById('main-view');
+    const breadcrumb = document.getElementById('breadcrumb-text');
+    if (breadcrumb) breadcrumb.textContent = '数据导入';
     HSD.mapCore.restoreLayout();
 
     container.innerHTML = `

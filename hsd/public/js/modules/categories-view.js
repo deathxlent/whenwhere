@@ -20,6 +20,9 @@ HSD.categoriesView = {
 
   async render(container, selectedCategoryId = null) {
     if (!container) container = document.getElementById('main-view');
+    const breadcrumb = document.getElementById('breadcrumb-text');
+    if (breadcrumb) breadcrumb.textContent = '类别管理';
+    HSD.mapCore.restoreLayout();
 
     const [catRes, mapRes] = await Promise.all([
       API.get('/categories'),
