@@ -1028,7 +1028,17 @@ async function renderMapView() {
               <textarea class="form-control" id="f-tips" placeholder="小贴士（猜图时显示，非必填）" rows="2"></textarea>
             </div>
             <div class="form-group">
-              <label class="form-label required">图片（至少1张）</label>
+              <label class="form-label">视频URL</label>
+              <input type="text" class="form-control" id="f-video-url" placeholder="支持优酷、bilibili链接">
+              <div class="form-hint">仅支持 youku.com / bilibili.com / b23.tv 链接</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">音频URL</label>
+              <input type="text" class="form-control" id="f-audio-url" placeholder="支持QQ音乐、网易云音乐或.mp3链接">
+              <div class="form-hint">支持 y.qq.com / music.163.com / .mp3 结尾的链接</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">图片</label>
               <div class="image-add-tabs">
                 <button type="button" class="image-add-tab active" data-tab="upload">📤 上传图片</button>
                 <button type="button" class="image-add-tab" data-tab="url">🔗 添加URL</button>
@@ -1951,8 +1961,13 @@ async function submitEvent() {
 
   const fTips = document.getElementById('f-tips');
   const tipsVal = fTips ? fTips.value.trim() : '';
-  if (state.pendingImages.length === 0 && !tipsVal) {
-    toast('图片（上传或URL）、提示(tips) 三者至少需要至少填写一项', 'error');
+  const fVideoUrl = document.getElementById('f-video-url');
+  const videoUrlVal = fVideoUrl ? fVideoUrl.value.trim() : '';
+  const fAudioUrl = document.getElementById('f-audio-url');
+  const audioUrlVal = fAudioUrl ? fAudioUrl.value.trim() : '';
+
+  if (state.pendingImages.length === 0 && !tipsVal && !videoUrlVal && !audioUrlVal) {
+    toast('图片（上传或URL）、提示(tips)、视频URL、音频URL 至少需要填写一项', 'error');
     return;
   }
 
@@ -2007,7 +2022,9 @@ async function submitEvent() {
       location_name: document.getElementById('f-locname').value.trim() || null,
       location_lat2: lat2Text !== '-' ? parseFloat(lat2Text) : null,
       location_lng2: lng2Text !== '-' ? parseFloat(lng2Text) : null,
-      location_only: locationOnly ? 1 : 0
+      location_only: locationOnly ? 1 : 0,
+      video_url: videoUrlVal || null,
+      audio_url: audioUrlVal || null
     };
 
     const res = await API.post('/events', eventData);
