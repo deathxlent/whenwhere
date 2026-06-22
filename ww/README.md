@@ -1011,6 +1011,116 @@ A: Token 是自动生成的，如果丢失，可以重新注册一个同名用�
 
 ---
 
+## 📱 Android 单机版 (APK)
+
+项目同时支持打包为 Android 单机应用，无需服务器即可在手机上游玩。
+
+### 技术方案
+
+采用 **Capacitor + sql.js** 架构：
+- **Capacitor**：将 Web 应用包装为原生 Android 应用
+- **sql.js**：在浏览器/WebView 中运行 SQLite，替换后端的 better-sqlite3
+- **Web Crypto API**：替换 Node.js crypto 模块，实现前端 token 加密解密
+
+### 目录结构
+
+```
+ww-apk/                          # APK 打包目录（独立于 ww，互不影响）
+├── scripts/
+│   └── build-apk.js            # 构建脚本：同步代码+注入适配层
+├── mobile/                      # 移动端适配层
+│   ├── db-driver.js            # sql.js 驱动，模拟 better-sqlite3 API
+│   ├── auth-crypto.js          # Web Crypto API 认证模块
+│   ├── business-logic.js       # 业务逻辑（从后端路由移植）
+│   └── api-adapter.js          # API 适配层（替换 fetch 为本地调用）
+├── www/                         # 构建输出目录（构建时自动生成）
+├── android/                     # Capacitor Android 项目（首次 init 后生成）
+├── package.json
+└── capacitor.config.json
+```
+
+### 工作原理
+
+1. **构建脚本 `build-apk.js`**：
+   - 从 `ww/public` 复制前端代码到 `ww-apk/www`
+   - 从 `ww/static` 复制静态资源（瓦片、图片、GeoJSON）
+   - 从 `ww/db` 复制 SQLite 数据库
+   - 注入移动端适配脚本到 `index.html`
+   - 替换 `utils.js` 中的 `API` 对象为本地适配层
+
+2. **API 适配层**：
+   - 原前端代码调用 `API.get('/api/xxx')` 无任何改动
+   - 在移动端，`API` 对象被替换为 `MobileAPI`
+   - `MobileAPI` 直接调用本地数据库函数，不再发起网络请求
+
+3. **数据库**：
+   - 首次启动时从 `/whenwhere.db` 加载预置数据
+   - 后续数据保存在浏览器 localStorage（Base64 编码）
+   - 支持完整的 SQL 查询，与后端行为一致
+
+### 构建 APK 步骤
+
+#### 前置要求
+- **JDK 17+**：已安装并配置 `JAVA_HOME`
+- **Android SDK**：已安装并配置 `ANDROID_HOME`
+- **Node.js 18+**
+
+#### 完整构建流程
+
+```powershell
+# 1. 进入 APK 目录
+cd ww-apk
+
+# 2. 安装依赖
+npm install
+
+# 3. 执行构建脚本（同步前端代码 + 注入适配层）
+npm run build
+
+# 4. 初始化 Capacitor（首次执行）
+npx cap add android
+
+# 5. 同步到 Android 项目
+npx cap sync android
+
+# 6. 打开 Android Studio 打包
+npx cap open android
+
+# 7. 在 Android Studio 中
+#    - 等待 Gradle 同步完成
+#    - Build -> Build Bundle(s) / APK(s) -> Build APK(s)
+#    - 生成的 APK 在：android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+#### 快捷命令
+
+```powershell
+# 一键构建（不含 Android Studio 步骤）
+npm run full
+
+# 仅重新同步前端代码
+npm run build
+npx cap sync android
+```
+
+### 开发与更新流程
+
+日常开发仍在 `ww/` 目录进行，APK 构建时自动同步：
+
+```
+ww/ 开发 → 功能完成 → 执行 build-apk.js → ww-apk/www/ → Capacitor 打包 APK
+```
+
+### 注意事项
+
+1. **ww 功能不受影响**：所有改动仅在 `ww-apk/` 目录，`ww/` 目录完全独立
+2. **数据库同步**：每次构建会重新复制 `ww/db/whenwhere.db`，确保 APK 数据最新
+3. **离线瓦片**：APK 内置所有静态资源，无需网络即可游玩（在线地图瓦片除外）
+4. **首次加载**：首次启动需解压 sql.js WASM 文件，可能需要几秒
+5. **存储限制**：浏览器 localStorage 通常限制为 5-10MB，大量答题数据可能需要清理
+
+---
+
 ## 🔗 相关项目
 
 - **[HSD 维护系统](../hsd/README.md)** — WhenWhere 的配套数据管理工具，支持题目编辑、数据导入导出、AI 智能提取、众筹出题等功能。

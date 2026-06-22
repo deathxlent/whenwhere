@@ -41,32 +41,38 @@ function renderLoginPage() {
     loginBtn.disabled = true;
     loginBtn.textContent = '处理中...';
 
-    if (!token) {
-      const res = await API.post('/auth/register', { username });
-      if (res.success) {
-        setCookie(COOKIE_NAME, res.data.encrypted, COOKIE_EXPIRY);
-        showTokenDialog(res.data.token, res.data.username, res.data.id);
-      } else if (res.needToken) {
-        tokenArea.style.display = 'block';
-        loginBtn.disabled = false;
-        loginBtn.textContent = '登录';
-        if (tokenInput) tokenInput.focus();
+    try {
+      if (!token) {
+        const res = await API.post('/auth/register', { username });
+        if (res.success) {
+          setCookie(COOKIE_NAME, res.data.encrypted, COOKIE_EXPIRY);
+          showTokenDialog(res.data.token, res.data.username, res.data.id);
+        } else if (res.needToken) {
+          tokenArea.style.display = 'block';
+          loginBtn.disabled = false;
+          loginBtn.textContent = '登录';
+          if (tokenInput) tokenInput.focus();
+        } else {
+          alert(res.message);
+          loginBtn.disabled = false;
+          loginBtn.textContent = '进入';
+        }
       } else {
-        alert(res.message);
-        loginBtn.disabled = false;
-        loginBtn.textContent = '进入';
+        const res = await API.post('/auth/login', { username, token });
+        if (res.success) {
+          setCookie(COOKIE_NAME, res.data.encrypted, COOKIE_EXPIRY);
+          appState.user = { id: res.data.id, username: res.data.username };
+          renderMainPage();
+        } else {
+          alert(res.message);
+          loginBtn.disabled = false;
+          loginBtn.textContent = '登录';
+        }
       }
-    } else {
-      const res = await API.post('/auth/login', { username, token });
-      if (res.success) {
-        setCookie(COOKIE_NAME, res.data.encrypted, COOKIE_EXPIRY);
-        appState.user = { id: res.data.id, username: res.data.username };
-        renderMainPage();
-      } else {
-        alert(res.message);
-        loginBtn.disabled = false;
-        loginBtn.textContent = '登录';
-      }
+    } catch (e) {
+      alert('操作失败: ' + e.message);
+      loginBtn.disabled = false;
+      loginBtn.textContent = token ? '登录' : '进入';
     }
   });
 }

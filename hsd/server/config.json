@@ -1,0 +1,16 @@
+{
+  "server": {
+    "port": 3001
+  },
+  "llm": {
+    "apiKey": "your-api-key-here",
+    "baseURL": "https://api.openai.com/v1",
+    "model": "gpt-4o-mini",
+    "maxTokens": 1000,
+    "temperature": 0.3
+  },
+  "paths": {
+    "images": "static/images/",
+    "exports": "static/exports/"
+  }
+}

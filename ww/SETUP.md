@@ -429,3 +429,222 @@ SQLite 是文件型数据库，确保：
 - 检查浏览器是否禁用了 localStorage
 - 检查 Token 是否已过期或失效
 - 尝试清除浏览器缓存后重新登录
+
+---
+
+## 📱 Android APK 构建指南
+
+### 前置环境准备
+
+#### 1. 安装 JDK 17
+
+APK 构建需要 JDK 17 或更高版本：
+
+**Windows:**
+1. 下载 [Oracle JDK 17](https://www.oracle.com/java/technologies/downloads/#java17) 或 [OpenJDK 17](https://adoptium.net/)
+2. 运行安装程序，默认安装到 `C:\Program Files\Java\jdk-17`
+3. 配置环境变量：
+   ```powershell
+   # 系统属性 -> 环境变量 -> 系统变量
+   # 新建 JAVA_HOME = C:\Program Files\Java\jdk-17
+   # 编辑 Path，添加 %JAVA_HOME%\bin
+   
+   # 验证
+   java -version
+   # 应显示 java version "17.x.x"
+   ```
+
+#### 2. 安装 Android SDK
+
+**方式 A：安装 Android Studio（推荐）**
+1. 下载 [Android Studio](https://developer.android.com/studio)
+2. 运行安装程序，选择默认配置
+3. 首次启动时选择 "Custom" 安装，确保勾选：
+   - Android SDK
+   - Android SDK Platform
+   - Android Virtual Device
+4. 安装完成后，在欢迎界面点击 "More Actions" -> "SDK Manager"
+5. 安装 Android 13.0 (Tiramisu) 或更高版本的 SDK Platform
+6. 在 "SDK Tools" 中安装：
+   - Android SDK Build-Tools 34.0.0+
+   - Android SDK Platform-Tools
+   - Android SDK Tools
+
+**方式 B：仅安装命令行工具**
+1. 下载 [Android Command Line Tools](https://developer.android.com/studio#command-tools)
+2. 解压到 `C:\Android\cmdline-tools\latest\`
+3. 配置环境变量：
+   ```powershell
+   ANDROID_HOME = C:\Android
+   Path 添加: %ANDROID_HOME%\platform-tools; %ANDROID_HOME%\cmdline-tools\latest\bin
+   
+   # 验证
+   sdkmanager --version
+   adb version
+   ```
+4. 安装 SDK 组件：
+   ```powershell
+   sdkmanager "platform-tools" "platforms;android-33" "build-tools;34.0.0"
+   ```
+
+#### 3. 验证环境
+
+打开新的 PowerShell 窗口，执行：
+```powershell
+echo "JAVA_HOME: $env:JAVA_HOME"
+echo "ANDROID_HOME: $env:ANDROID_HOME"
+java -version
+```
+
+### Gradle 下载与配置
+
+APK 构建需要 Gradle 8.2.1。首次构建时会自动下载，但如遇网络问题可手动处理：
+
+#### 常见问题：SSL 证书错误
+
+如果遇到 `PKIX path building failed` 错误，说明系统无法验证 Gradle 下载服务器的证书。
+
+**解决方案：**
+
+1. **使用系统 CA 证书（推荐）**：
+   ```powershell
+   # 以管理员身份运行 PowerShell
+   Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client" -Name "DisabledByDefault" -Value 0
+   Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client" -Name "Enabled" -Value 1
+   ```
+
+2. **手动下载 Gradle**：
+   - 访问 https://services.gradle.org/distributions/
+   - 下载 `gradle-8.2.1-all.zip`
+   - 放到目录：`%USERPROFILE%\.gradle\wrapper\dists\gradle-8.2.1-all\d8pvvlun5bx6sdtwqhf8y9z4b\`
+   - 删除同目录下的 `.lck` 和 `.part` 文件
+
+3. **配置 Gradle 镜像**：
+   在 `ww-apk/android/gradle.properties` 中添加：
+   ```properties
+   systemProp.http.proxyHost=127.0.0.1
+   systemProp.http.proxyPort=7890
+   systemProp.https.proxyHost=127.0.0.1
+   systemProp.https.proxyPort=7890
+   ```
+
+### 首次构建完整流程
+
+```powershell
+# 1. 进入 APK 目录
+cd c:\ws\whenwhere\ww-apk
+
+# 2. 安装依赖
+npm install
+
+# 3. 执行构建脚本（同步前端代码和数据库）
+node scripts/build-apk.js
+
+# 4. 初始化 Capacitor Android 项目（仅首次）
+npx cap add android
+
+# 5. 同步到 Android 项目
+npx cap sync android
+
+# 6. 打开 Android Studio
+npx cap open android
+```
+
+在 Android Studio 中：
+1. 等待 Gradle 同步完成（首次可能需要 5-10 分钟下载依赖）
+2. 菜单栏选择 **Build** → **Build Bundle(s) / APK(s)** → **Build APK(s)**
+3. 构建完成后点击右下角的 **locate** 链接
+4. APK 文件位置：`ww-apk/android/app/build/outputs/apk/debug/app-debug.apk`
+
+### 日常更新流程
+
+在 `ww/` 目录开发完成后，更新 APK 只需：
+
+```powershell
+cd ww-apk
+npm run build          # 同步最新代码和数据
+npx cap sync android   # 同步到 Android 项目
+npx cap open android   # 在 Android Studio 中重新构建
+```
+
+### 构建 Release 版 APK
+
+Debug 版 APK 可直接安装，但如需发布：
+
+1. 生成签名密钥：
+   ```powershell
+   keytool -genkey -v -keystore whenwhere.keystore -alias whenwhere -keyalg RSA -keysize 2048 -validity 10000
+   ```
+
+2. 在 `ww-apk/android/app/build.gradle` 中配置签名：
+   ```groovy
+   android {
+       signingConfigs {
+           release {
+               storeFile file("whenwhere.keystore")
+               storePassword "your_password"
+               keyAlias "whenwhere"
+               keyPassword "your_password"
+           }
+       }
+       buildTypes {
+           release {
+               signingConfig signingConfigs.release
+               minifyEnabled true
+               proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+           }
+       }
+   }
+   ```
+
+3. 构建 Release APK：
+   ```powershell
+   cd ww-apk/android
+   .\gradlew.bat assembleRelease
+   ```
+
+4. APK 位置：`ww-apk/android/app/build/outputs/apk/release/app-release.apk`
+
+### 安装 APK 到手机
+
+**方式 A：通过 USB**
+1. 手机开启「开发者选项」和「USB 调试」
+2. 连接电脑，选择「传输文件」模式
+3. 运行：
+   ```powershell
+   adb install app-debug.apk
+   ```
+
+**方式 B：直接传输**
+1. 将 APK 复制到手机存储
+2. 在手机文件管理器中点击 APK 文件安装
+3. 允许「未知来源应用」安装
+
+### 常见构建问题
+
+#### Q: Gradle 同步一直卡在下载
+
+A: 检查网络连接，或手动下载 Gradle 放到缓存目录（见上文）。
+
+#### Q: 构建时报错 `SDK location not found`
+
+A: 确保 `ANDROID_HOME` 环境变量已正确设置，或在 `ww-apk/android/local.properties` 中添加：
+```properties
+sdk.dir=C:\\Users\\YourName\\AppData\\Local\\Android\\Sdk
+```
+
+#### Q: 安装 APK 时提示「解析包错误」
+
+A: 可能是 APK 构建不完整，重新构建；或手机 Android 版本过低（需 Android 7.0+）。
+
+#### Q: APK 启动后白屏
+
+A: 检查浏览器控制台（通过 Chrome 远程调试 `chrome://inspect`），通常是资源路径错误或 JavaScript 异常。
+
+#### Q: 数据库不加载
+
+A: 确保 `ww/db/whenwhere.db` 存在，且构建脚本执行时成功复制到了 `ww-apk/www/` 目录。
+
+---
+
+## 🔗 相关文档

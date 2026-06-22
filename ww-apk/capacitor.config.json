@@ -1,0 +1,11 @@
+{
+  "appId": "com.whenwhere.app",
+  "appName": "何时何地",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

@@ -1,114 +1,103 @@
-@echo off
+﻿﻿@echo off
 setlocal enabledelayedexpansion
+chcp 65001 >nul
 
 echo ========================================
-echo   WhenWhere 一键安装脚本 (Windows)
+echo   WhenWhere Setup Script (Windows)
 echo ========================================
 echo.
 
-REM 检查 Node.js
-echo [1/6] 检查 Node.js 环境...
+echo [1/6] Checking Node.js...
 where node >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [错误] 未检测到 Node.js，请先安装 Node.js 20.x 或更高版本
-    echo 下载地址: https://nodejs.org/
+    echo [ERROR] Node.js not found. Please install Node.js 20+
+    echo Download: https://nodejs.org/
     pause
     exit /b 1
 )
-
 for /f "delims=" %%i in ('node --version') do set NODE_VERSION=%%i
-echo Node.js 版本: %NODE_VERSION%
+echo Node.js: %NODE_VERSION%
 
-REM 检查 npm
-echo [2/6] 检查 npm...
+echo [2/6] Checking npm...
 where npm >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [错误] 未检测到 npm，请重新安装 Node.js
+    echo [ERROR] npm not found. Please reinstall Node.js.
     pause
     exit /b 1
 )
-
 for /f "delims=" %%i in ('npm --version') do set NPM_VERSION=%%i
-echo npm 版本: %NPM_VERSION%
+echo npm: %NPM_VERSION%
 echo.
 
-REM 安装 HSD 依赖
-echo [3/6] 安装 HSD 依赖...
+echo [3/6] Installing HSD dependencies...
 cd hsd
 if exist node_modules (
-    echo 检测到已存在 node_modules，跳过安装
+    echo node_modules exists, skipped.
 ) else (
     call npm install
     if %errorlevel% neq 0 (
-        echo [错误] HSD 依赖安装失败
+        echo [ERROR] HSD dependencies install failed
         cd ..
         pause
         exit /b 1
     )
-    echo HSD 依赖安装完成
+    echo HSD dependencies installed.
 )
 
-REM 初始化 HSD 数据库
-echo [4/6] 初始化 HSD 数据库...
+echo [4/6] Initializing HSD database...
 if exist db\hsd.db (
-    echo 检测到已存在数据库，跳过初始化
+    echo Database exists, skipped.
 ) else (
     if not exist db mkdir db
     call npm run init-db
     if %errorlevel% neq 0 (
-        echo [警告] HSD 数据库初始化失败，请手动执行 npm run init-db
+        echo [WARN] HSD db init may have issues.
     ) else (
-        echo HSD 数据库初始化完成
+        echo HSD database initialized.
     )
 )
-
 cd ..
 
-REM 安装 WW 依赖
-echo [5/6] 安装 WW 依赖...
+echo [5/6] Installing WW dependencies...
 cd ww
 if exist node_modules (
-    echo 检测到已存在 node_modules，跳过安装
+    echo node_modules exists, skipped.
 ) else (
     call npm install
     if %errorlevel% neq 0 (
-        echo [错误] WW 依赖安装失败
+        echo [ERROR] WW dependencies install failed
         cd ..
         pause
         exit /b 1
     )
-    echo WW 依赖安装完成
+    echo WW dependencies installed.
 )
 
-REM 初始化 WW 数据库
-echo [6/6] 初始化 WW 数据库...
+echo [6/6] Initializing WW database...
 if exist db\whenwhere.db (
-    echo 检测到已存在数据库，跳过初始化
+    echo Database exists, skipped.
 ) else (
     if not exist db mkdir db
     call npm run init-db
     if %errorlevel% neq 0 (
-        echo [警告] WW 数据库初始化失败，请手动执行 npm run init-db
+        echo [WARN] WW db init may have issues.
     ) else (
-        echo WW 数据库初始化完成
+        echo WW database initialized.
     )
 )
-
 cd ..
 
-REM 创建必要目录
 echo.
-echo 创建必要目录...
+echo Creating directories...
 if not exist hsd\static\images mkdir hsd\static\images
 if not exist hsd\static\exports mkdir hsd\static\exports
 if not exist ww\static\images mkdir ww\static\images
 if not exist ww\static\tiles mkdir ww\static\tiles
 if not exist ww\static\geojson mkdir ww\static\geojson
 
-REM 检查 HSD 配置文件
 if not exist hsd\server\config.json (
     echo.
-    echo 创建 HSD 配置文件模板...
+    echo Creating HSD config template...
     (
         echo {
         echo   "server": {
@@ -127,17 +116,17 @@ if not exist hsd\server\config.json (
         echo   }
         echo }
     ) > hsd\server\config.json
-    echo 请编辑 hsd\server\config.json 配置 LLM API（可选）
+    echo Edit hsd\server\config.json to configure LLM API (optional)
 )
 
 echo.
 echo ========================================
-echo   安装完成！
+echo   Setup complete!
 echo ========================================
 echo.
-echo HSD 维护系统: http://localhost:3001
-echo WW 游戏系统:   http://localhost:3000
+echo HSD Admin:    http://localhost:3001
+echo WW Game:      http://localhost:3000
 echo.
-echo 启动服务请运行: start.bat
+echo Run start.bat to start services.
 echo.
 pause

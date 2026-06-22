@@ -1,0 +1,22 @@
+{
+  "name": "ww-apk",
+  "version": "1.0.0",
+  "description": "何时何地 Android APK",
+  "main": "index.js",
+  "scripts": {
+    "build": "node scripts/build-apk.js",
+    "cap:init": "npx cap init ww-apk com.whenwhere.app --web-dir www",
+    "cap:add": "npx cap add android",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "apk:debug": "npx cap sync android && npx cap open android",
+    "full": "node scripts/build-apk.js && npx cap sync android && npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}
