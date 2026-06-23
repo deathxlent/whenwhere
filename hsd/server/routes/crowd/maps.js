@@ -109,7 +109,15 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   try {
-    db.prepare('UPDATE maps SET is_active = 0 WHERE id = ?').run(req.params.id);
+    const map = db.prepare('SELECT id FROM maps WHERE id = ?').get(req.params.id);
+    if (!map) {
+      return res.json({ success: false, message: '地图不存在' });
+    }
+    const subCount = db.prepare('SELECT COUNT(*) as cnt FROM sub_categories WHERE map_id = ?').get(req.params.id).cnt;
+    if (subCount > 0) {
+      return res.json({ success: false, message: '该地图下存在子分类，无法删除' });
+    }
+    db.prepare('DELETE FROM maps WHERE id = ?').run(req.params.id);
     res.json({ success: true, message: '已删除' });
   } catch (e) {
     res.json({ success: false, message: e.message });

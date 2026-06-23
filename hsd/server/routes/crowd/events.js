@@ -221,7 +221,11 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   try {
-    db.prepare('UPDATE events SET is_active = 0 WHERE id = ?').run(req.params.id);
+    const event = db.prepare('SELECT id FROM events WHERE id = ?').get(req.params.id);
+    if (!event) {
+      return res.json({ success: false, message: '事件不存在' });
+    }
+    db.prepare('DELETE FROM events WHERE id = ?').run(req.params.id);
     res.json({ success: true, message: '已删除' });
   } catch (e) {
     res.json({ success: false, message: e.message });

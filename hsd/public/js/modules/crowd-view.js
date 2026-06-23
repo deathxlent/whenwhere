@@ -804,7 +804,7 @@ HSD.crowdView = {
           toast('删除成功', 'success');
           this.loadEventList();
         } else {
-          toast('删除失败', 'error');
+          toast('删除失败: ' + (r.message || '未知错误'), 'error');
         }
       });
     });

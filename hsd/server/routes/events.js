@@ -109,46 +109,60 @@ router.post('/', (req, res) => {
     return res.json({ success: false, message: '缺少必填参数' });
   }
 
-  const hasTips = !!(tips && tips.trim());
-  const hasImageUrls = !!(image_urls && Array.isArray(image_urls) && image_urls.length > 0);
-  const hasVideoUrl = !!(video_url && video_url.trim());
-  const hasAudioUrl = !!(audio_url && audio_url.trim());
+  try {
+    const cat = db.prepare('SELECT id FROM categories WHERE id = ?').get(category_id);
+    if (!cat) {
+      return res.json({ success: false, message: '分类不存在，请刷新页面后重试' });
+    }
+    const sub = db.prepare('SELECT id FROM sub_categories WHERE id = ? AND category_id = ?').get(sub_category_id, category_id);
+    if (!sub) {
+      return res.json({ success: false, message: '子分类不存在，请刷新页面后重试' });
+    }
 
-  if (!hasTips && !hasImageUrls && !hasVideoUrl && !hasAudioUrl) {
-    return res.json({ success: false, message: '提示(tips)、图片URL、上传图片、视频URL、音频URL 至少需要填写一项' });
+    const hasTips = !!(tips && tips.trim());
+    const hasImageUrls = !!(image_urls && Array.isArray(image_urls) && image_urls.length > 0);
+    const hasVideoUrl = !!(video_url && video_url.trim());
+    const hasAudioUrl = !!(audio_url && audio_url.trim());
+
+    if (!hasTips && !hasImageUrls && !hasVideoUrl && !hasAudioUrl) {
+      return res.json({ success: false, message: '提示(tips)、图片URL、上传图片、视频URL、音频URL 至少需要填写一项' });
+    }
+
+    if (hasVideoUrl && !isValidVideoUrl(video_url.trim())) {
+      return res.json({ success: false, message: '视频URL格式不正确，仅支持优酷和bilibili链接' });
+    }
+
+    if (hasAudioUrl && !isValidAudioUrl(audio_url.trim())) {
+      return res.json({ success: false, message: '音频URL格式不正确，仅支持QQ音乐、网易云音乐或.mp3结尾的链接' });
+    }
+
+    const result = db.prepare(`
+      INSERT INTO events (category_id, sub_category_id, title,
+        start_ts, start_precision, end_ts, end_precision,
+        description, tips, location_lat, location_lng, location_name, sort_order,
+        location_lat2, location_lng2, location_only, video_url, audio_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      category_id, sub_category_id, title,
+      start_ts || null, start_precision !== undefined ? start_precision : 0,
+      end_ts || null, end_precision !== undefined ? end_precision : 0,
+      description || null, tips || null,
+      location_lat || null, location_lng || null,
+      location_name || null, sort_order || 0,
+      location_lat2 || null, location_lng2 || null,
+      location_only ? 1 : 0,
+      video_url ? video_url.trim() : null,
+      audio_url ? audio_url.trim() : null
+    );
+
+    const event = db.prepare('SELECT * FROM events WHERE id = ?').get(result.lastInsertRowid);
+    event.start_display = tsToDisplay(event.start_ts, event.start_precision);
+    event.end_display = tsToDisplay(event.end_ts, event.end_precision);
+    res.json({ success: true, data: event, message: '添加成功' });
+  } catch (e) {
+    console.error('添加事件失败:', e);
+    res.json({ success: false, message: e.message });
   }
-
-  if (hasVideoUrl && !isValidVideoUrl(video_url.trim())) {
-    return res.json({ success: false, message: '视频URL格式不正确，仅支持优酷和bilibili链接' });
-  }
-
-  if (hasAudioUrl && !isValidAudioUrl(audio_url.trim())) {
-    return res.json({ success: false, message: '音频URL格式不正确，仅支持QQ音乐、网易云音乐或.mp3结尾的链接' });
-  }
-
-  const result = db.prepare(`
-    INSERT INTO events (category_id, sub_category_id, title,
-      start_ts, start_precision, end_ts, end_precision,
-      description, tips, location_lat, location_lng, location_name, sort_order,
-      location_lat2, location_lng2, location_only, video_url, audio_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    category_id, sub_category_id, title,
-    start_ts || null, start_precision !== undefined ? start_precision : 0,
-    end_ts || null, end_precision !== undefined ? end_precision : 0,
-    description || null, tips || null,
-    location_lat || null, location_lng || null,
-    location_name || null, sort_order || 0,
-    location_lat2 || null, location_lng2 || null,
-    location_only ? 1 : 0,
-    video_url ? video_url.trim() : null,
-    audio_url ? audio_url.trim() : null
-  );
-
-  const event = db.prepare('SELECT * FROM events WHERE id = ?').get(result.lastInsertRowid);
-  event.start_display = tsToDisplay(event.start_ts, event.start_precision);
-  event.end_display = tsToDisplay(event.end_ts, event.end_precision);
-  res.json({ success: true, data: event, message: '添加成功' });
 });
 
 router.put('/:id', (req, res) => {
@@ -229,42 +243,51 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
 
-  const event = db.prepare(`
-    SELECT e.*, c.code as category_code, sc.code as sub_category_code
-    FROM events e
-    JOIN categories c ON e.category_id = c.id
-    JOIN sub_categories sc ON e.sub_category_id = sc.id
-    WHERE e.id = ?
-  `).get(id);
-
-  if (!event) {
-    return res.json({ success: false, message: '事件不存在' });
-  }
-
-  const images = db.prepare('SELECT * FROM event_images WHERE event_id = ?').all(id);
-
-  const tx = db.transaction(() => {
-    db.prepare('DELETE FROM event_images WHERE event_id = ?').run(id);
-    db.prepare('DELETE FROM events WHERE id = ?').run(id);
-  });
-  tx();
-
-  const eventDir = path.join(IMAGES_ROOT, event.category_code, event.sub_category_code, String(id));
   try {
-    if (fs.existsSync(eventDir)) {
-      images.forEach(img => {
-        const filePath = path.join(IMAGES_ROOT, img.file_path);
-        if (fs.existsSync(filePath)) {
-          try { fs.unlinkSync(filePath); } catch (e) {}
-        }
-      });
-      try { fs.rmdirSync(eventDir, { recursive: true }); } catch (e) {}
-    }
-  } catch (e) {
-    console.error('删除图片文件失败:', e);
-  }
+    const event = db.prepare(`
+      SELECT e.*, c.code as category_code, sc.code as sub_category_code
+      FROM events e
+      JOIN categories c ON e.category_id = c.id
+      JOIN sub_categories sc ON e.sub_category_id = sc.id
+      WHERE e.id = ?
+    `).get(id);
 
-  res.json({ success: true, message: '删除成功' });
+    if (!event) {
+      return res.json({ success: false, message: '事件不存在' });
+    }
+
+    const images = db.prepare('SELECT * FROM event_images WHERE event_id = ?').all(id);
+    const answerCount = db.prepare('SELECT COUNT(*) as cnt FROM game_answers WHERE event_id = ?').get(id).cnt;
+
+    const tx = db.transaction(() => {
+      db.prepare('DELETE FROM game_answers WHERE event_id = ?').run(id);
+      db.prepare('DELETE FROM event_images WHERE event_id = ?').run(id);
+      db.prepare('DELETE FROM events WHERE id = ?').run(id);
+    });
+    tx();
+
+    console.log(`已删除事件 ${id}，同时删除了 ${answerCount} 条答题记录`);
+
+    const eventDir = path.join(IMAGES_ROOT, event.category_code, event.sub_category_code, String(id));
+    try {
+      if (fs.existsSync(eventDir)) {
+        images.forEach(img => {
+          const filePath = path.join(IMAGES_ROOT, img.file_path);
+          if (fs.existsSync(filePath)) {
+            try { fs.unlinkSync(filePath); } catch (e) {}
+          }
+        });
+        try { fs.rmdirSync(eventDir, { recursive: true }); } catch (e) {}
+      }
+    } catch (e) {
+      console.error('删除图片文件失败:', e);
+    }
+
+    res.json({ success: true, message: '删除成功' });
+  } catch (e) {
+    console.error('删除事件失败:', e);
+    res.json({ success: false, message: e.message });
+  }
 });
 
 module.exports = router;

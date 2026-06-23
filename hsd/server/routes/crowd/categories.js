@@ -94,7 +94,15 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   try {
-    db.prepare('UPDATE categories SET is_active = 0 WHERE id = ?').run(req.params.id);
+    const cat = db.prepare('SELECT id FROM categories WHERE id = ?').get(req.params.id);
+    if (!cat) {
+      return res.json({ success: false, message: '分类不存在' });
+    }
+    const subCount = db.prepare('SELECT COUNT(*) as cnt FROM sub_categories WHERE category_id = ?').get(req.params.id).cnt;
+    if (subCount > 0) {
+      return res.json({ success: false, message: '该分类下存在子分类，请先删除子分类' });
+    }
+    db.prepare('DELETE FROM categories WHERE id = ?').run(req.params.id);
     res.json({ success: true, message: '已删除' });
   } catch (e) {
     res.json({ success: false, message: e.message });
@@ -148,7 +156,15 @@ router.put('/sub-category/:id', (req, res) => {
 
 router.delete('/sub-category/:id', (req, res) => {
   try {
-    db.prepare('UPDATE sub_categories SET is_active = 0 WHERE id = ?').run(req.params.id);
+    const sub = db.prepare('SELECT id FROM sub_categories WHERE id = ?').get(req.params.id);
+    if (!sub) {
+      return res.json({ success: false, message: '子分类不存在' });
+    }
+    const eventCount = db.prepare('SELECT COUNT(*) as cnt FROM events WHERE sub_category_id = ?').get(req.params.id).cnt;
+    if (eventCount > 0) {
+      return res.json({ success: false, message: '该子分类下存在事件，请先删除事件' });
+    }
+    db.prepare('DELETE FROM sub_categories WHERE id = ?').run(req.params.id);
     res.json({ success: true, message: '已删除' });
   } catch (e) {
     res.json({ success: false, message: e.message });

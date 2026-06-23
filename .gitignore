@@ -110,13 +110,6 @@ cython_debug/
 .venv
 venv/
 
-# ================================
-# Database
-# ================================
-*.db
-*.db-journal
-*.db-shm
-*.db-wal
 
 # ================================
 # Android / Gradle
@@ -146,7 +139,6 @@ ww-apk/www/
 # Project-specific
 # ================================
 .omo/
-prompt.txt
 
 # ExtractEvent config (may contain secrets)
-extractevent/config.json
+hsd/config.json
