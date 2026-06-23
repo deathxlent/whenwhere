@@ -262,7 +262,7 @@ function renderFavoritesList(items) {
         ${item.description ? `<div class="fav-description">${escapeHtml(item.description)}</div>` : ''}
       </div>
       <div class="fav-actions">
-        <button class="btn btn-default fav-view-btn" data-event-id="${item.id}" title="查看大家怎么答">👥 查看答题</button>
+        <button class="btn btn-default fav-view-btn" data-event-id="${item.id}" title="查看事件详情">👥 查看事件</button>
         <button class="btn btn-danger fav-unfav-btn" data-event-id="${item.id}" title="取消收藏">★ 已收藏</button>
       </div>
     </div>

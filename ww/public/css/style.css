@@ -1158,8 +1158,6 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #0a0a2e; c
   background: rgba(79,195,247,0.12);
   border: 1px solid rgba(79,195,247,0.4);
   color: #4fc3f7;
-  font-size: 13px !important;
-  padding: 6px 12px !important;
 }
 .fav-view-btn:hover {
   background: rgba(79,195,247,0.25);
