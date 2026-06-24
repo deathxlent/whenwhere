@@ -204,4 +204,7 @@ MIT License - 详见 [LICENSE](LICENSE) 文件。
 
 ---
 
-**Made with ❤️ by WhenWhere Team**
+**Made with ❤️ by xlent**
+
+
+同时想征集一些书专门介绍某国家在全世界的作恶，不仅仅是二战亚洲地区，我好利用大模型批量生成题然后出单机apk
